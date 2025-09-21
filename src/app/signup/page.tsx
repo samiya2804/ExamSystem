@@ -2,40 +2,53 @@
 
 import { useState } from "react";
 
-// This is a simulated, in-memory database.
-const USERS = [
-  { id: 1, email: "admin@example.com", password: "password123", role: "admin" },
-  { id: 2, email: "faculty@example.com", password: "password123", role: "faculty" },
-  { id: 3, email: "student@example.com", password: "password123", role: "student" },
-];
-
-const LoginPage = () => {
+const SignupPage = () => {
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  // This is a simple client-side redirect. In a real Next.js app,
+  // you would use the useRouter hook from 'next/navigation'
+  // to perform a proper client-side navigation without a full page reload.
   const handleRedirect = (path: string) => {
     if (typeof window !== 'undefined') {
       window.location.href = path;
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setMessage(null);
 
-    const foundUser = USERS.find(
-      (u) => u.email === email && u.password === password && u.role === role
-    );
-    if (foundUser) {
-      setMessage(`Logged in successfully as ${foundUser.role}!`);
-      // In a real app, you would handle state and redirect properly
-      handleRedirect('/');
+    // This is a simulated, in-memory database.
+    const USERS = [
+      { id: 1, email: "admin@example.com", username: "admin", role: "admin" },
+      { id: 2, email: "faculty@example.com", username: "faculty", role: "faculty" },
+      { id: 3, email: "student@example.com", username: "student", role: "student" },
+    ];
+
+    const userExists = USERS.find((u) => u.email === email || u.username === username);
+    if (userExists) {
+      setMessage("Account with this email or username already exists.");
     } else {
-      setMessage("Invalid credentials or role. Please try again.");
+      const newUser = {
+        id: USERS.length + 1,
+        firstName,
+        lastName,
+        username,
+        email,
+        password,
+        role,
+      };
+      USERS.push(newUser);
+      setMessage(`Signed up successfully as ${role}! You can now log in.`);
+      handleRedirect("/login");
     }
     setLoading(false);
   };
@@ -58,10 +71,10 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">Login</h1>
+        <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">Sign Up</h1>
 
         {/* Role Slider Tabs */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-end mb-6">
           <div className="flex justify-between items-center p-1 bg-gray-200 rounded-full shadow-inner w-full max-w-xs">
             {roles.map((r) => (
               <button
@@ -90,7 +103,46 @@ const LoginPage = () => {
             {message}
           </div>
         )}
-        <form onSubmit={handleLogin} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
+          <div>
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+              First Name
+            </label>
+            <input
+              type="text"
+              id="firstName"
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+              Last Name
+            </label>
+            <input
+              type="text"
+              id="lastName"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+              Username
+            </label>
+            <input
+              type="text"
+              id="username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              required
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
               Email
@@ -122,14 +174,14 @@ const LoginPage = () => {
             className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
             disabled={loading}
           >
-            {loading ? "Processing..." : "Login"}
+            {loading ? "Processing..." : "Sign Up"}
           </button>
         </form>
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
-            Don't have an account?
-            <a href="/signup" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
-              Sign Up
+            Already have an account?
+            <a href="/login" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
+              Login
             </a>
           </p>
         </div>
@@ -138,4 +190,4 @@ const LoginPage = () => {
   );
 };
 
-export default LoginPage;
+export default SignupPage;
