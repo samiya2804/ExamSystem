@@ -1,44 +1,19 @@
 "use client";
 
 import { useState } from "react";
-
-// This is a simulated, in-memory database.
-const USERS = [
-  { id: 1, email: "admin@example.com", password: "password123", role: "admin" },
-  { id: 2, email: "faculty@example.com", password: "password123", role: "faculty" },
-  { id: 3, email: "student@example.com", password: "password123", role: "student" },
-];
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { useAuth } from "@/lib/hooks/useAuth";
+import Link from "next/link";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const handleRedirect = (path: string) => {
-    if (typeof window !== 'undefined') {
-      window.location.href = path;
-    }
-  };
-
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
-    const foundUser = USERS.find(
-      (u) => u.email === email && u.password === password && u.role === role
-    );
-    if (foundUser) {
-      setMessage(`Logged in successfully as ${foundUser.role}!`);
-      // In a real app, you would handle state and redirect properly
-      handleRedirect('/');
-    } else {
-      setMessage("Invalid credentials or role. Please try again.");
-    }
-    setLoading(false);
-  };
+  const router = useRouter();
+  const { refreshUser } = useAuth(); // hook to update navbar
 
   const roles = ["student", "faculty", "admin"];
 
@@ -55,6 +30,34 @@ const LoginPage = () => {
     }
   };
 
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, role }),
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("Login successful! 🎉");
+        refreshUser(); // update navbar state
+        router.push(`/${role}`); // redirect to dashboard based on role
+      } else {
+        toast.error(data.error || "Login failed");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Something went wrong!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
@@ -66,6 +69,7 @@ const LoginPage = () => {
             {roles.map((r) => (
               <button
                 key={r}
+                type="button"
                 onClick={() => setRole(r)}
                 className={`w-1/3 py-2 text-sm font-semibold capitalize rounded-full transition-all duration-300 ${
                   role === r
@@ -79,17 +83,6 @@ const LoginPage = () => {
           </div>
         </div>
 
-        {message && (
-          <div
-            className={`p-3 rounded-md text-center mb-4 text-sm font-medium ${
-              message.includes("successfully")
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {message}
-          </div>
-        )}
         <form onSubmit={handleLogin} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -125,12 +118,13 @@ const LoginPage = () => {
             {loading ? "Processing..." : "Login"}
           </button>
         </form>
+
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             Don't have an account?
-            <a href="/signup" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
+            <Link href="/signup" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
               Sign Up
-            </a>
+            </Link>
           </p>
         </div>
       </div>

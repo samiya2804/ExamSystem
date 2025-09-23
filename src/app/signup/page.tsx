@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner"; // ✅ shadcn toast
 
 const SignupPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -9,48 +11,46 @@ const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // This is a simple client-side redirect. In a real Next.js app,
-  // you would use the useRouter hook from 'next/navigation'
-  // to perform a proper client-side navigation without a full page reload.
-  const handleRedirect = (path: string) => {
-    if (typeof window !== 'undefined') {
-      window.location.href = path;
-    }
-  };
+  const router = useRouter();
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMessage(null);
 
-    // This is a simulated, in-memory database.
-    const USERS = [
-      { id: 1, email: "admin@example.com", username: "admin", role: "admin" },
-      { id: 2, email: "faculty@example.com", username: "faculty", role: "faculty" },
-      { id: 3, email: "student@example.com", username: "student", role: "student" },
-    ];
+    try {
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          username,
+          email,
+          password,
+          role,
+        }),
+      });
 
-    const userExists = USERS.find((u) => u.email === email || u.username === username);
-    if (userExists) {
-      setMessage("Account with this email or username already exists.");
-    } else {
-      const newUser = {
-        id: USERS.length + 1,
-        firstName,
-        lastName,
-        username,
-        email,
-        password,
-        role,
-      };
-      USERS.push(newUser);
-      setMessage(`Signed up successfully as ${role}! You can now log in.`);
-      handleRedirect("/login");
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success("🎉 User created successfully!");
+        setTimeout(() => router.push("/login"), 1500);
+      } else {
+        if (res.status === 400 && data.error?.includes("exists")) {
+          toast.warning("⚠️ User already registered. Please login instead.");
+        } else {
+          toast.error(data.error || "❌ Signup failed. Try again later.");
+        }
+      }
+    } catch (err) {
+      console.error("Signup Error:", err);
+      toast.error("🚨 Server error! Please try again.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const roles = ["student", "faculty", "admin"];
@@ -73,13 +73,14 @@ const SignupPage = () => {
       <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">Sign Up</h1>
 
-        {/* Role Slider Tabs */}
+        {/* Role Tabs */}
         <div className="flex justify-end mb-6">
           <div className="flex justify-between items-center p-1 bg-gray-200 rounded-full shadow-inner w-full max-w-xs">
             {roles.map((r) => (
               <button
                 key={r}
                 onClick={() => setRole(r)}
+                type="button"
                 className={`w-1/3 py-2 text-sm font-semibold capitalize rounded-full transition-all duration-300 ${
                   role === r
                     ? "text-white shadow-md " + getRoleColor(r)
@@ -92,17 +93,7 @@ const SignupPage = () => {
           </div>
         </div>
 
-        {message && (
-          <div
-            className={`p-3 rounded-md text-center mb-4 text-sm font-medium ${
-              message.includes("successfully")
-                ? "bg-green-100 text-green-700"
-                : "bg-red-100 text-red-700"
-            }`}
-          >
-            {message}
-          </div>
-        )}
+        {/* Signup Form */}
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
             <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
@@ -177,6 +168,7 @@ const SignupPage = () => {
             {loading ? "Processing..." : "Sign Up"}
           </button>
         </form>
+
         <div className="mt-4 text-center">
           <p className="text-sm text-gray-600">
             Already have an account?
