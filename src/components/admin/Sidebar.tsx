@@ -8,12 +8,12 @@ export default function Sidebar() {
   return (
     <aside className="w-64 bg-white border-r min-h-screen p-6">
       <div className="mb-8">
-        <div className="text-lg font-bold text-indigo-700">AI Exam System</div>
+        <div className="text-lg font-bold text-teal-700">AI Exam System</div>
         <p className="text-sm text-slate-500 mt-1">Admin Console</p>
       </div>
 
       <nav className="space-y-2">
-        <Link href="/admin" className="flex items-center gap-3 p-3 rounded-md bg-indigo-700 text-white">
+        <Link href="/admin" className="flex items-center gap-3 p-3 rounded-md bg-teal-700 text-white">
           <Grid className="w-5 h-5" /> Dashboard
         </Link>
 

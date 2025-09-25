@@ -1,75 +1,168 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { BookOpen, UserCheck, BarChart } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, FileText, Users, Brain, BookOpen, PieChart, CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 
 export default function HomePage() {
   return (
-    <section className="container mx-auto py-12 space-y-16 px-6">
+    <main className="min-h-screen bg-gray-900 text-gray-100">
       {/* Hero Section */}
-      <div className="text-center space-y-6">
-        <h1 className="text-5xl font-extrabold text-indigo-600">
-          AI Exam System
-        </h1>
-        <p className="text-gray-700 max-w-2xl mx-auto text-lg">
-          Automate question paper generation, evaluate student answers with AI,
-          and track performance in real-time. Say goodbye to manual exams!
+      <section className="relative flex flex-col items-center justify-center py-24 text-center">
+        <motion.h1
+          initial={{ opacity: 0, y: -30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="text-5xl font-bold tracking-tight text-white"
+        >
+          AI Powered Exam System
+        </motion.h1>
+        <p className="mt-4 text-lg text-gray-300 max-w-2xl">
+          Simplify online exams with automation, monitoring, analytics, and seamless question bank management.
         </p>
-        <Link href="/login">
-          <Button className="px-6 py-3 text-lg">Get Started</Button>
-        </Link>
-      </div>
+        <div className="mt-6 flex gap-4">
+          <Link href="/login">
+            <Button size="lg" className="bg-teal-600 text-white hover:bg-indigo-700">
+              Get Started
+            </Button>
+          </Link>
+          <Link href="#features">
+            <Button size="lg" variant="outline" className="bg-teal-600 text-white hover:bg-indigo-700">
+              Learn More
+            </Button>
+          </Link>
+        </div>
+      </section>
 
       {/* Features Section */}
-      <div className="grid md:grid-cols-3 gap-8">
-        <Card className="hover:shadow-xl transition transform hover:-translate-y-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-6 h-6 text-indigo-600" /> AI Question Papers
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              Faculty selects subject, difficulty, and marks — AI generates a full question paper.
-            </p>
-          </CardContent>
-        </Card>
+      <section id="features" className="py-20 bg-gray-800">
+        <div className="max-w-6xl mx-auto px-6">
+          <h2 className="text-3xl font-bold text-center mb-12 text-white">Powerful Features</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gray-700 shadow-lg hover:shadow-xl transition">
+              <CardHeader>
+                <BarChart3 className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Analytics Dashboard</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                Gain insights into student performance with real-time graphs and reports.
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-700 shadow-lg hover:shadow-xl transition">
+              <CardHeader>
+                <FileText className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Question Bank</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                Upload, manage, and filter questions by subject, type, and difficulty.
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-700 shadow-lg hover:shadow-xl transition">
+              <CardHeader>
+                <Users className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Faculty & Students</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                Easily manage users, assign faculties, and monitor students.
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-        <Card className="hover:shadow-xl transition transform hover:-translate-y-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="w-6 h-6 text-green-600" /> Student Upload
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              Students write answers offline and upload scanned sheets online for AI evaluation.
-            </p>
-          </CardContent>
-        </Card>
+      {/* How It Works */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold mb-12 text-white">How It Works</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <Card className="bg-gray-700">
+              <CardHeader>
+                <BookOpen className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Step 1: Upload</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                Admin uploads question banks & exam details.
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-700">
+              <CardHeader>
+                <Brain className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Step 2: AI Exam</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                System generates randomized, secure exams automatically.
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-700">
+              <CardHeader>
+                <PieChart className="w-10 h-10 text-teal-400" />
+                <CardTitle className="text-white">Step 3: Analyze</CardTitle>
+              </CardHeader>
+              <CardContent className="text-gray-300">
+                Get insights from analytics dashboard instantly.
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
 
-        <Card className="hover:shadow-xl transition transform hover:-translate-y-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <BarChart className="w-6 h-6 text-purple-600" /> Performance Analytics
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>
-              AI scores answers, provides topic-wise feedback, and shows interactive dashboards.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
+      {/* Why Choose Us */}
+      <section className="py-20 bg-gray-800">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold mb-12 text-white">Why Choose Us?</h2>
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="flex flex-col items-center">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+              <h3 className="mt-4 font-semibold text-white">Secure & Reliable</h3>
+              <p className="text-gray-300 mt-2">Built with advanced authentication & monitoring.</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+              <h3 className="mt-4 font-semibold text-white">AI-Powered</h3>
+              <p className="text-gray-300 mt-2">Leverages AI for question selection & analysis.</p>
+            </div>
+            <div className="flex flex-col items-center">
+              <CheckCircle className="w-10 h-10 text-green-400" />
+              <h3 className="mt-4 font-semibold text-white">Easy to Use</h3>
+              <p className="text-gray-300 mt-2">Designed with simplicity and efficiency in mind.</p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      {/* Call to Action */}
-      <div className="text-center mt-12">
+      {/* Testimonials */}
+      <section className="py-20">
+        <div className="max-w-6xl mx-auto px-6 text-center">
+          <h2 className="text-3xl font-bold mb-12 text-white">What People Say</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="bg-gray-700 shadow-md">
+              <CardContent className="p-6 text-gray-300">
+                "This exam system made managing tests so much easier. The analytics saved us hours!"
+                <p className="mt-4 font-semibold text-white">- Professor Sharma</p>
+              </CardContent>
+            </Card>
+            <Card className="bg-gray-700 shadow-md">
+              <CardContent className="p-6 text-gray-300">
+                "Seamless exam experience. Loved the AI-powered features!"
+                <p className="mt-4 font-semibold text-white">- Student, B.Tech CSE</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20 bg-indigo-600 text-white text-center">
+        <h2 className="text-3xl font-bold mb-4">Ready to Automate Exams?</h2>
+        <p className="mb-6">Join the next-gen AI powered exam management system today.</p>
         <Link href="/login">
-          <Button className="px-8 py-4 text-xl">Login & Explore</Button>
+          <Button size="lg" className="bg-teal-600 text-white hover:bg-teal-700">
+            Get Started
+          </Button>
         </Link>
-      </div>
-    </section>
+      </section>
+    </main>
   );
 }

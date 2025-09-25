@@ -42,7 +42,7 @@ export default function AddSubjectPage() {
   return (
     <div className="max-w-3xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <BookOpen className="w-6 h-6 text-indigo-600" /> Manage Subjects
+        <BookOpen className="w-6 h-6 text-teal-600" /> Manage Subjects
       </h1>
 
       {/* Form */}

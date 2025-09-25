@@ -10,7 +10,7 @@ type Props = {
 };
 
 function Icon({ name }: { name?: Props["icon"] }) {
-  const cls = "w-6 h-6 text-indigo-600";
+  const cls = "w-6 h-6 text-teal-600";
   switch (name) {
     case "users": return <svg className={cls} viewBox="0 0 24 24" fill="none"><path d="M17 21v-2a4 4 0 00-4-4H7a4 4 0 00-4 4v2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M9 11a4 4 0 100-8 4 4 0 000 8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
     case "file": return <svg className={cls} viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /><path d="M14 2v6h6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" /></svg>;
@@ -29,7 +29,7 @@ export default function StatsCard({ title, value, subtitle, trend, icon }: Props
           {subtitle && <div className="text-sm text-slate-500 mt-2">{subtitle}</div>}
         </div>
         <div className="flex flex-col items-end">
-          <div className="p-2 bg-indigo-50 rounded-md">
+          <div className="p-2 bg-teal-50 rounded-md">
             <Icon name={icon} />
           </div>
           {trend && <div className="text-sm text-green-500 mt-2">{trend}</div>}

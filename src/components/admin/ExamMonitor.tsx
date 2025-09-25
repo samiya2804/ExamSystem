@@ -54,7 +54,7 @@ export default function ExamMonitor() {
 
           <div className="mt-4">
             <div className="h-3 bg-white rounded-full overflow-hidden border">
-              <div className="h-full bg-indigo-600" style={{ width: `${(e.active / e.total) * 100}%` }} />
+              <div className="h-full bg-teal-600" style={{ width: `${(e.active / e.total) * 100}%` }} />
             </div>
             <div className="grid grid-cols-3 text-center mt-4">
               <div>
