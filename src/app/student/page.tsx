@@ -201,14 +201,14 @@ export default function StudentDashboard() {
 
   if (!activeExam) {
     return (
-      <div className="min-h-screen bg-gray-100 font-sans p-6 sm:p-10">
+      <div className="min-h-screen bg-slate-950 text-gray-100 font-sans p-6 sm:p-10">
         <MessageToast />
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Header */}
-          <header className="p-8 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between">
+          <header className="p-8 bg-gradient-to-br from-indigo-900  to-gray-900 text-white rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-inner">
-                <span className="text-3xl font-bold text-teal-600">MI</span>
+              <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center shadow-inner">
+                <span className="text-3xl font-bold text-blue-900">MI</span>
               </div>
               <div>
                 <h1 className="text-3xl font-bold">Welcome, Student</h1>
@@ -216,7 +216,7 @@ export default function StudentDashboard() {
               </div>
             </div>
             <div className="mt-4 sm:mt-0">
-              <Button className="bg-white text-teal-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
+              <Button className="bg-gray-700 text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
                 View All Results
               </Button>
             </div>
@@ -224,10 +224,10 @@ export default function StudentDashboard() {
 
           {/* Key Stats Section */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="rounded-2xl shadow-lg p-6 bg-white transform transition-transform duration-300 hover:scale-105">
+            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700 transform transition-transform duration-300 hover:scale-105">
               <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
-                  <BookOpen className="w-6 h-6 text-teal-500" />
+                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
+                  <BookOpen className="w-6 h-6 text-white" />
                   <span>Exams Available</span>
                 </CardTitle>
               </CardHeader>
@@ -235,13 +235,13 @@ export default function StudentDashboard() {
                 <div className="text-5xl font-extrabold text-teal-600 mt-2">
                   {availableExams.length}
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Upcoming tests on your schedule.</p>
+                <p className="text-sm text-white mt-2">Upcoming tests on your schedule.</p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl shadow-lg p-6 bg-white transform transition-transform duration-300 hover:scale-105">
+            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700 transform transition-transform duration-300 hover:scale-105">
               <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
+                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
                   <BarChart2 className="w-6 h-6 text-green-500" />
                   <span>Average Score</span>
                 </CardTitle>
@@ -257,13 +257,13 @@ export default function StudentDashboard() {
                       : "N/A"
                   }
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Your average performance.</p>
+                <p className="text-sm text-white mt-2">Your average performance.</p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl shadow-lg p-6 bg-white transform transition-transform duration-300 hover:scale-105">
+            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700  transform transition-transform duration-300 hover:scale-105">
               <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
+                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
                   <FileText className="w-6 h-6 text-yellow-500" />
                   <span>Exams Completed</span>
                 </CardTitle>
@@ -272,42 +272,42 @@ export default function StudentDashboard() {
                 <div className="text-5xl font-extrabold text-yellow-600 mt-2">
                   {pastResults.length}
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Exams you have completed.</p>
+                <p className="text-sm text-white mt-2">Exams you have completed.</p>
               </CardContent>
             </Card>
 
-            <Card className="rounded-2xl shadow-lg p-6 bg-white transform transition-transform duration-300 hover:scale-105">
+            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700  transform transition-transform duration-300 hover:scale-105">
               <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-gray-800 flex items-center space-x-2">
+                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
                   <Calendar className="w-6 h-6 text-blue-500" />
                   <span>Last Exam</span>
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0">
-                <div className="text-lg font-bold text-blue-600 mt-2">
+                <div className="text-4xl font-bold text-blue-600 mt-2 mb-4">
                   {
                     pastResults.length > 0
                       ? pastResults[pastResults.length - 1].subject
                       : "None"
                   }
                 </div>
-                <p className="text-sm text-gray-500 mt-2">Most recent subject completed.</p>
+                <p className="text-sm text-white mt-2">Most recent subject completed.</p>
               </CardContent>
             </Card>
           </section>
 
           {/* Upcoming Exams Section */}
           <section>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Upcoming Exams</h2>
+            <h2 className="text-3xl font-bold text-blue-600 mb-6">Upcoming Exams</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {availableExams.map((exam) => (
-                <Card key={exam.id} className="rounded-2xl shadow-lg p-6 bg-white flex flex-col justify-between transform transition-transform duration-300 hover:scale-105">
+                <Card key={exam.id} className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700  flex flex-col justify-between transform transition-transform duration-300 hover:scale-105">
                   <CardHeader className="p-0">
-                    <CardTitle className="text-2xl font-semibold text-teal-600 flex items-center gap-3">
+                    <CardTitle className="text-2xl font-semibold text-blue-800 flex items-center gap-3">
                       <BookOpen className="w-7 h-7" /> {exam.subject}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="p-0 mt-4 flex-grow space-y-2 text-gray-600">
+                  <CardContent className="p-0 mt-4 flex-grow space-y-2 text-white">
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4" />
                       <span>Total Marks: {exam.totalMarks}</span>
@@ -324,7 +324,7 @@ export default function StudentDashboard() {
                   {exam.questions.length > 0 ? (
                     <Button
                       onClick={() => setActiveExam(exam)}
-                      className="w-full mt-6 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer hover-bg-gradient-to-r from-teal-600 to-cyan-800 duration-200 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-3xl shadow-md"
+                      className="w-full mt-6 flex items-center justify-center gap-2 py-3 transition-colors cursor-pointer bg-blue-600 hover:bg-blue-700 text-white rounded-3xl shadow-md"
                     >
                       <UploadCloud className="w-5 h-5" /> Start Exam
                     </Button>
@@ -337,7 +337,7 @@ export default function StudentDashboard() {
                         onChange={handleFileUpload}
                         className="hidden"
                       />
-                      <label htmlFor={`file-upload-${exam.id}`} className="w-full flex items-center justify-center gap-2 py-2 bg-gray-200 text-gray-800 hover:bg-gray-300 transition-colors duration-200 rounded-3xl shadow-md cursor-pointer">
+                      <label htmlFor={`file-upload-${exam.id}`} className="w-full flex items-center justify-center gap-2 py-2 bg-blue-400 text-white hover:bg-blue-500 transition-colors duration-200 rounded-3xl shadow-md cursor-pointer">
                         <UploadCloud className="w-5 h-5" /> Upload Answer Sheet
                       </label>
                     </div>
@@ -348,68 +348,88 @@ export default function StudentDashboard() {
           </section>
 
           {/* Overall Performance Section */}
-          <section>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Overall Performance</h2>
-            <Card className="rounded-2xl shadow-lg p-6 bg-white">
-              <div className="w-full h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={averageMarksData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
-                    <XAxis dataKey="subject" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="marks" stroke="#6366f1" fill="#c7d2fe" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </section>
+         <section>
+  <h2 className="text-3xl font-bold text-indigo-400 mb-6">Overall Performance</h2>
+  <Card className="rounded-2xl shadow-xl p-6 bg-gray-900/90 border border-gray-800 backdrop-blur-md">
+    <div className="w-full h-80">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={averageMarksData} margin={{ top: 10, right: 30, left: -20, bottom: 0 }}>
+          <XAxis dataKey="subject" stroke="#9ca3af" /> {/* gray axis labels */}
+          <YAxis stroke="#9ca3af" />
+          <Tooltip 
+            contentStyle={{ backgroundColor: "#1f2937", borderRadius: "0.5rem", border: "none" }}
+            labelStyle={{ color: "#e5e7eb" }}
+          />
+          <Area 
+            type="monotone" 
+            dataKey="marks" 
+            stroke="#6366f1" 
+            fill="#3730a3"  // darker indigo fill
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  </Card>
+</section>
 
-          {/* Past Results Section */}
-          <section>
-            <h2 className="text-3xl font-bold text-gray-800 mb-6">Past Results</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {pastResults.map((res) => (
-                <Card key={res.id} className="rounded-2xl shadow-lg p-6 bg-white transform transition-transform duration-300 hover:scale-105">
-                  <CardHeader className="p-0">
-                    <CardTitle className="text-2xl font-semibold text-purple-600 flex items-center gap-3">
-                      <BarChart2 className="w-7 h-7" /> {res.subject}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-0 mt-4">
-                    <p className="text-3xl font-bold text-gray-800">
-                      {res.marksObtained}/{res.totalMarks}
-                    </p>
-                    <p className="text-sm text-gray-500 mt-2">Topic-wise Performance:</p>
-                    <div className="w-full h-40 mt-3">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={res.topicPerformance} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
-                          <XAxis dataKey="topic" className="text-xs" />
-                          <YAxis />
-                          <Tooltip />
-                          <Area type="monotone" dataKey="score" stroke="#22c55e" fill="#86efac" />
-                        </AreaChart>
-                      </ResponsiveContainer>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </section>
+{/* Past Results Section */}
+<section>
+  <h2 className="text-3xl font-bold text-indigo-400 mb-6">Past Results</h2>
+  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {pastResults.map((res) => (
+      <Card 
+        key={res.id} 
+        className="rounded-2xl shadow-lg p-6 bg-gray-900/90 border border-gray-800 transform transition-transform duration-300 hover:scale-105 backdrop-blur-md"
+      >
+        <CardHeader className="p-0">
+          <CardTitle className="text-2xl font-semibold text-purple-400 flex items-center gap-3">
+            <BarChart2 className="w-7 h-7 text-purple-400" /> {res.subject}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0 mt-4">
+          <p className="text-3xl font-bold text-gray-100">
+            {res.marksObtained}/{res.totalMarks}
+          </p>
+          <p className="text-sm text-gray-400 mt-2">Topic-wise Performance:</p>
+          <div className="w-full h-40 mt-3">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={res.topicPerformance} margin={{ top: 10, right: 0, left: -20, bottom: 0 }}>
+                <XAxis dataKey="topic" stroke="#9ca3af" className="text-xs" />
+                <YAxis stroke="#9ca3af" />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: "#1f2937", borderRadius: "0.5rem", border: "none" }}
+                  labelStyle={{ color: "#e5e7eb" }}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="score" 
+                  stroke="#22c55e" 
+                  fill="#065f46" // darker green fill
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </CardContent>
+      </Card>
+    ))}
+  </div>
+</section>
+
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans p-6 sm:p-10">
+    <div className="min-h-screen bg-slate-800 border border-slate-700 text-white font-sans p-6 sm:p-10">
       <MessageToast />
       <div className="max-w-5xl mx-auto space-y-6">
-        <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-white rounded-3xl shadow-xl">
-          <Button onClick={() => setActiveExam(null)} className="flex items-center gap-2 text-teal-600 font-semibold rounded-full bg-gray-100 hover:bg-gray-200 transition-transform duration-200 transform hover:scale-105">
+        <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-gray-700 rounded-3xl shadow-xl">
+          <Button onClick={() => setActiveExam(null)} className="flex items-center gap-2 text-blue-600 font-semibold rounded-full bg-gray-700 hover:bg-gray-800 transition-transform duration-200 transform hover:scale-105">
             <ChevronLeft className="w-4 h-4" /> Back to Dashboard
           </Button>
           <div className="text-center flex-1 mt-4 sm:mt-0">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">{activeExam.subject} Exam</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-white">{activeExam.subject} Exam</h1>
           </div>
           <div className="flex items-center space-x-2 text-red-600 font-bold bg-red-100 px-4 py-2 rounded-full shadow-inner mt-4 sm:mt-0">
             <Clock className="w-5 h-5" />
@@ -419,33 +439,33 @@ export default function StudentDashboard() {
 
         <section className="space-y-8">
           {activeExam.questions.map((q, index) => (
-            <Card key={q.id} className="p-8 rounded-3xl shadow-lg bg-white">
+            <Card key={q.id} className="p-8 rounded-3xl shadow-lg bg-gray-800">
               <CardHeader className="p-0 mb-6">
-                <CardTitle className="text-xl font-bold text-gray-800">
+                <CardTitle className="text-xl font-bold text-white">
                   Question {index + 1}
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-0 space-y-6">
-                <p className="text-lg font-medium text-gray-700">{q.questionText}</p>
+                <p className="text-lg font-medium text-white">{q.questionText}</p>
                 {q.type === 'mcq' && (
                   <div className="space-y-4">
                     {q.options?.map((option, optIndex) => (
-                      <div key={optIndex} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <div key={optIndex} className="flex items-center space-x-3 p-4 border border-gray-200 rounded-lg cursor-pointer hover:bg-green-600 transition-colors">
                         <input type="radio" id={`q${q.id}-opt${optIndex}`} name={`q${q.id}`} className="form-radio text-teal-600 w-4 h-4" />
-                        <label htmlFor={`q${q.id}-opt${optIndex}`} className="text-gray-700 font-medium flex-1 cursor-pointer">{option}</label>
+                        <label htmlFor={`q${q.id}-opt${optIndex}`} className="text-white font-medium flex-1 cursor-pointer">{option}</label>
                       </div>
                     ))}
                   </div>
                 )}
                 {q.type === 'short_answer' && (
-                  <textarea rows={3} className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-gray-800"></textarea>
+                  <textarea rows={3} className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-white"></textarea>
                 )}
                 {q.type === 'long_answer' && (
-                  <textarea rows={8} className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-gray-800"></textarea>
+                  <textarea rows={8} className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition text-white"></textarea>
                 )}
                 {q.type === 'coding' && (
                   <div className="space-y-2">
-                    <p className="text-sm font-medium text-gray-500">Code Here</p>
+                    <p className="text-sm font-medium text-white">Code Here</p>
                     <textarea rows={12} className="w-full font-mono p-4 border border-gray-300 rounded-lg bg-gray-900 text-green-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition"></textarea>
                   </div>
                 )}
@@ -453,13 +473,13 @@ export default function StudentDashboard() {
             </Card>
           ))}
 
-          <div className="p-8 bg-white rounded-3xl shadow-lg text-center">
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Upload Answer Sheet (for handwritten sections)</h3>
-            <p className="text-md text-gray-500 mb-6">Please ensure the file is clear and properly labeled.</p>
-            <input type="file" className="text-sm text-gray-500 file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 transition-colors" />
+          <div className="p-8 bg-gray-800 rounded-3xl shadow-lg text-center">
+            <h3 className="text-xl font-bold text-white mb-2">Upload Answer Sheet (for handwritten sections)</h3>
+            <p className="text-md text-white mb-6">Please ensure the file is clear and properly labeled.</p>
+            <input type="file" className="text-sm text-white file:mr-4 file:py-2 file:px-6 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-100 file:text-purple-700 hover:file:bg-purple-200 transition-colors" />
           </div>
 
-          <Button onClick={handleExamSubmission} className="w-full flex items-center justify-center gap-3 py-4 text-white font-bold bg-gradient-to-r from-teal-500 to-cyan-600 cursor-pointer rounded-3xl shadow-md  ">
+          <Button onClick={handleExamSubmission} className="w-full flex items-center justify-center gap-3 py-4 text-white font-bold bg-gradient-to-r from-blue-900 to-gray-800 cursor-pointer rounded-3xl shadow-md  ">
             <UploadCloud className="w-6 h-6" /> Submit Exam
           </Button>
         </section>

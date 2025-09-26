@@ -24,25 +24,25 @@ const ongoingExams = [
 
 export default function ExamMonitor() {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border">
+    <div className="bg-gray-800 rounded-lg p-6 shadow-sm border">
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-lg font-medium text-slate-900">Active Exam Monitor</h3>
-          <p className="text-sm text-slate-500">Real-time monitoring of ongoing examinations</p>
+          <h3 className="text-lg font-medium text-white">Active Exam Monitor</h3>
+          <p className="text-sm text-white">Real-time monitoring of ongoing examinations</p>
         </div>
 
-        <div className="text-sm text-slate-500">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+        <div className="text-sm text-white">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
       </div>
 
       {ongoingExams.map((e) => (
-        <div key={e.id} className="border rounded-md p-4 bg-slate-50">
+        <div key={e.id} className="border rounded-md p-4 bg-gray-800">
           <div className="flex items-center justify-between">
             <div>
               <h4 className="font-semibold text-slate-800">{e.title}</h4>
-              <div className="text-sm text-slate-500 mt-1">{e.course} • {e.teacher} • {e.start} - {e.end}</div>
+              <div className="text-sm text-white mt-1">{e.course} • {e.teacher} • {e.start} - {e.end}</div>
             </div>
 
-            <div className="flex items-center gap-4 text-slate-600">
+            <div className="flex items-center gap-4 text-white">
               <div className="flex items-center gap-2">
                 <Eye className="w-4 h-4" /> <span className="text-sm">View Details</span>
               </div>
@@ -53,21 +53,21 @@ export default function ExamMonitor() {
           </div>
 
           <div className="mt-4">
-            <div className="h-3 bg-white rounded-full overflow-hidden border">
+            <div className="h-3 bg-gray-700 rounded-full overflow-hidden border">
               <div className="h-full bg-teal-600" style={{ width: `${(e.active / e.total) * 100}%` }} />
             </div>
             <div className="grid grid-cols-3 text-center mt-4">
               <div>
-                <div className="text-2xl font-semibold text-slate-900">{e.total}</div>
-                <div className="text-sm text-slate-500">Total Students</div>
+                <div className="text-2xl font-semibold text-white">{e.total}</div>
+                <div className="text-sm text-white">Total Students</div>
               </div>
               <div>
                 <div className="text-2xl font-semibold text-emerald-600">{e.active}</div>
-                <div className="text-sm text-slate-500">Currently Active</div>
+                <div className="text-sm text-white">Currently Active</div>
               </div>
               <div>
-                <div className="text-2xl font-semibold text-slate-900">{e.submitted}</div>
-                <div className="text-sm text-slate-500">Submitted</div>
+                <div className="text-2xl font-semibold text-white">{e.submitted}</div>
+                <div className="text-sm text-white">Submitted</div>
               </div>
             </div>
 
@@ -81,9 +81,9 @@ export default function ExamMonitor() {
                     </div>
                     <div>
                       <div className="text-sm font-medium text-slate-800">{a.text}</div>
-                      <div className="text-xs text-slate-500">Student ID: {a.student}</div>
+                      <div className="text-xs text-white">Student ID: {a.student}</div>
                     </div>
-                    <div className="ml-auto text-slate-400">↗</div>
+                    <div className="ml-auto text-white">↗</div>
                   </li>
                 ))}
               </ul>

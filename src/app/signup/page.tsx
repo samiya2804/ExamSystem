@@ -69,13 +69,13 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">Sign Up</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900  to-gray-900  flex items-center justify-center p-4">
+      <div className="bg-white/10 backdrop-blur-lg-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+        <h1 className="text-3xl font-bold text-center text-indigo-400 mb-6">Sign Up</h1>
 
         {/* Role Tabs */}
-        <div className="flex justify-end mb-6">
-          <div className="flex justify-between items-center p-1 bg-gray-200 rounded-full shadow-inner w-full max-w-xs">
+        <div className="flex justify-center mb-6">
+          <div className="flex justify-between items-center p-1 bg-gray-800/70 rounded-full shadow-inner w-full max-w-xs">
             {roles.map((r) => (
               <button
                 key={r}
@@ -84,7 +84,7 @@ const SignupPage = () => {
                 className={`w-1/3 py-2 text-sm font-semibold capitalize rounded-full transition-all duration-300 ${
                   role === r
                     ? "text-white shadow-md " + getRoleColor(r)
-                    : "text-gray-700"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {r}
@@ -96,7 +96,7 @@ const SignupPage = () => {
         {/* Signup Form */}
         <form onSubmit={handleSignup} className="space-y-4">
           <div>
-            <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="firstName" className="block text-sm font-medium text-gray-300 mb-1">
               First Name
             </label>
             <input
@@ -105,11 +105,11 @@ const SignupPage = () => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="lastName" className="block text-sm font-medium text-gray-300 mb-1">
               Last Name
             </label>
             <input
@@ -118,11 +118,11 @@ const SignupPage = () => {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
               Username
             </label>
             <input
@@ -131,11 +131,11 @@ const SignupPage = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
               Email
             </label>
             <input
@@ -144,11 +144,11 @@ const SignupPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
               Password
             </label>
             <input
@@ -157,12 +157,12 @@ const SignupPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl cursor-pointer shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
             disabled={loading}
           >
             {loading ? "Processing..." : "Sign Up"}
@@ -170,9 +170,9 @@ const SignupPage = () => {
         </form>
 
         <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-gray-400">
             Already have an account?
-            <a href="/login" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
+            <a href="/login" className="text-indigo-400 hover:text-indigo-300 font-semibold ml-1 transition-colors">
               Login
             </a>
           </p>
