@@ -1,44 +1,65 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserPlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 
 type Faculty = {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   department: string;
 };
 
-export default function AddFacultyPage() {
-  const [faculties, setFaculties] = useState<Faculty[]>([
-    { id: "F001", name: "Dr. Mohammad Iqbal", email: "iqbal@univ.edu", department: "CSE" },
-    { id: "F002", name: "Prof. Samiya Saqi", email: "samiya@univ.edu", department: "AI" },
-  ]);
+type Department = {
+  _id: string;
+  name: string;
+};
 
+export default function AddFacultyPage() {
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
 
-  const handleAdd = () => {
+  // Load faculties
+  useEffect(() => {
+    fetch("/api/faculty")
+      .then((res) => res.json())
+      .then(setFaculties);
+  }, []);
+
+  // Load departments
+  useEffect(() => {
+    fetch("/api/department")
+      .then((res) => res.json())
+      .then((data) => setDepartments(data));
+  }, []);
+
+  const handleAdd = async () => {
     if (!name || !email || !department) return;
-    const newFaculty = {
-      id: `F${(faculties.length + 1).toString().padStart(3, "0")}`,
-      name,
-      email,
-      department,
-    };
-    setFaculties([...faculties, newFaculty]);
-    setName("");
-    setEmail("");
-    setDepartment("");
+    const res = await fetch("/api/faculty", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, department }),
+    });
+    if (res.ok) {
+      const newFaculty = await res.json();
+      setFaculties((prev) => [...prev, newFaculty]);
+      setName("");
+      setEmail("");
+      setDepartment("");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setFaculties(faculties.filter((f) => f.id !== id));
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/faculty/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setFaculties(faculties.filter((f) => f._id !== id));
+    }
   };
 
   return (
@@ -56,10 +77,11 @@ export default function AddFacultyPage() {
             <SelectValue placeholder="Department" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="CSE">CSE</SelectItem>
-            <SelectItem value="AI">AI</SelectItem>
-            <SelectItem value="Maths">Maths</SelectItem>
-            <SelectItem value="Physics">Physics</SelectItem>
+            {departments.map((d) => (
+              <SelectItem key={d._id} value={d.name}>
+                {d.name}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
         <Button onClick={handleAdd}>Add</Button>
@@ -77,14 +99,14 @@ export default function AddFacultyPage() {
         </thead>
         <tbody>
           {faculties.map((f) => (
-            <tr key={f.id} className="border-t bg-white">
+            <tr key={f._id} className="border-t bg-white">
               <td className="py-3 px-4 font-medium">{f.name}</td>
               <td className="py-3 px-4">{f.email}</td>
               <td className="py-3 px-4">{f.department}</td>
               <td className="py-3 px-4 text-right">
                 <button
                   className="text-red-500 hover:text-red-600"
-                  onClick={() => handleDelete(f.id)}
+                  onClick={() => handleDelete(f._id)}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>

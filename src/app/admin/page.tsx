@@ -29,7 +29,7 @@ export default function AdminPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/admin/addFaculty"
-                className="px-3 py-2 bg-white border rounded-md text-slate-700 hover:shadow"
+                className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
               >
                 Add Faculty
               </Link>
@@ -38,6 +38,12 @@ export default function AdminPage() {
                 className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
               >
                 Add Subject
+              </Link>
+              <Link
+                href="/admin/addDepartment"
+                className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
+              >
+                Add Department
               </Link>
             </div>
           </div>
