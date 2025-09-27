@@ -23,8 +23,8 @@ const COLORS = ["#4f46e5", "#06b6d4", "#10b981", "#f59e0b", "#9ca3af"];
 export default function ChartsPanel() {
   return (
     <div className="space-y-6">
-      <div className="bg-white rounded-lg p-4 shadow-sm border h-64">
-        <h4 className="text-slate-800 font-medium mb-2">Topic Performance (Last 4 weeks)</h4>
+      <div className="bg-gray-700 rounded-lg p-4 shadow-sm border h-64">
+        <h4 className="bg-gray-700 font-medium mb-2">Topic Performance (Last 4 weeks)</h4>
         <ResponsiveContainer width="100%" height="85%">
           <AreaChart data={areaData}>
             <XAxis dataKey="week" />
@@ -37,8 +37,8 @@ export default function ChartsPanel() {
         </ResponsiveContainer>
       </div>
 
-      <div className="bg-white rounded-lg p-4 shadow-sm border h-64">
-        <h4 className="text-slate-800 font-medium mb-2">Course Distribution (B.Tech)</h4>
+      <div className="bg-gray-700 rounded-lg p-4 shadow-sm border h-64">
+        <h4 className="bg-gray-700 font-medium mb-4">Course Distribution (B.Tech)</h4>
         <ResponsiveContainer width="100%" height="80%">
           <PieChart>
             <Pie data={pieData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} label>
@@ -46,7 +46,7 @@ export default function ChartsPanel() {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Legend verticalAlign="bottom" height={36}/>
+            <Legend verticalAlign="bottom"  height={36}/>
             <Tooltip />
           </PieChart>
         </ResponsiveContainer>

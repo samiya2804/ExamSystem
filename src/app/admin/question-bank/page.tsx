@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useState } from "react";
@@ -35,34 +36,18 @@ export default function QuestionBankPage() {
   const [filterType, setFilterType] = useState("all");
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
 
-  // Delete Question
-  const handleDelete = (id: string) => {
-    setQuestions(questions.filter((q) => q.id !== id));
-  };
-
-  // Save Edit
-  const handleSave = () => {
-    setQuestions(questions.map((q) => (q.id === editQ.id ? editQ : q)));
-    setEditQ(null);
-  };
-
-  // Add Question
+  const handleDelete = (id: string) => setQuestions(questions.filter((q) => q.id !== id));
+  const handleSave = () => { setQuestions(questions.map((q) => (q.id === editQ.id ? editQ : q))); setEditQ(null); };
   const handleAdd = () => {
     const id = "Q" + (questions.length + 1).toString().padStart(3, "0");
     setQuestions([...questions, { id, ...newQuestion }]);
     setNewQuestion({ subject: "", type: "", question: "" });
   };
-
-  // Upload PDF
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setUploadedFile(file.name);
-      // Later: Send file to backend API for parsing
-    }
+    if (file) setUploadedFile(file.name);
   };
 
-  // Filtering + Searching
   const filteredQuestions = questions.filter((q) => {
     return (
       (filterSubject === "all" || q.subject === filterSubject) &&
@@ -73,21 +58,19 @@ export default function QuestionBankPage() {
   });
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold flex items-center gap-2">
-        <BookOpen className="w-6 h-6 text-teal-600" /> Question Bank
+    <div className="p-6 space-y-6 bg-gray-950 min-h-screen text-gray-100">
+      <h1 className="text-2xl font-bold flex items-center gap-2 text-blue-400">
+        <BookOpen className="w-6 h-6 text-teal-400" /> Question Bank
       </h1>
 
       {/* Upload PDF */}
       <div className="flex items-center gap-4">
-        <label className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer bg-white hover:bg-slate-50">
-          <Upload className="w-4 h-4 text-teal-600" />
+        <label className="flex items-center gap-2 px-4 py-2 border rounded-md cursor-pointer bg-gray-900 hover:bg-gray-800 text-gray-100">
+          <Upload className="w-4 h-4 text-teal-400" />
           <span>Upload Question Bank (PDF)</span>
           <input type="file" accept="application/pdf" hidden onChange={handleUpload} />
         </label>
-        {uploadedFile && (
-          <span className="text-sm text-slate-600">Uploaded: {uploadedFile}</span>
-        )}
+        {uploadedFile && <span className="text-sm text-gray-400">Uploaded: {uploadedFile}</span>}
       </div>
 
       {/* Filters + Search */}
@@ -96,14 +79,11 @@ export default function QuestionBankPage() {
           placeholder="Search questions..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-64"
+          className="w-full md:w-64 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
         />
 
-        <Select
-          value={filterSubject}
-          onValueChange={(val) => setFilterSubject(val)}
-        >
-          <SelectTrigger className="w-full md:w-40">
+        <Select value={filterSubject} onValueChange={setFilterSubject}>
+          <SelectTrigger className="w-full md:w-40 bg-gray-900 text-gray-100 border-gray-700">
             <SelectValue placeholder="Filter by Subject" />
           </SelectTrigger>
           <SelectContent>
@@ -114,11 +94,8 @@ export default function QuestionBankPage() {
           </SelectContent>
         </Select>
 
-        <Select
-          value={filterType}
-          onValueChange={(val) => setFilterType(val)}
-        >
-          <SelectTrigger className="w-full md:w-40">
+        <Select value={filterType} onValueChange={setFilterType}>
+          <SelectTrigger className="w-full md:w-40 bg-gray-900 text-gray-100 border-gray-700">
             <SelectValue placeholder="Filter by Type" />
           </SelectTrigger>
           <SelectContent>
@@ -137,7 +114,7 @@ export default function QuestionBankPage() {
             <PlusCircle className="w-4 h-4" /> Add Question
           </Button>
         </DialogTrigger>
-        <DialogContent>
+        <DialogContent className="bg-gray-900 text-gray-100">
           <DialogHeader>
             <DialogTitle>Add Question</DialogTitle>
           </DialogHeader>
@@ -146,12 +123,10 @@ export default function QuestionBankPage() {
               placeholder="Enter Question"
               value={newQuestion.question}
               onChange={(e) => setNewQuestion({ ...newQuestion, question: e.target.value })}
+              className="bg-gray-800 text-gray-100 placeholder-gray-400"
             />
-            <Select
-              value={newQuestion.subject}
-              onValueChange={(val) => setNewQuestion({ ...newQuestion, subject: val })}
-            >
-              <SelectTrigger>
+            <Select value={newQuestion.subject} onValueChange={(val) => setNewQuestion({ ...newQuestion, subject: val })}>
+              <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
                 <SelectValue placeholder="Select Subject" />
               </SelectTrigger>
               <SelectContent>
@@ -160,11 +135,8 @@ export default function QuestionBankPage() {
                 <SelectItem value="Java">Java</SelectItem>
               </SelectContent>
             </Select>
-            <Select
-              value={newQuestion.type}
-              onValueChange={(val) => setNewQuestion({ ...newQuestion, type: val })}
-            >
-              <SelectTrigger>
+            <Select value={newQuestion.type} onValueChange={(val) => setNewQuestion({ ...newQuestion, type: val })}>
+              <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
                 <SelectValue placeholder="Select Type" />
               </SelectTrigger>
               <SelectContent>
@@ -175,15 +147,15 @@ export default function QuestionBankPage() {
             </Select>
           </div>
           <DialogFooter>
-            <Button onClick={handleAdd}>Add</Button>
+            <Button onClick={handleAdd} className="bg-teal-600 hover:bg-teal-700">Add</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Questions Table */}
-      <div className="overflow-x-auto bg-white shadow rounded-lg">
-        <table className="w-full text-left">
-          <thead className="text-sm text-slate-500">
+      <div className="overflow-x-auto bg-gray-900 shadow-lg rounded-lg">
+        <table className="w-full text-left text-gray-100">
+          <thead className="text-sm text-gray-400 border-b border-gray-700">
             <tr>
               <th className="py-3 px-4">Question</th>
               <th className="py-3 px-4">Subject</th>
@@ -191,9 +163,9 @@ export default function QuestionBankPage() {
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y">
+          <tbody className="divide-y divide-gray-700">
             {filteredQuestions.map((q) => (
-              <tr key={q.id}>
+              <tr key={q.id} className="hover:bg-gray-800">
                 <td className="py-3 px-4">{q.question}</td>
                 <td className="py-3 px-4">{q.subject}</td>
                 <td className="py-3 px-4">{q.type}</td>
@@ -202,14 +174,14 @@ export default function QuestionBankPage() {
                   <Dialog>
                     <DialogTrigger asChild>
                       <button
-                        className="text-slate-500 hover:text-slate-700"
+                        className="text-gray-400 hover:text-gray-100"
                         onClick={() => setEditQ(q)}
                       >
                         <Edit3 className="w-4 h-4" />
                       </button>
                     </DialogTrigger>
                     {editQ && editQ.id === q.id && (
-                      <DialogContent>
+                      <DialogContent className="bg-gray-900 text-gray-100">
                         <DialogHeader>
                           <DialogTitle>Edit Question</DialogTitle>
                         </DialogHeader>
@@ -217,12 +189,10 @@ export default function QuestionBankPage() {
                           <Input
                             value={editQ.question}
                             onChange={(e) => setEditQ({ ...editQ, question: e.target.value })}
+                            className="bg-gray-800 text-gray-100 placeholder-gray-400"
                           />
-                          <Select
-                            value={editQ.subject}
-                            onValueChange={(val) => setEditQ({ ...editQ, subject: val })}
-                          >
-                            <SelectTrigger>
+                          <Select value={editQ.subject} onValueChange={(val) => setEditQ({ ...editQ, subject: val })}>
+                            <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
                               <SelectValue placeholder="Select Subject" />
                             </SelectTrigger>
                             <SelectContent>
@@ -231,11 +201,8 @@ export default function QuestionBankPage() {
                               <SelectItem value="Java">Java</SelectItem>
                             </SelectContent>
                           </Select>
-                          <Select
-                            value={editQ.type}
-                            onValueChange={(val) => setEditQ({ ...editQ, type: val })}
-                          >
-                            <SelectTrigger>
+                          <Select value={editQ.type} onValueChange={(val) => setEditQ({ ...editQ, type: val })}>
+                            <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
                               <SelectValue placeholder="Select Type" />
                             </SelectTrigger>
                             <SelectContent>
@@ -246,7 +213,7 @@ export default function QuestionBankPage() {
                           </Select>
                         </div>
                         <DialogFooter>
-                          <Button onClick={handleSave}>Save</Button>
+                          <Button onClick={handleSave} className="bg-teal-600 hover:bg-teal-700">Save</Button>
                         </DialogFooter>
                       </DialogContent>
                     )}

@@ -27,6 +27,7 @@ export default function UsersTable() {
   const [filterStatus, setFilterStatus] = useState("All");
   const [searchTerm, setSearchTerm] = useState("");
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [editUser, setEditUser] = useState<any>(null);
 
   // Delete user
@@ -51,7 +52,7 @@ export default function UsersTable() {
   });
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4  text-white">
       {/* Filters & Search */}
       <div className="flex flex-wrap gap-4 items-center">
         <Input
@@ -87,7 +88,7 @@ export default function UsersTable() {
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full text-left">
-          <thead className="text-sm text-slate-500">
+          <thead className="text-sm text-white">
             <tr>
               <th className="py-3 px-4">User</th>
               <th className="py-3 px-4">Role</th>
@@ -99,20 +100,20 @@ export default function UsersTable() {
 
           <tbody className="divide-y">
             {filteredUsers.map((u) => (
-              <tr key={u.id} className="bg-white">
+              <tr key={u.id} className="bg-gray-800 text-white">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-teal-50 flex items-center justify-center text-teal-600">
+                    <div className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center text-teal-600">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
-                      <div className="font-medium text-slate-900">{u.name}</div>
-                      <div className="text-sm text-slate-500">{u.email}</div>
+                      <div className="font-medium text-white">{u.name}</div>
+                      <div className="text-sm text-white">{u.email}</div>
                     </div>
                   </div>
                 </td>
 
-                <td className="py-4 px-4 text-sm text-slate-700">{u.role}</td>
+                <td className="py-4 px-4 text-sm text-white">{u.role}</td>
 
                 <td className="py-4 px-4">
                   <span
@@ -126,14 +127,14 @@ export default function UsersTable() {
                   </span>
                 </td>
 
-                <td className="py-4 px-4 text-sm text-slate-600">{u.lastLogin}</td>
+                <td className="py-4 px-4 text-sm text-white">{u.lastLogin}</td>
 
                 <td className="py-4 px-4 text-right">
                   <div className="inline-flex items-center gap-3">
                     <Dialog>
                       <DialogTrigger asChild>
                         <button
-                          className="text-slate-500 hover:text-slate-700"
+                          className="text-white hover:text-white"
                           onClick={() => setEditUser(u)}
                         >
                           <Edit3 className="w-4 h-4" />

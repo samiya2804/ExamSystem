@@ -21,12 +21,12 @@ function Icon({ name }: { name?: Props["icon"] }) {
 
 export default function StatsCard({ title, value, subtitle, trend, icon }: Props) {
   return (
-    <div className="bg-white rounded-lg p-6 shadow-sm border">
+    <div className="bg-gray-800 text-white rounded-lg p-6 shadow-sm border">
       <div className="flex items-start justify-between">
         <div>
-          <div className="text-xs text-slate-500">{title}</div>
-          <div className="mt-3 text-2xl font-semibold text-slate-900">{value}</div>
-          {subtitle && <div className="text-sm text-slate-500 mt-2">{subtitle}</div>}
+          <div className="text-xs text-white">{title}</div>
+          <div className="mt-3 text-2xl font-semibold text-white">{value}</div>
+          {subtitle && <div className="text-sm text-white mt-2">{subtitle}</div>}
         </div>
         <div className="flex flex-col items-end">
           <div className="p-2 bg-teal-50 rounded-md">

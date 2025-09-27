@@ -13,18 +13,18 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { refreshUser } = useAuth(); // hook to update navbar
+  const { refreshUser } = useAuth();
 
   const roles = ["student", "faculty", "admin"];
 
   const getRoleColor = (r: string) => {
     switch (r) {
       case "student":
-        return "bg-blue-500";
+        return "bg-blue-600";
       case "faculty":
-        return "bg-green-500";
+        return "bg-green-600";
       case "admin":
-        return "bg-purple-500";
+        return "bg-purple-600";
       default:
         return "bg-gray-500";
     }
@@ -45,8 +45,8 @@ const LoginPage = () => {
 
       if (res.ok) {
         toast.success("Login successful! 🎉");
-        refreshUser(); // update navbar state
-        router.push(`/${role}`); // redirect to dashboard based on role
+        refreshUser();
+        router.push(`/${role}`);
       } else {
         toast.error(data.error || "Login failed");
       }
@@ -59,13 +59,14 @@ const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
-        <h1 className="text-3xl font-bold text-center text-indigo-600 mb-6">Login</h1>
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900  to-gray-900 flex items-center justify-center p-4">
+      <div className="bg-white/10 backdrop-blur-lg p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
+        <h1 className="text-3xl font-bold text-center text-white mb-6">Welcome Back</h1>
+        <p className="text-center text-gray-300 mb-8 text-sm">Login to continue to your dashboard</p>
 
-        {/* Role Slider Tabs */}
+        {/* Role Switcher */}
         <div className="flex justify-center mb-6">
-          <div className="flex justify-between items-center p-1 bg-gray-200 rounded-full shadow-inner w-full max-w-xs">
+          <div className="flex justify-between items-center p-1 bg-gray-800/70 rounded-full shadow-inner w-full max-w-xs">
             {roles.map((r) => (
               <button
                 key={r}
@@ -73,8 +74,8 @@ const LoginPage = () => {
                 onClick={() => setRole(r)}
                 className={`w-1/3 py-2 text-sm font-semibold capitalize rounded-full transition-all duration-300 ${
                   role === r
-                    ? "text-white shadow-md " + getRoleColor(r)
-                    : "text-gray-700"
+                    ? "text-white shadow-lg " + getRoleColor(r)
+                    : "text-gray-300 hover:text-white"
                 }`}
               >
                 {r}
@@ -83,9 +84,10 @@ const LoginPage = () => {
           </div>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4">
+        {/* Form */}
+        <form onSubmit={handleLogin} className="space-y-5">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-1">
               Email
             </label>
             <input
@@ -94,11 +96,12 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              placeholder="you@example.com"
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-1">
               Password
             </label>
             <input
@@ -107,22 +110,27 @@ const LoginPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+              placeholder="••••••••"
             />
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+            className="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Processing..." : "Login"}
           </button>
         </form>
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600">
-            Don't have an account?
-            <Link href="/signup" className="text-indigo-600 hover:text-indigo-800 font-semibold ml-1 transition-colors">
+        {/* Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-300">
+            Don&apos;t have an account?
+            <Link
+              href="/signup"
+              className="text-indigo-400 hover:text-indigo-300 font-semibold ml-1 transition-colors"
+            >
               Sign Up
             </Link>
           </p>

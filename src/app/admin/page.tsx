@@ -10,7 +10,7 @@ import Link from "next/link";
 
 export default function AdminPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
       <div className="flex">
         <Sidebar />
 
@@ -18,10 +18,10 @@ export default function AdminPage() {
           {/* header */}
           <div className="flex items-start justify-between gap-6 mb-8">
             <div>
-              <h1 className="text-3xl font-semibold text-slate-900">
+              <h1 className="text-3xl font-semibold text-blue-400">
                 Admin Dashboard
               </h1>
-              <p className="text-sm text-slate-500 mt-1">
+              <p className="text-sm text-gray-400 mt-1">
                 Comprehensive system oversight and management
               </p>
             </div>
@@ -29,13 +29,17 @@ export default function AdminPage() {
             <div className="flex items-center gap-3">
               <Link
                 href="/admin/addFaculty"
+
+                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-700 hover:text-white transition"
+
                 className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
+
               >
                 Add Faculty
               </Link>
               <Link
                 href="/admin/addSubject"
-                className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
               >
                 Add Subject
               </Link>
@@ -84,24 +88,27 @@ export default function AdminPage() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6">
               {/* User Management (table) */}
-              <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="bg-gray-900 rounded-lg shadow-md p-6 border border-gray-800">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h2 className="text-lg font-medium text-slate-900">
+                    <h2 className="text-lg font-medium text-blue-300">
                       User Management
                     </h2>
-                    <p className="text-sm text-slate-500">
+                    <p className="text-sm text-gray-400">
                       Manage faculty and student accounts
                     </p>
                   </div>
                   {/* <div className="flex items-center gap-2">
-                    <input className="px-3 py-2 border rounded-md" placeholder="Search users..." />
-                    <select className="px-3 py-2 border rounded-md">
+                    <input
+                      className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder:text-gray-400"
+                      placeholder="Search users..."
+                    />
+                    <select className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white">
                       <option>All Roles</option>
                       <option>Student</option>
                       <option>Faculty</option>
                     </select>
-                    <select className="px-3 py-2 border rounded-md">
+                    <select className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white">
                       <option>All Status</option>
                       <option>Active</option>
                       <option>Inactive</option>
