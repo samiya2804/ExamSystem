@@ -3,14 +3,16 @@ import { connectDB } from "@/lib/db";
 import Subject from "@/lib/models/subject";
 import Faculty from "@/lib/models/faculty";
 
-export async function GET(_: Request, { params }: { params: { id: string } }) {
+export async function GET(req: Request) {
   await connectDB();
-  const subject = await Subject.findById(params.id).populate("faculty", "name email department");
+  const id = req.url.split("/").pop(); // extract ID from URL
+  const subject = await Subject.findById(id).populate("faculty", "name email department");
   return NextResponse.json(subject);
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request) {
   await connectDB();
+  const id = req.url.split("/").pop(); // extract ID from URL
   const data = await req.json();
 
   if (data.faculty) {
@@ -20,15 +22,16 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     }
   }
 
-  const updated = await Subject.findByIdAndUpdate(params.id, data, { new: true }).populate(
+  const updated = await Subject.findByIdAndUpdate(id, data, { new: true }).populate(
     "faculty",
     "name email department"
   );
   return NextResponse.json(updated);
 }
 
-export async function DELETE(_: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request) {
   await connectDB();
-  await Subject.findByIdAndDelete(params.id);
+  const id = req.url.split("/").pop(); // extract ID from URL
+  await Subject.findByIdAndDelete(id);
   return NextResponse.json({ message: "Deleted" });
 }
