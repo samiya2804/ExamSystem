@@ -1,3 +1,4 @@
+// app/api/auth/signup/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import User from "@/lib/models/User";
@@ -9,13 +10,17 @@ export async function POST(req: Request) {
     const body = await req.json();
     const { firstName, lastName, username, email, password, role } = body;
 
-    // check existing
+    if (!firstName || !email || !password || !role || !username) {
+      return NextResponse.json({ error: "All fields are required" }, { status: 400 });
+    }
+
+    // Check existing email or username
     const existing = await User.findOne({ $or: [{ email }, { username }] });
     if (existing) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
 
-    // hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
@@ -29,7 +34,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ 
       message: "User registered successfully",
-      user: { id: newUser._id, email: newUser.email, role: newUser.role } 
+      user: { id: newUser._id, firstName: newUser.firstName, email: newUser.email, role: newUser.role } 
     });
   } catch (err: any) {
     console.error("Signup Error:", err);
