@@ -118,7 +118,7 @@ export default function Navbar() {
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg text-white hover:bg-blue-700/40 transition-colors"
+          className="md:hidden p-2 rounded-lg text-white  hover:bg-blue-700/40 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <ChevronUp className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -133,7 +133,7 @@ export default function Navbar() {
             animate={{ height: "auto", opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-blue-800 px-6 py-4 space-y-4 overflow-hidden"
+            className="md:hidden bg-gradient-to-br from-indigo-900 to-gray-900 px-6 py-4 space-y-4 overflow-hidden"
           >
             <Link
               href="/"

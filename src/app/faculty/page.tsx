@@ -11,7 +11,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
-import { FileText, Plus, BookOpen, CheckCircle, Save } from "lucide-react";
+import { FileText, Plus, BookOpen, CheckCircle, Save, Trash2, Check, Edit, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import axios from 'axios';
@@ -26,6 +26,7 @@ type Question = {
   options?: string[];
 };
 
+// Added isPublished to the Exam type
 type Exam = {
   _id: string;
   title: string;
@@ -33,6 +34,7 @@ type Exam = {
   durationInMinutes: number;
   date: string;
   questions: Question[];
+  isPublished: boolean;
 };
 
 export default function FacultyPage() {
@@ -48,6 +50,7 @@ export default function FacultyPage() {
   const [message, setMessage] = useState<string | null>(null);
   const [showConfirmationModal, setShowConfirmationModal] = useState(false);
   const [examToAddToDashboard, setExamToAddToDashboard] = useState<Exam | null>(null);
+  const [editingExam, setEditingExam] = useState<Exam | null>(null);
 
   useEffect(() => {
     setSubjects(["Java", "DBMS", "Data Structures", "Operating Systems", "Python", "Computer Networks"]);
@@ -70,7 +73,6 @@ export default function FacultyPage() {
       return;
     }
     const newQuestion: Question = {
-      // Use a temporary client-side ID for local state management
       _id: `temp-${Date.now()}`, 
       type: questionType,
       questionText: questionText,
@@ -83,9 +85,31 @@ export default function FacultyPage() {
     setOptions(['', '', '', '']);
   };
 
-  const handleCreateExam = async () => {
-    if (!examTitle || !selectedSubject || currentQuestions.length === 0) {
-      setMessage("⚠️ Please provide an exam title, subject, and at least one question.");
+  const handleRemoveQuestion = (questionId: string | undefined) => {
+    setCurrentQuestions(prevQuestions => prevQuestions.filter(q => q._id !== questionId));
+  };
+
+  const handleEditExam = (exam: Exam) => {
+    setEditingExam(exam);
+    setExamTitle(exam.title);
+    setSelectedSubject(exam.subject);
+    setDuration(exam.durationInMinutes);
+    setCurrentQuestions(exam.questions);
+    setMessage(`✏️ Editing exam: ${exam.title}`);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingExam(null);
+    setExamTitle("");
+    setSelectedSubject("");
+    setDuration(180);
+    setCurrentQuestions([]);
+    setMessage("Editing cancelled.");
+  };
+
+  const handleSaveExam = async () => {
+    if (!examTitle || !selectedSubject) {
+      setMessage("⚠️ Please provide an exam title and subject.");
       return;
     }
 
@@ -101,11 +125,18 @@ export default function FacultyPage() {
         }))
       };
 
-      const response = await axios.post('/api/exams', examData);
-
-      // Add the new exam from the server to the state
-      setPublishedExams([response.data, ...publishedExams]);
-      setMessage("📢 Exam published successfully!");
+      if (editingExam) {
+        // Update an existing exam
+        const response = await axios.put(`/api/exams/${editingExam._id}`, examData);
+        setPublishedExams(prevExams => prevExams.map(exam => exam._id === response.data._id ? response.data : exam));
+        setMessage("📢 Exam updated successfully!");
+        setEditingExam(null);
+      } else {
+        // Create a new exam
+        const response = await axios.post('/api/exams', examData);
+        setPublishedExams([response.data, ...publishedExams]);
+        setMessage("📢 Exam published successfully!");
+      }
 
       // Reset the form
       setExamTitle("");
@@ -113,21 +144,41 @@ export default function FacultyPage() {
       setDuration(180);
       setCurrentQuestions([]);
     } catch (error) {
-      console.error("Error creating exam:", error);
-      setMessage("❌ Failed to create exam. Please try again.");
+      console.error("Error saving exam:", error);
+      setMessage("❌ Failed to save exam. Please try again.");
     }
   };
 
-  // The rest of the functions remain the same as they operate on local state
   const handlePromptAddToDashboard = (exam: Exam) => {
     setExamToAddToDashboard(exam);
     setShowConfirmationModal(true);
   };
 
-  const handleConfirmAddToDashboard = () => {
-    setMessage(`✅ Exam "${examToAddToDashboard?.title}" added to student dashboard!`);
-    setExamToAddToDashboard(null);
-    setShowConfirmationModal(false);
+  const handleConfirmAddToDashboard = async () => {
+    if (!examToAddToDashboard) return;
+    try {
+      const response = await axios.put(`/api/exams/${examToAddToDashboard._id}`, { isPublished: true });
+      setPublishedExams(prevExams => prevExams.map(exam => exam._id === response.data._id ? response.data : exam));
+      setMessage(`✅ Exam "${examToAddToDashboard.title}" added to student dashboard!`);
+      setExamToAddToDashboard(null);
+      setShowConfirmationModal(false);
+    } catch (error) {
+      console.error("Failed to add to dashboard:", error);
+      setMessage("❌ Failed to add exam to dashboard. Please try again.");
+    }
+  };
+
+  const handleDeleteExam = async (examId: string) => {
+    if (window.confirm("Are you sure you want to delete this exam? This action cannot be undone.")) {
+      try {
+        await axios.delete(`/api/exams/${examId}`);
+        setPublishedExams(prevExams => prevExams.filter(exam => exam._id !== examId));
+        setMessage("🗑️ Exam deleted successfully!");
+      } catch (error) {
+        console.error("Failed to delete exam:", error);
+        setMessage("❌ Failed to delete exam. Please try again.");
+      }
+    }
   };
 
   const handleCancelAddToDashboard = () => {
@@ -199,7 +250,7 @@ export default function FacultyPage() {
         <Card className="max-w-4xl mx-auto p-8 shadow-lg rounded-3xl bg-gray-900 border border-gray-700">
           <CardHeader className="p-0 mb-6">
             <CardTitle className="text-2xl font-bold flex items-center gap-2 text-white">
-              <FileText className="w-6 h-6 text-cyan-400" /> Create New Exam
+              <FileText className="w-6 h-6 text-cyan-400" /> {editingExam ? "Edit Exam" : "Create New Exam"}
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0 space-y-6">
@@ -273,19 +324,31 @@ export default function FacultyPage() {
             {currentQuestions.length > 0 && (
               <div className="space-y-4 p-4 border border-gray-700 rounded-2xl bg-gray-800">
                 <h4 className="text-lg font-bold text-white">Questions ({currentQuestions.length})</h4>
-                <ul className="list-disc ml-5 space-y-2 text-gray-300">
+                <ul className="space-y-2 text-gray-300">
                   {currentQuestions.map((q) => (
-                    <li key={q._id}>
-                      <span className="font-medium text-blue-400">{q.type.toUpperCase()}</span>: {q.questionText.slice(0, 50)}...
+                    <li key={q._id} className="flex justify-between items-center bg-gray-700 p-3 rounded-md">
+                      <span>
+                        <span className="font-medium text-blue-400">{q.type.toUpperCase()}</span>: {q.questionText.slice(0, 50)}...
+                      </span>
+                      <Button onClick={() => handleRemoveQuestion(q._id)} variant="ghost" className="p-1 h-auto text-gray-400 hover:text-red-500">
+                        <X className="w-4 h-4" />
+                      </Button>
                     </li>
                   ))}
                 </ul>
               </div>
             )}
 
-            <Button onClick={handleCreateExam} className="w-full py-4 text-lg font-bold bg-blue-900 text-white rounded-xl shadow-md hover:bg-blue-950 transition">
-              <Save className="w-5 h-5 mr-2" /> Create & Publish Exam
-            </Button>
+            <div className="flex gap-4">
+              {editingExam && (
+                <Button onClick={handleCancelEdit} className="w-1/2 py-4 text-lg font-bold bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-600 transition">
+                  Cancel Edit
+                </Button>
+              )}
+              <Button onClick={handleSaveExam} className={`w-${editingExam ? '1/2' : 'full'} py-4 text-lg font-bold bg-blue-900 text-white rounded-xl shadow-md hover:bg-blue-950 transition`}>
+                <Save className="w-5 h-5 mr-2" /> {editingExam ? "Save Changes" : "Create & Publish Exam"}
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
@@ -294,9 +357,29 @@ export default function FacultyPage() {
           <h2 className="text-2xl font-bold text-white mb-6">Published Exams</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {publishedExams.map((exam) => (
-              <Card key={exam._id} className="rounded-2xl shadow-md p-6 bg-gray-800 border border-gray-700 hover:scale-105 transition">
+              <Card key={exam._id} className="relative rounded-2xl shadow-md p-6 bg-gray-800 border border-gray-700 hover:scale-105 transition">
                 <CardHeader className="p-0 mb-4">
-                  <CardTitle className="text-xl font-semibold text-white">{exam.title}</CardTitle>
+                  <div className="flex justify-between items-start">
+                    <CardTitle className="text-xl font-semibold text-white">{exam.title}</CardTitle>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleEditExam(exam)}
+                        className="text-blue-500 cursor-pointer p-2 rounded-full"
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Edit className="w-5 h-5" />
+                      </Button>
+                      <Button
+                        onClick={() => handleDeleteExam(exam._id)}
+                        className="text-red-500 hover:text-red-600 p-2 rounded-full"
+                        variant="ghost"
+                        size="sm"
+                      >
+                        <Trash2 className="w-5 h-5" />
+                      </Button>
+                    </div>
+                  </div>
                   <CardDescription className="flex items-center gap-2 text-sm text-gray-400 mt-1">
                     <BookOpen className="w-4 h-4 text-cyan-400" /> {exam.subject}
                   </CardDescription>
@@ -305,9 +388,15 @@ export default function FacultyPage() {
                   <p>Duration: {exam.durationInMinutes} minutes</p>
                   <p>Questions: {exam.questions.length}</p>
                   <p>Date: {new Date(exam.date).toLocaleDateString()}</p>
-                  <Button onClick={() => handlePromptAddToDashboard(exam)} className="w-full mt-4 bg-blue-700 text-white hover:bg-blue-900 rounded-xl cursor-pointer shadow-md py-3 font-semibold hover:scale-105 transition">
-                    Add to Dashboard
-                  </Button>
+                  {exam.isPublished ? (
+                    <Button className="w-full mt-4 bg-green-700 text-white rounded-xl shadow-md py-3 font-semibold hover:bg-green-800 cursor-not-allowed">
+                      <Check className="w-5 h-5 mr-2" /> Added
+                    </Button>
+                  ) : (
+                    <Button onClick={() => handlePromptAddToDashboard(exam)} className="w-full mt-4 bg-blue-700 text-white hover:bg-blue-900 rounded-xl cursor-pointer shadow-md py-3 font-semibold hover:scale-105 transition">
+                      Add to Dashboard
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
             ))}

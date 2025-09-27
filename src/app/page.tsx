@@ -68,7 +68,7 @@ export default function HomePage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-blue-400 text-blue-400 hover:bg-blue-950 rounded-xl cursor-pointer transition-transform duration-300 transform hover:-translate-y-1"
+                className="border-blue-400 bg-blue-950 rounded-xl cursor-pointer transition-transform duration-300 transform hover:-translate-y-1"
               >
                 Learn More
               </Button>
