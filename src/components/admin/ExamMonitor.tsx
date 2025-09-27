@@ -80,7 +80,7 @@ export default function ExamMonitor() {
                       <div className={`w-7 h-7 rounded-full flex items-center justify-center ${a.type === 'warning' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>!</div>
                     </div>
                     <div>
-                      <div className="text-sm font-medium text-slate-800">{a.text}</div>
+                      <div className="text-sm font-medium text-white">{a.text}</div>
                       <div className="text-xs text-white">Student ID: {a.student}</div>
                     </div>
                     <div className="ml-auto text-white">↗</div>

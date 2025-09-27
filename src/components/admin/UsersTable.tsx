@@ -103,7 +103,7 @@ export default function UsersTable() {
               <tr key={u.id} className="bg-gray-800 text-white">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center text-teal-600">
+                    <div className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center text-indigo-600">
                       <User className="w-5 h-5" />
                     </div>
                     <div>
