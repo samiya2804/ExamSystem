@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trash2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,36 +13,65 @@ import {
 } from "@/components/ui/select";
 
 type Subject = {
-  id: string;
+  _id: string;
   name: string;
-  faculty: string;
+  faculty: {
+    _id: string;
+    name: string;
+    email: string;
+    department: string;
+  };
 };
 
-const faculties = ["Dr. Mohammad Iqbal", "Prof. Samiya Saqi", "Dr. Sarah Johnson"];
+type Faculty = {
+  _id: string;
+  name: string;
+  email: string;
+  department: string;
+};
 
 export default function AddSubjectPage() {
-  const [subjects, setSubjects] = useState<Subject[]>([
-    { id: "S001", name: "Computer Networks", faculty: "Dr. Mohammad Iqbal" },
-    { id: "S002", name: "Database Systems", faculty: "Prof. Samiya Saqi" },
-  ]);
-
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
   const [subjectName, setSubjectName] = useState("");
   const [selectedFaculty, setSelectedFaculty] = useState("");
 
-  const handleAdd = () => {
+  // Load subjects + faculties
+  useEffect(() => {
+    fetch("/api/subject")
+      .then((res) => res.json())
+      .then(setSubjects);
+
+    fetch("/api/faculty")
+      .then((res) => res.json())
+      .then(setFaculties);
+  }, []);
+
+  const handleAdd = async () => {
     if (!subjectName || !selectedFaculty) return;
-    const newSubject = {
-      id: `S${(subjects.length + 1).toString().padStart(3, "0")}`,
-      name: subjectName,
-      faculty: selectedFaculty,
-    };
-    setSubjects([...subjects, newSubject]);
-    setSubjectName("");
-    setSelectedFaculty("");
+
+    const res = await fetch("/api/subject", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: subjectName,
+        faculty: selectedFaculty, // faculty _id
+      }),
+    });
+
+    if (res.ok) {
+      const newSubject = await res.json();
+      setSubjects((prev) => [...prev, newSubject]);
+      setSubjectName("");
+      setSelectedFaculty("");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setSubjects(subjects.filter((s) => s.id !== id));
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/subject/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setSubjects(subjects.filter((s) => s._id !== id));
+    }
   };
 
   return (
@@ -63,10 +92,17 @@ export default function AddSubjectPage() {
           <SelectTrigger className="w-48 bg-gray-900 border-gray-700 text-white">
             <SelectValue placeholder="Assign Faculty" />
           </SelectTrigger>
+
           <SelectContent className="bg-gray-900 border border-gray-700 text-gray-100">
             {faculties.map((f, i) => (
               <SelectItem key={i} value={f}>
                 {f}
+
+          <SelectContent>
+            {faculties.map((f) => (
+              <SelectItem key={f._id} value={f._id}>
+                {f.name} ({f.department})
+
               </SelectItem>
             ))}
           </SelectContent>
@@ -80,6 +116,7 @@ export default function AddSubjectPage() {
       </div>
 
       {/* Table */}
+
       <div className="overflow-hidden rounded-lg border border-gray-800 shadow">
         <table className="w-full">
           <thead className="bg-gray-900 text-sm text-gray-400">
@@ -87,6 +124,29 @@ export default function AddSubjectPage() {
               <th className="py-3 px-4 text-left">Subject</th>
               <th className="py-3 px-4 text-left">Faculty</th>
               <th className="py-3 px-4 text-right">Actions</th>
+
+      <table className="w-full border rounded-lg overflow-hidden">
+        <thead className="bg-slate-50 text-sm text-slate-500">
+          <tr>
+            <th className="py-3 px-4">Subject</th>
+            <th className="py-3 px-4">Faculty</th>
+            <th className="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {subjects.map((s) => (
+            <tr key={s._id} className="border-t bg-white">
+              <td className="py-3 px-4 font-medium">{s.name}</td>
+              <td className="py-3 px-4">{s.faculty?.name || "—"}</td>
+              <td className="py-3 px-4 text-right">
+                <button
+                  className="text-red-500 hover:text-red-600"
+                  onClick={() => handleDelete(s._id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </td>
+
             </tr>
           </thead>
           <tbody>

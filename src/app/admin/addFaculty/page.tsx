@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UserPlus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,11 +13,12 @@ import {
 } from "@/components/ui/select";
 
 type Faculty = {
-  id: string;
+  _id: string;
   name: string;
   email: string;
   department: string;
 };
+
 
 export default function AddFacultyPage() {
   const [faculties, setFaculties] = useState<Faculty[]>([
@@ -35,26 +36,54 @@ export default function AddFacultyPage() {
     },
   ]);
 
+type Department = {
+  _id: string;
+  name: string;
+};
+
+
+export default function AddFacultyPage() {
+  const [faculties, setFaculties] = useState<Faculty[]>([]);
+  const [departments, setDepartments] = useState<Department[]>([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [department, setDepartment] = useState("");
 
-  const handleAdd = () => {
+  // Load faculties
+  useEffect(() => {
+    fetch("/api/faculty")
+      .then((res) => res.json())
+      .then(setFaculties);
+  }, []);
+
+  // Load departments
+  useEffect(() => {
+    fetch("/api/department")
+      .then((res) => res.json())
+      .then((data) => setDepartments(data));
+  }, []);
+
+  const handleAdd = async () => {
     if (!name || !email || !department) return;
-    const newFaculty = {
-      id: `F${(faculties.length + 1).toString().padStart(3, "0")}`,
-      name,
-      email,
-      department,
-    };
-    setFaculties([...faculties, newFaculty]);
-    setName("");
-    setEmail("");
-    setDepartment("");
+    const res = await fetch("/api/faculty", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, department }),
+    });
+    if (res.ok) {
+      const newFaculty = await res.json();
+      setFaculties((prev) => [...prev, newFaculty]);
+      setName("");
+      setEmail("");
+      setDepartment("");
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setFaculties(faculties.filter((f) => f.id !== id));
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/faculty/${id}`, { method: "DELETE" });
+    if (res.ok) {
+      setFaculties(faculties.filter((f) => f._id !== id));
+    }
   };
 
   return (
@@ -81,11 +110,20 @@ export default function AddFacultyPage() {
           <SelectTrigger className="w-40 bg-gray-900 border-gray-700 text-white">
             <SelectValue placeholder="Department" />
           </SelectTrigger>
+
           <SelectContent className="bg-gray-900 border border-gray-700 text-gray-100">
             <SelectItem value="CSE">CSE</SelectItem>
             <SelectItem value="AI">AI</SelectItem>
             <SelectItem value="Maths">Maths</SelectItem>
             <SelectItem value="Physics">Physics</SelectItem>
+
+          <SelectContent>
+            {departments.map((d) => (
+              <SelectItem key={d._id} value={d.name}>
+                {d.name}
+              </SelectItem>
+            ))}
+
           </SelectContent>
         </Select>
         <Button
@@ -97,6 +135,7 @@ export default function AddFacultyPage() {
       </div>
 
       {/* Table */}
+
       <div className="overflow-hidden rounded-lg border border-gray-800 shadow">
         <table className="w-full">
           <thead className="bg-gray-900 text-sm text-gray-400">
@@ -105,6 +144,31 @@ export default function AddFacultyPage() {
               <th className="py-3 px-4 text-left">Email</th>
               <th className="py-3 px-4 text-left">Department</th>
               <th className="py-3 px-4 text-right">Actions</th>
+
+      <table className="w-full border rounded-lg overflow-hidden">
+        <thead className="bg-slate-50 text-sm text-slate-500">
+          <tr>
+            <th className="py-3 px-4">Name</th>
+            <th className="py-3 px-4">Email</th>
+            <th className="py-3 px-4">Department</th>
+            <th className="py-3 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {faculties.map((f) => (
+            <tr key={f._id} className="border-t bg-white">
+              <td className="py-3 px-4 font-medium">{f.name}</td>
+              <td className="py-3 px-4">{f.email}</td>
+              <td className="py-3 px-4">{f.department}</td>
+              <td className="py-3 px-4 text-right">
+                <button
+                  className="text-red-500 hover:text-red-600"
+                  onClick={() => handleDelete(f._id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </td>
+
             </tr>
           </thead>
           <tbody>
