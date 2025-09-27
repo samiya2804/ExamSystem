@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trash2, BookOpen } from "lucide-react";
+import { Trash2, BookOpen, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import Link from "next/link";
 
 type Subject = {
   _id: string;
@@ -20,7 +15,7 @@ type Subject = {
     name: string;
     email: string;
     department: string;
-  };
+  } | null;
 };
 
 type Faculty = {
@@ -40,11 +35,13 @@ export default function AddSubjectPage() {
   useEffect(() => {
     fetch("/api/subject")
       .then((res) => res.json())
-      .then(setSubjects);
+      .then(setSubjects)
+      .catch(console.error);
 
     fetch("/api/faculty")
       .then((res) => res.json())
-      .then(setFaculties);
+      .then(setFaculties)
+      .catch(console.error);
   }, []);
 
   const handleAdd = async () => {
@@ -55,7 +52,7 @@ export default function AddSubjectPage() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         name: subjectName,
-        faculty: selectedFaculty, // faculty _id
+        faculty: selectedFaculty,
       }),
     });
 
@@ -70,99 +67,78 @@ export default function AddSubjectPage() {
   const handleDelete = async (id: string) => {
     const res = await fetch(`/api/subject/${id}`, { method: "DELETE" });
     if (res.ok) {
-      setSubjects(subjects.filter((s) => s._id !== id));
+      setSubjects((prev) => prev.filter((s) => s._id !== id));
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-950 min-h-screen text-gray-100">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-blue-400">
-        <BookOpen className="w-6 h-6 text-blue-500" /> Manage Subjects
-      </h1>
+    <div className="min-h-screen bg-gray-950 p-4 md:p-8 text-gray-100">
+      {/* Header + Back Button */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-400">
+          <BookOpen className="w-6 h-6 text-teal-400" /> Manage Subjects
+        </h1>
+        <Link href="/admin">
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Button>
+        </Link>
+      </div>
 
       {/* Form */}
-      <div className="flex gap-3 mb-8 flex-wrap">
+      <div className="flex flex-col sm:flex-row gap-3 mb-8 flex-wrap w-full">
         <Input
           placeholder="Enter subject name"
           value={subjectName}
           onChange={(e) => setSubjectName(e.target.value)}
-          className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
+          className="flex-1 bg-gray-900 border-gray-700 text-gray-100 placeholder-gray-400"
         />
+
         <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-          <SelectTrigger className="w-48 bg-gray-900 border-gray-700 text-white">
+          <SelectTrigger className="w-full sm:w-60 bg-gray-900 border-gray-700 text-gray-100">
             <SelectValue placeholder="Assign Faculty" />
           </SelectTrigger>
-
           <SelectContent className="bg-gray-900 border border-gray-700 text-gray-100">
-            {faculties.map((f, i) => (
-              <SelectItem key={i} value={f}>
-                {f}
-
-          <SelectContent>
             {faculties.map((f) => (
               <SelectItem key={f._id} value={f._id}>
                 {f.name} ({f.department})
-
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+
         <Button
           onClick={handleAdd}
-          className="bg-blue-600 hover:bg-blue-700 text-white shadow-md"
+          className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
         >
           Add
         </Button>
       </div>
 
-      {/* Table */}
-
-      <div className="overflow-hidden rounded-lg border border-gray-800 shadow">
-        <table className="w-full">
+      {/* Subjects Table */}
+      <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-800 bg-gray-900">
+        <table className="w-full text-gray-100">
           <thead className="bg-gray-900 text-sm text-gray-400">
             <tr>
               <th className="py-3 px-4 text-left">Subject</th>
               <th className="py-3 px-4 text-left">Faculty</th>
               <th className="py-3 px-4 text-right">Actions</th>
-
-      <table className="w-full border rounded-lg overflow-hidden">
-        <thead className="bg-slate-50 text-sm text-slate-500">
-          <tr>
-            <th className="py-3 px-4">Subject</th>
-            <th className="py-3 px-4">Faculty</th>
-            <th className="py-3 px-4 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {subjects.map((s) => (
-            <tr key={s._id} className="border-t bg-white">
-              <td className="py-3 px-4 font-medium">{s.name}</td>
-              <td className="py-3 px-4">{s.faculty?.name || "—"}</td>
-              <td className="py-3 px-4 text-right">
-                <button
-                  className="text-red-500 hover:text-red-600"
-                  onClick={() => handleDelete(s._id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </td>
-
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-gray-700">
             {subjects.map((s, idx) => (
               <tr
-                key={s.id}
-                className={`border-t border-gray-800 ${
+                key={s._id}
+                className={`${
                   idx % 2 === 0 ? "bg-gray-950" : "bg-gray-900"
-                }`}
+                } hover:bg-gray-800 transition`}
               >
                 <td className="py-3 px-4 font-medium text-gray-100">{s.name}</td>
-                <td className="py-3 px-4 text-gray-300">{s.faculty}</td>
+                <td className="py-3 px-4 text-gray-300">{s.faculty?.name || "—"}</td>
                 <td className="py-3 px-4 text-right">
                   <button
                     className="text-red-500 hover:text-red-400 transition"
-                    onClick={() => handleDelete(s.id)}
+                    onClick={() => handleDelete(s._id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

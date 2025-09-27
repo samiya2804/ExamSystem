@@ -218,7 +218,7 @@ export default function StudentDashboard() {
             </div>
             <div className="mt-4 sm:mt-0">
 
-              <Button className="bg-gray-700 text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
+              
 
               <Link href="/student/results" className="bg-white text-teal-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
 
