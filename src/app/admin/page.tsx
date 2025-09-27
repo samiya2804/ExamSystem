@@ -1,7 +1,5 @@
-// app/admin/page.tsx
 "use client";
 
-import Sidebar from "@/components/admin/Sidebar";
 import StatsCard from "@/components/admin/StatsCard";
 import UsersTable from "@/components/admin/UsersTable";
 import ExamMonitor from "@/components/admin/ExamMonitor";
@@ -11,122 +9,116 @@ import Link from "next/link";
 export default function AdminPage() {
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="flex">
-        <Sidebar />
-
-        <div className="flex-1 p-8">
-          {/* header */}
-          <div className="flex items-start justify-between gap-6 mb-8">
-            <div>
-              <h1 className="text-3xl font-semibold text-blue-400">
-                Admin Dashboard
-              </h1>
-              <p className="text-sm text-gray-400 mt-1">
-                Comprehensive system oversight and management
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <Link
-                href="/admin/addFaculty"
-
-                className="px-3 py-2 bg-gray-800 border border-gray-700 rounded-md text-gray-200 hover:bg-gray-700 hover:text-white transition"
-
-                className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
-
-              >
-                Add Faculty
-              </Link>
-              <Link
-                href="/admin/addSubject"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition"
-              >
-                Add Subject
-              </Link>
-              <Link
-                href="/admin/addDepartment"
-                className="px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700"
-              >
-                Add Department
-              </Link>
-            </div>
+      <div className="flex flex-col p-4 sm:p-6 md:p-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold text-blue-400">
+              Admin Dashboard
+            </h1>
+            <p className="text-sm text-gray-400 mt-1">
+              Comprehensive system oversight and management
+            </p>
           </div>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-            <StatsCard
-              title="Total Users"
-              value="2,847"
-              subtitle="Active students and faculty"
-              trend="+12.5%"
-              icon="users"
-            />
-            <StatsCard
-              title="Active Exams"
-              value="23"
-              subtitle="Currently running examinations"
-              trend="+3"
-              icon="file"
-            />
-            <StatsCard
-              title="Platform Usage"
-              value="94.2%"
-              subtitle="System uptime this month"
-              trend="+2.1%"
-              icon="pulse"
-            />
-            <StatsCard
-              title="Storage Used"
-              value="67.8%"
-              subtitle="Of total allocated storage"
-              trend="-5.2%"
-              icon="database"
-            />
+          {/* Action Menu */}
+          <div className="flex flex-wrap gap-2 sm:gap-3">
+            {/* <Link
+              href="/admin"
+              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+            >
+              Dashboard
+            </Link> */}
+            <Link
+              href="/admin/question-bank"
+              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+            >
+              Question Bank
+            </Link>
+            <Link
+              href="/admin/analytics"
+              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+            >
+              Analytics
+            </Link>
+            <Link
+              href="/admin/addFaculty"
+              className="px-3 sm:px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700 text-sm sm:text-base"
+            >
+              Add Faculty
+            </Link>
+            <Link
+              href="/admin/addSubject"
+              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 text-sm sm:text-base"
+            >
+              Add Subject
+            </Link>
+            <Link
+              href="/admin/addDepartment"
+              className="px-3 sm:px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700 text-sm sm:text-base"
+            >
+              Add Department
+            </Link>
           </div>
+        </div>
 
-          {/* User Management + Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              {/* User Management (table) */}
-              <div className="bg-gray-900 rounded-lg shadow-md p-6 border border-gray-800">
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <h2 className="text-lg font-medium text-blue-300">
-                      User Management
-                    </h2>
-                    <p className="text-sm text-gray-400">
-                      Manage faculty and student accounts
-                    </p>
-                  </div>
-                  {/* <div className="flex items-center gap-2">
-                    <input
-                      className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white placeholder:text-gray-400"
-                      placeholder="Search users..."
-                    />
-                    <select className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white">
-                      <option>All Roles</option>
-                      <option>Student</option>
-                      <option>Faculty</option>
-                    </select>
-                    <select className="px-3 py-2 rounded-md bg-gray-800 border border-gray-700 text-white">
-                      <option>All Status</option>
-                      <option>Active</option>
-                      <option>Inactive</option>
-                    </select>
-                  </div> */}
+        {/* KPI Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+          <StatsCard
+            title="Total Users"
+            value="2,847"
+            subtitle="Active students and faculty"
+            trend="+12.5%"
+            icon="users"
+          />
+          <StatsCard
+            title="Active Exams"
+            value="23"
+            subtitle="Currently running examinations"
+            trend="+3"
+            icon="file"
+          />
+          <StatsCard
+            title="Platform Usage"
+            value="94.2%"
+            subtitle="System uptime this month"
+            trend="+2.1%"
+            icon="pulse"
+          />
+          <StatsCard
+            title="Storage Used"
+            value="67.8%"
+            subtitle="Of total allocated storage"
+            trend="-5.2%"
+            icon="database"
+          />
+        </div>
+
+        {/* User Management + Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-6">
+            {/* User Management (table) */}
+            <div className="bg-gray-900 rounded-lg shadow-md p-4 sm:p-6 border border-gray-800 overflow-x-auto">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
+                <div>
+                  <h2 className="text-lg font-medium text-blue-300">
+                    User Management
+                  </h2>
+                  <p className="text-sm text-gray-400">
+                    Manage faculty and student accounts
+                  </p>
                 </div>
-
-                <UsersTable />
               </div>
-
-              {/* Exam Monitor */}
-              <ExamMonitor />
+              <UsersTable />
             </div>
 
-            {/* Right column charts */}
-            <div className="space-y-6">
-              <ChartsPanel />
-            </div>
+            {/* Exam Monitor */}
+            <ExamMonitor />
+          </div>
+
+          {/* Right column charts */}
+          <div className="space-y-6">
+            <ChartsPanel />
           </div>
         </div>
       </div>

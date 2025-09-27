@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Building2, Trash2 } from "lucide-react";
+import { Building2, Trash2, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 
 type Department = {
   _id: string;
@@ -20,7 +21,8 @@ export default function AddDepartmentPage() {
   useEffect(() => {
     fetch("/api/department")
       .then((res) => res.json())
-      .then(setDepartments);
+      .then(setDepartments)
+      .catch((err) => console.error(err));
   }, []);
 
   const handleAdd = async () => {
@@ -46,52 +48,69 @@ export default function AddDepartmentPage() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
-        <Building2 className="w-6 h-6 text-teal-600" /> Manage Departments
-      </h1>
+    <div className="min-h-screen bg-gray-950 p-4 md:p-8 text-gray-100">
+      {/* Header + Back Button */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-400">
+          <Building2 className="w-6 h-6 text-teal-400" /> Manage Departments
+        </h1>
+        <Link href="/admin">
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Button>
+        </Link>
+      </div>
 
       {/* Form */}
-      <div className="flex gap-3 mb-6">
+      <div className="flex flex-col sm:flex-row gap-3 mb-6 w-full">
         <Input
           placeholder="Department Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
+          className="flex-1 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
         />
         <Input
           placeholder="Code (e.g., CSE)"
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          className="w-full sm:w-36 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
         />
-        <Button onClick={handleAdd}>Add</Button>
+        <Button
+          onClick={handleAdd}
+          className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
+        >
+          Add
+        </Button>
       </div>
 
-      {/* Table */}
-      <table className="w-full border rounded-lg overflow-hidden">
-        <thead className="bg-slate-50 text-sm text-slate-500">
-          <tr>
-            <th className="py-3 px-4">Name</th>
-            <th className="py-3 px-4">Code</th>
-            <th className="py-3 px-4 text-right">Actions</th>
-          </tr>
-        </thead>
-        <tbody>
-          {departments.map((d) => (
-            <tr key={d._id} className="border-t bg-white">
-              <td className="py-3 px-4 font-medium">{d.name}</td>
-              <td className="py-3 px-4">{d.code}</td>
-              <td className="py-3 px-4 text-right">
-                <button
-                  className="text-red-500 hover:text-red-600"
-                  onClick={() => handleDelete(d._id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </td>
+      {/* Departments Table */}
+      <div className="overflow-x-auto rounded-lg shadow-lg border border-gray-800 bg-gray-900">
+        <table className="w-full text-left text-gray-100">
+          <thead className="text-sm text-gray-400 border-b border-gray-700">
+            <tr>
+              <th className="py-3 px-4">Name</th>
+              <th className="py-3 px-4">Code</th>
+              <th className="py-3 px-4 text-right">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-700">
+            {departments.map((d) => (
+              <tr key={d._id} className="hover:bg-gray-800 transition">
+                <td className="py-3 px-4 font-medium">{d.name}</td>
+                <td className="py-3 px-4">{d.code}</td>
+                <td className="py-3 px-4 text-right">
+                  <button
+                    className="text-red-500 hover:text-red-600"
+                    onClick={() => handleDelete(d._id)}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
