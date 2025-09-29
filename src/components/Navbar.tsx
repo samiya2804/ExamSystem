@@ -108,6 +108,7 @@ export default function Navbar() {
                       credentials: "include",
                     });
                     setUser(null);
+                    window.location.href = "/";
                   }}
                 >
                   <LogOut className="w-4 h-4" /> Logout
