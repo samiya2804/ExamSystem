@@ -1,12 +1,15 @@
 import mongoose, { Schema, models } from "mongoose";
 
-const SubjectSchema = new Schema(
+const subjectSchema = new Schema(
   {
     name: { type: String, required: true },
-    faculty: { type: Schema.Types.ObjectId, ref: "Faculty", required: true },
+    code: { type: String, required: true, unique: true }, // ✅ New field
+    topics: [{ type: String }], // ✅ New field
+    faculty: { type: Schema.Types.ObjectId, ref: "Faculty" },
   },
   { timestamps: true }
 );
 
-const Subject = models.Subject || mongoose.model("Subject", SubjectSchema);
+const Subject = models.Subject || mongoose.model("Subject", subjectSchema);
+
 export default Subject;
