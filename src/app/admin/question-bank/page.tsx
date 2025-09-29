@@ -29,67 +29,60 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+type Subject = {
+  _id: string;
+  name: string;
+  code: string;
+  topics: string[];
+  faculty: { _id: string; name: string; email: string; department: string } | null;
+};
+
 export default function QuestionBankPage() {
   const [questions, setQuestions] = useState<any[]>([]);
-  const [newQuestion, setNewQuestion] = useState({
-    questionText: "",
-    type: "",
-  });
-  const [editQ, setEditQ] = useState<any>(null);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [search, setSearch] = useState("");
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
 
-  // Fetch questions from DB
+  // Fetch questions
   useEffect(() => {
     fetch("/api/questions")
       .then((res) => res.json())
-      .then((data) => setQuestions(data))
-      .catch((err) => console.error("Fetch error:", err));
+      .then(setQuestions)
+      .catch(console.error);
   }, []);
 
-  const handleAdd = async () => {
-    const res = await fetch("/api/questions", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(newQuestion),
-    });
-    const saved = await res.json();
-    setQuestions([saved, ...questions]);
-    setNewQuestion({ questionText: "", type: "" });
-  };
-
-  const handleSave = async () => {
-    if (!editQ) return;
-    const res = await fetch(`/api/questions/${editQ._id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(editQ),
-    });
-    const updated = await res.json();
-    setQuestions(questions.map((q) => (q._id === updated._id ? updated : q)));
-    setEditQ(null);
-  };
-
-  const handleDelete = async (id: string) => {
-    await fetch(`/api/questions/${id}`, { method: "DELETE" });
-    setQuestions(questions.filter((q) => q._id !== id));
-  };
+  // Fetch subjects
+  useEffect(() => {
+    fetch("/api/subject")
+      .then((res) => res.json())
+      .then(setSubjects)
+      .catch(console.error);
+  }, []);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) setUploadedFile(file.name);
   };
 
-  const filteredQuestions = questions.filter((q) =>
-    q.questionText.toLowerCase().includes(search.toLowerCase())
+  const filteredSubjects = subjects.filter(
+    (s) =>
+      s.name.toLowerCase().includes(search.toLowerCase()) ||
+      s.code.toLowerCase().includes(search.toLowerCase()) ||
+      s.topics.join(", ").toLowerCase().includes(search.toLowerCase()) ||
+      s.faculty?.name.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleDeleteSubject = async (id: string) => {
+    const res = await fetch(`/api/subject/${id}`, { method: "DELETE" });
+    if (res.ok) setSubjects(subjects.filter((s) => s._id !== id));
+  };
 
   return (
     <div className="p-4 md:p-6 space-y-6 bg-gray-950 min-h-screen text-gray-100">
       {/* Header + Back */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <h1 className="text-2xl font-bold flex items-center gap-2 text-blue-400">
-          <BookOpen className="w-6 h-6 text-teal-400" /> Question Bank
+          <BookOpen className="w-6 h-6 text-teal-400" /> Question Bank & Subjects
         </h1>
         <Link href="/admin" className="w-full md:w-auto">
           <Button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700">
@@ -105,144 +98,60 @@ export default function QuestionBankPage() {
           <span>Upload Question Bank (PDF)</span>
           <input type="file" accept="application/pdf" hidden onChange={handleUpload} />
         </label>
-        {uploadedFile && (
-          <span className="text-sm text-gray-400">
-            Uploaded: {uploadedFile}
-          </span>
-        )}
+        {uploadedFile && <span className="text-sm text-gray-400">Uploaded: {uploadedFile}</span>}
       </div>
 
-      {/* Search */}
+      {/* Search Subjects */}
       <Input
-        placeholder="Search questions..."
+        placeholder="Search subjects..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         className="w-full md:w-64 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
       />
 
-      {/* Add Question */}
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700">
-            <PlusCircle className="w-4 h-4" /> Add Question
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="bg-gray-900 text-gray-100">
-          <DialogHeader>
-            <DialogTitle>Add Question</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Input
-              placeholder="Enter Question"
-              value={newQuestion.questionText}
-              onChange={(e) =>
-                setNewQuestion({ ...newQuestion, questionText: e.target.value })
-              }
-              className="bg-gray-800 text-gray-100 placeholder-gray-400"
-            />
-            <Select
-              value={newQuestion.type}
-              onValueChange={(val) => setNewQuestion({ ...newQuestion, type: val })}
-            >
-              <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
-                <SelectValue placeholder="Select Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="mcq">MCQ</SelectItem>
-                <SelectItem value="short_answer">Short Answer</SelectItem>
-                <SelectItem value="long_answer">Long Answer</SelectItem>
-                <SelectItem value="coding">Coding</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <DialogFooter>
-            <Button onClick={handleAdd} className="bg-teal-600 hover:bg-teal-700">
-              Add
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Questions Table */}
-      <div className="overflow-x-auto bg-gray-900 shadow-lg rounded-lg">
+      {/* Subjects Table */}
+      <div className="overflow-x-auto bg-gray-900 shadow-lg rounded-lg mt-4">
         <table className="w-full text-left text-gray-100">
           <thead className="text-sm text-gray-400 border-b border-gray-700">
             <tr>
-              <th className="py-3 px-4">Question</th>
-              <th className="py-3 px-4">Type</th>
+              <th className="py-3 px-4">Code</th>
+              <th className="py-3 px-4">Subject</th>
+              <th className="py-3 px-4">Topics</th>
+              <th className="py-3 px-4">Faculty</th>
               <th className="py-3 px-4 text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-700">
-            {filteredQuestions.map((q) => (
+            {filteredSubjects.map((s, idx) => (
               <tr
-                key={q._id}
-                className="hover:bg-gray-800 transition-colors duration-200"
+                key={s._id}
+                className={`${
+                  idx % 2 === 0 ? "bg-gray-950" : "bg-gray-900"
+                } hover:bg-gray-800 transition`}
               >
-                <td className="py-3 px-4">{q.questionText}</td>
-                <td className="py-3 px-4 capitalize">{q.type.replace("_", " ")}</td>
-                <td className="py-3 px-4 text-right flex gap-3 justify-end">
-                  {/* Edit */}
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <button
-                        className="text-gray-400 hover:text-gray-100"
-                        onClick={() => setEditQ(q)}
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </button>
-                    </DialogTrigger>
-                    {editQ && editQ._id === q._id && (
-                      <DialogContent className="bg-gray-900 text-gray-100">
-                        <DialogHeader>
-                          <DialogTitle>Edit Question</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4 py-4">
-                          <Input
-                            value={editQ.questionText}
-                            onChange={(e) =>
-                              setEditQ({ ...editQ, questionText: e.target.value })
-                            }
-                            className="bg-gray-800 text-gray-100 placeholder-gray-400"
-                          />
-                          <Select
-                            value={editQ.type}
-                            onValueChange={(val) =>
-                              setEditQ({ ...editQ, type: val })
-                            }
-                          >
-                            <SelectTrigger className="bg-gray-800 text-gray-100 border-gray-700">
-                              <SelectValue placeholder="Select Type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="mcq">MCQ</SelectItem>
-                              <SelectItem value="short_answer">Short Answer</SelectItem>
-                              <SelectItem value="long_answer">Long Answer</SelectItem>
-                              <SelectItem value="coding">Coding</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <DialogFooter>
-                          <Button
-                            onClick={handleSave}
-                            className="bg-teal-600 hover:bg-teal-700"
-                          >
-                            Save
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    )}
-                  </Dialog>
-                  {/* Delete */}
+                <td className="py-3 px-4 text-gray-300">{s.code}</td>
+                <td className="py-3 px-4 font-medium text-gray-100">{s.name}</td>
+                <td className="py-3 px-4 text-gray-300">
+                  {s.topics?.length ? s.topics.join(", ") : "—"}
+                </td>
+                <td className="py-3 px-4 text-gray-300">{s.faculty?.name || "—"}</td>
+                <td className="py-3 px-4 text-right">
                   <button
-                    className="text-red-500 hover:text-red-600"
-                    onClick={() => handleDelete(q._id)}
+                    className="text-red-500 hover:text-red-400 transition"
+                    onClick={() => handleDeleteSubject(s._id)}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </td>
               </tr>
             ))}
+            {filteredSubjects.length === 0 && (
+              <tr>
+                <td colSpan={5} className="py-4 text-center text-gray-500">
+                  No subjects found.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
