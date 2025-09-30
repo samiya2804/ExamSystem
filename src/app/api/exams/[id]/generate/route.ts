@@ -3,12 +3,6 @@ import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 
-/**
- * This endpoint simulates question generation.
- * Replace the "generateDummyQuestions" with a real call to OpenAI / Gemini
- * that sends the subject + topics + counts + difficulty and returns structured questions.
- */
-
 function generateDummyQuestions(exam: any) {
   const questions: any[] = [];
 
@@ -31,14 +25,19 @@ function generateDummyQuestions(exam: any) {
   return questions;
 }
 
-export async function POST(_: Request, { params }: { params: { id: string } }) {
+export async function POST(
+  req: Request,
+  context: { params: { id: string } }
+) {
   try {
     await connectDB();
-    const { id } = params;
-    const exam = await Exam.findById(id).populate("subject", "name code");
-    if (!exam) return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    const { id } = context.params;
 
-    // TODO: replace with real AI call (OpenAI/Gemini). For now generate dummy questions.
+    const exam = await Exam.findById(id).populate("subject", "name code");
+    if (!exam) {
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
+
     const generated = generateDummyQuestions(exam);
 
     exam.questions = generated;
@@ -49,6 +48,9 @@ export async function POST(_: Request, { params }: { params: { id: string } }) {
     return NextResponse.json(populated);
   } catch (err: any) {
     console.error("Generate exam error:", err);
-    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
   }
 }
