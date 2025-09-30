@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
-// Removed invalid import of RouteContext
+import type { NextRequest } from "next/server";
 
 function generateDummyQuestions(exam: any) {
   const questions: any[] = [];
@@ -25,10 +25,13 @@ function generateDummyQuestions(exam: any) {
   return questions;
 }
 
-export async function POST(req: Request, context: { params: { id: string } }) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: { id: string } }
+) {
   try {
     await connectDB();
-    const { id } = context.params;
+    const { id } = params;
 
     const exam = await Exam.findById(id).populate("subject", "name code");
     if (!exam) {
