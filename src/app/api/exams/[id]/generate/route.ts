@@ -1,7 +1,7 @@
-// app/api/exams/[id]/generate/route.ts
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
+// Removed invalid import of RouteContext
 
 function generateDummyQuestions(exam: any) {
   const questions: any[] = [];
@@ -25,10 +25,7 @@ function generateDummyQuestions(exam: any) {
   return questions;
 }
 
-export async function POST(
-  req: Request,
-  context: { params: { id: string } }
-) {
+export async function POST(req: Request, context: { params: { id: string } }) {
   try {
     await connectDB();
     const { id } = context.params;
