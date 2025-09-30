@@ -1,7 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
-import type { NextRequest } from "next/server";
+
+// 👇 define the type manually
+type Params = {
+  params: {
+    id: string;
+  };
+};
 
 function generateDummyQuestions(exam: any) {
   const questions: any[] = [];
@@ -9,7 +15,9 @@ function generateDummyQuestions(exam: any) {
   const pushMany = (count: number, type: string, marks: number) => {
     for (let i = 1; i <= count; i++) {
       questions.push({
-        text: `${type.replace("_", " ").toUpperCase()} Q${i} — (${exam.title} / ${exam.subject?.name || exam.subject})`,
+        text: `${type.replace("_", " ").toUpperCase()} Q${i} — (${
+          exam.title
+        } / ${exam.subject?.name || exam.subject})`,
         type,
         marks,
         answer: `Model answer for ${type} Q${i}`,
@@ -25,10 +33,8 @@ function generateDummyQuestions(exam: any) {
   return questions;
 }
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+// 👇 use the inline Params type
+export async function POST(req: NextRequest, { params }: Params) {
   try {
     await connectDB();
     const { id } = params;
