@@ -1,91 +1,80 @@
-// src/app/api/exams/[id]/route.ts
-
+// app/api/exams/[id]/route.ts
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
-import Question from "@/lib/models/Question";
+import Subject from "@/lib/models/subject";
 
-// PUT handler to update an exam
-export async function PUT(request: Request) {
+// GET exam by ID
+export async function GET(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
     await connectDB();
-    const id = request.url.split("/").pop(); // extract exam ID from URL
-    const body = await request.json();
-
-    if (body.isPublished !== undefined) {
-      // Only update publish status
-      const updatedExam = await Exam.findByIdAndUpdate(
-        id,
-        { isPublished: body.isPublished },
-        { new: true }
-      ).populate("questions");
-
-      if (!updatedExam) {
-        return NextResponse.json({ message: "Exam not found" }, { status: 404 });
-      }
-      return NextResponse.json(updatedExam, { status: 200 });
-    } else {
-      // Full exam update, including questions
-      const { title, subject, duration, questions } = body;
-
-      // Delete old questions associated with the exam
-      const oldExam = await Exam.findById(id);
-      if (oldExam) {
-        await Question.deleteMany({ _id: { $in: oldExam.questions } });
-      }
-
-      // Create and save new questions
-      const questionIds: string[] = [];
-      for (const q of questions) {
-        const newQuestion = new Question(q);
-        const savedQuestion = await newQuestion.save();
-        questionIds.push(savedQuestion._id);
-      }
-
-      // Update the exam document
-      const updatedExam = await Exam.findByIdAndUpdate(
-        id,
-        {
-          title,
-          subject,
-          durationInMinutes: duration,
-          questions: questionIds,
-        },
-        { new: true, runValidators: true }
-      ).populate("questions");
-
-      if (!updatedExam) {
-        return NextResponse.json({ message: "Exam not found" }, { status: 404 });
-      }
-      return NextResponse.json(updatedExam, { status: 200 });
-    }
-  } catch (error) {
-    console.error("Error updating exam:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+    const { id } = await context.params; // ✅ await params
+    const exam = await Exam.findById(id).populate("subject", "name code");
+    if (!exam)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(exam);
+  } catch (err: any) {
+    console.error("Exam GET error:", err);
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
   }
 }
 
-// DELETE handler to delete an exam and its questions
-export async function DELETE(request: Request) {
+// UPDATE exam
+export async function PUT(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
   try {
     await connectDB();
-    const id = request.url.split("/").pop(); // extract exam ID from URL
+    const { id } = await context.params; // ✅ await params
+    const data = await req.json();
 
-    const examToDelete = await Exam.findById(id);
-
-    if (!examToDelete) {
-      return NextResponse.json({ message: "Exam not found" }, { status: 404 });
+    if (data.subject) {
+      const s = await Subject.findById(data.subject);
+      if (!s)
+        return NextResponse.json(
+          { error: "Subject not found" },
+          { status: 400 }
+        );
     }
 
-    await Exam.findByIdAndDelete(id);
-    await Question.deleteMany({ _id: { $in: examToDelete.questions } });
+    const updated = await Exam.findByIdAndUpdate(id, data, {
+      new: true,
+    }).populate("subject", "name code");
 
+    if (!updated)
+      return NextResponse.json({ error: "Not found" }, { status: 404 });
+    return NextResponse.json(updated);
+  } catch (err: any) {
+    console.error("Exam PUT error:", err);
     return NextResponse.json(
-      { message: "Exam and all associated questions deleted successfully" },
-      { status: 200 }
+      { error: err.message || "Server error" },
+      { status: 500 }
     );
-  } catch (error) {
-    console.error("Error deleting exam and questions:", error);
-    return NextResponse.json({ message: "Internal Server Error" }, { status: 500 });
+  }
+}
+
+// DELETE exam
+export async function DELETE(
+  req: Request,
+  context: { params: Promise<{ id: string }> }
+) {
+  try {
+    await connectDB();
+    const { id } = await context.params; // ✅ await params
+    await Exam.findByIdAndDelete(id);
+    return NextResponse.json({ message: "Deleted" });
+  } catch (err: any) {
+    console.error("Exam DELETE error:", err);
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
   }
 }
