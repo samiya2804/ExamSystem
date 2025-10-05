@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 import axios from "axios";
@@ -54,5 +55,19 @@ export async function POST(
     console.error("Generate API Error:", err.response ? err.response.data : err.message);
     const errorMessage = err.response ? err.response.data.detail : err.message || "Server error";
     return NextResponse.json({ error: errorMessage }, { status: 500 });
+
+
+export async function POST(req: NextRequest) {
+  try {
+    // Temporary placeholder
+    return NextResponse.json({
+      message: "We are working on it 🚧",
+    });
+  } catch (err: any) {
+    return NextResponse.json(
+      { error: err.message || "Server error" },
+      { status: 500 }
+    );
+
   }
 }
