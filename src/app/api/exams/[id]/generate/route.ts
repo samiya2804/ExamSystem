@@ -1,30 +1,24 @@
 import { NextResponse, type NextRequest } from "next/server";
-
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 import axios from "axios";
 
-// Use environment variable for Python API
 const PYTHON_API_URL = process.env.NEXT_PUBLIC_EXAM_MODEL_URL + "/api/v1/generate-paper";
 
-export async function POST(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function POST(req: NextRequest, context: { params: { id: string } }) {
+  const { params } = context; // ✅ Extract params here
   try {
     const examId = params.id;
     if (!examId) {
       return NextResponse.json({ error: "Exam ID is missing" }, { status: 400 });
     }
 
-    // 1. Connect to DB
     await connectDB();
     const exam = await Exam.findById(examId).populate("subject", "name");
     if (!exam) {
       return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
 
-    // 2. Prepare payload
     const payload = {
       subject: exam.subject.name,
       topic: exam.title,
@@ -34,7 +28,6 @@ export async function POST(
       num_coding: exam.coding.count,
     };
 
-    // 3. Call Python API
     const response = await axios.post(PYTHON_API_URL, payload);
     const generatedData = response.data;
 
@@ -42,7 +35,6 @@ export async function POST(
       throw new Error("Failed to get a valid response from the generation API");
     }
 
-    // 4. Update exam
     exam.questions = generatedData.full_paper_without_solutions;
     exam.paper_solutions_map = generatedData.paper_solutions_map;
     exam.status = "generated";
