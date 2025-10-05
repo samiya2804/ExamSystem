@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 
@@ -30,6 +31,16 @@ export async function PUT(
 
   } catch (err: any) {
     console.error("Publish API Error:", err.message);
+=======
+
+export async function POST(req: NextRequest) {
+  try {
+    // Temporary placeholder
+    return NextResponse.json({
+      message: "We are working on it 🚧",
+    });
+  } catch (err: any) {
+
     return NextResponse.json(
       { error: err.message || "Server error" },
       { status: 500 }
