@@ -1,3 +1,4 @@
+import Subject from "./subject";
 import mongoose, { Schema, Document } from "mongoose";
 
 // A schema for individual questions, including an ID placeholder
