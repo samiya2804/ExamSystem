@@ -4,6 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Toaster } from "sonner"; 
 import { AuthProvider } from "@/lib/hooks/useAuth";
+import GlobalLoader from "@/components/GlobalLoader";
 
 export const metadata: Metadata = {
   title: "AI Exam System",
@@ -21,6 +22,7 @@ export default function RootLayout({
         <AuthProvider>
           <Navbar />
           <main className="flex-1">{children}</main>
+          <GlobalLoader />
           <Toaster position="top-right" richColors />
           <Footer />
         </AuthProvider>
