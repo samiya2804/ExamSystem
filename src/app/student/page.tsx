@@ -22,9 +22,10 @@ import {
   ResponsiveContainer,
 } from "recharts";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
-import axios from "axios";
+const Link = ({ href, children, target, passHref, className }: { href: string; children: React.ReactNode; target?: string; passHref?: boolean; className?: string }) => <a href={href} target={target} className={className}>{children}</a>;
 import { useAuth } from "@/lib/hooks/useAuth";
+import axios from "axios";
+
 
 // --- DATA TYPES (CORRECTED & FINAL) ---
 
@@ -50,6 +51,7 @@ type Exam = {
   date: string;
   questions: QuestionPaper; // questions is an object
   isPublished: boolean;
+   publishedAt?: string; 
 };
 
 // FIX 3: This type now matches the result from your evaluation API and DB schema
@@ -74,12 +76,11 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const [availableExams, setAvailableExams] = useState<Exam[]>([]);
   const [pastResults, setPastResults] = useState<Result[]>([]);
-  const [activeExam, setActiveExam] = useState<Exam | null>(null);
-  const [timeLeft, setTimeLeft] = useState(0);
+
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
+  const [finishedExams, setFinishedExams] = useState<Set<string>>(new Set()); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -93,9 +94,11 @@ export default function StudentDashboard() {
         setAvailableExams(publishedExams);
 
         // FIX 4: Uncommented to fetch real results
-        // const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
-        // setPastResults(resultsResponse.data);
-
+  //       const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
+  //       setPastResults(resultsResponse.data);
+  // // Populate finishedExams set
+  //       const completedExamIds = new Set(resultsResponse.data.map((res: Result) => res.exam_id));
+  //       setFinishedExams(completedExamIds);
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("Failed to load dashboard data.");
@@ -106,64 +109,7 @@ export default function StudentDashboard() {
     fetchData();
   }, [user]);
 
-  const handleExamSubmission = useMemo(() => async () => {
-    if (!activeExam || !user) {
-      setError("Cannot submit, active exam or user not found.");
-      return;
-    }
-    try {
-      const payload = {
-        examId: activeExam._id,
-        studentId: user.id,
-        answers: answers,
-      };
-      await axios.post("/api/submit-exam", payload);
-      setMessage("Exam submitted successfully!");
-      setActiveExam(null);
-      setAnswers({});
-    } catch (err) {
-      console.error("Submission failed:", err);
-      setError("There was an error submitting your exam.");
-    }
-  }, [activeExam, user, answers]);
 
-  useEffect(() => {
-    if (activeExam) {
-      setTimeLeft(activeExam.duration * 60);
-      const timer = setInterval(() => {
-        setTimeLeft((prevTime) => {
-          if (prevTime <= 1) {
-            clearInterval(timer);
-            handleExamSubmission(); // Auto-submit when time is up
-            setMessage("Time's up! Your exam has been submitted automatically.");
-            return 0;
-          }
-          return prevTime - 1;
-        });
-      }, 1000);
-      return () => clearInterval(timer);
-    }
-  }, [activeExam, handleExamSubmission]);
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds < 10 ? "0" : ""}${remainingSeconds}`;
-  };
-
-  const handleAnswerChange = (questionId: string, value: string) => {
-    setAnswers((prev) => ({ ...prev, [questionId]: value }));
-  };
-
-  const allQuestions = useMemo(() => {
-    if (!activeExam?.questions) return [];
-    const { MCQs = [], Theory = [], Coding = [] } = activeExam.questions;
-    return [
-      ...MCQs.map((q) => ({ ...q, type: "MCQ" })),
-      ...Theory.map((q) => ({ ...q, type: "Theory" })),
-      ...Coding.map((q) => ({ ...q, type: "Coding" })),
-    ];
-  }, [activeExam]);
 
   const averageMarksData = useMemo(() => {
     return pastResults.map((res) => ({
@@ -198,7 +144,7 @@ export default function StudentDashboard() {
   if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p>Loading dashboard...</p></div>;
   if (error) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-red-500">Error: {error}</p></div>;
 
-  if (!activeExam) {
+
     return (
       <div className="min-h-screen bg-slate-950 text-gray-100 font-sans p-6 sm:p-10">
         <MessageToast />
@@ -224,21 +170,37 @@ export default function StudentDashboard() {
           <section>
             <h2 className="text-3xl font-bold text-blue-600 mb-6">Upcoming Exams</h2>
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {availableExams.map((exam) => (
+              {availableExams.map((exam) => {
+                 const hasFinished = finishedExams.has(exam._id);
+                  const isReady = 
+                  (exam.questions && 
+                    ((exam.questions.MCQs?.length ?? 0) > 0 || 
+                    (exam.questions.Theory?.length ?? 0) > 0));
+                
+                // FEATURE 2: Use publishedAt date
+                const displayDate = exam.publishedAt 
+                    ? new Date(exam.publishedAt).toLocaleDateString() 
+                    : new Date(exam.date).toLocaleDateString();
+
+                    return(
+
                 <Card key={exam._id} className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700 flex flex-col justify-between">
                   <CardHeader className="p-0"><CardTitle className="text-2xl font-semibold text-blue-800 flex items-center gap-3"><BookOpen className="w-7 h-7" /> {exam.subject.name}</CardTitle></CardHeader>
                   <CardContent className="p-0 mt-4 flex-grow space-y-2 text-white">
                     <div className="flex items-center gap-2"><FileText className="w-4 h-4" /><span>Duration: {exam.duration} Minutes</span></div>
-                    <div className="flex items-center gap-2"><Clock className="w-4 h-4" /><span>Date: {new Date(exam.date).toLocaleDateString()}</span></div>
+                    <div className="flex items-center gap-2"><Clock className="w-4 h-4" /><span>Published: {displayDate}</span></div>
                   </CardContent>
                   {/* FIX 5: This is the corrected conditional check */}
-                  {(exam.questions && (exam.questions.MCQs?.length > 0 || exam.questions.Theory?.length > 0)) ? (
+                  {(exam.questions && ((exam.questions.MCQs?.length ?? 0) > 0 || (exam.questions.Theory?.length ?? 0) > 0)) ? (
                     <Button onClick={() => setActiveExam(exam)} className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"><UploadCloud className="w-5 h-5" /> Start Exam</Button>
                   ) : (
-                    <div className="w-full mt-6 text-center text-gray-400 text-sm">Questions not yet available.</div>
+                    <div 
+                    className="w-full mt-6 text-center text-gray-400 text-sm">
+                      Questions not yet available.</div>
                   )}
                 </Card>
-              ))}
+              );
+})}
             </div>
           </section>
         </div>
@@ -290,4 +252,3 @@ export default function StudentDashboard() {
     </div>
   );
 }
-

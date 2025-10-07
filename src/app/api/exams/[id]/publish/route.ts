@@ -17,9 +17,15 @@ export async function PUT(
     
     // Find the exam and update its status to 'published'
     const updatedExam = await Exam.findByIdAndUpdate(
+<<<<<<< Updated upstream
         examId,
         { status: "published", isPublished: true },
         { new: true } // This option returns the updated document
+=======
+      examId,
+      { status: "published", isPublished: true , publishedAt: new Date() },
+      { new: true } // return updated document
+>>>>>>> Stashed changes
     ).populate("subject", "name code");
 
     if (!updatedExam) {

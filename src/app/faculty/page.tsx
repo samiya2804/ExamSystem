@@ -185,9 +185,20 @@ export default function FacultyDashboardPage() {
   const handleGeneratePaper = async (examId: string) => {
     if (!confirm("Generate question paper using AI? This will replace existing questions.")) return;
     setGenerating(examId);
+     setLoading(true);
     try {
+<<<<<<< Updated upstream
       const res = await fetch(`/api/exams/${examId}/generate`, { method: "POST" });
       if (!res.ok) {
+=======
+      const res = await fetch(`/api/exams/${examId}/generate`, {
+        method: "POST",
+      });
+      
+      if (res.status === 200) {
+        toast.success("Paper generated successfully!");
+      } else {
+>>>>>>> Stashed changes
         const errorData = await res.json();
         throw new Error(errorData.error || "Generation failed with an unknown error");
       }
