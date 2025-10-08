@@ -76,11 +76,14 @@ export default function StudentDashboard() {
   const { user } = useAuth();
   const [availableExams, setAvailableExams] = useState<Exam[]>([]);
   const [pastResults, setPastResults] = useState<Result[]>([]);
+   const [activeExam, setActiveExam] = useState<Exam | null>(null);
 
+  const [timeLeft, setTimeLeft] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [finishedExams, setFinishedExams] = useState<Set<string>>(new Set()); 
+  const [answers, setAnswers] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,8 +97,8 @@ export default function StudentDashboard() {
         setAvailableExams(publishedExams);
 
         // FIX 4: Uncommented to fetch real results
-        // const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
-        // setPastResults(resultsResponse.data);
+        const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
+        setPastResults(resultsResponse.data);
 
       } catch (err) {
         console.error("Failed to fetch data:", err);
@@ -140,9 +143,11 @@ export default function StudentDashboard() {
   );
 
   if (loading) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p>Loading dashboard...</p></div>;
-  if (error) return <div className="min-h-screen bg-slate-950 flex items-center justify-center"><p className="text-red-500">Error: {error}</p></div>;
+  if (error) 
+    return <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <p className="text-red-500">Error: {error}</p></div>;
 
-
+  if (!activeExam) {
     return (
       <div className="min-h-screen bg-slate-950 text-gray-100 font-sans p-6 sm:p-10">
         <MessageToast />
@@ -190,7 +195,20 @@ export default function StudentDashboard() {
                   </CardContent>
                   {/* FIX 5: This is the corrected conditional check */}
                   {(exam.questions && ((exam.questions.MCQs?.length ?? 0) > 0 || (exam.questions.Theory?.length ?? 0) > 0)) ? (
-                    <Button onClick={() =>  window.open(`/student/exam/${exam._id}`, "_blank")} className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"><UploadCloud className="w-5 h-5" /> Start Exam</Button>
+<Button 
+    onClick={() => {
+        // --- ADDED AUTH STATE TRANSFER ---
+        if (user?.id) {
+            // Save a flag or ID to session storage so the new window can quickly verify
+            sessionStorage.setItem('temp_exam_student_id', user.id);
+        }
+        // --- END ADDED AUTH STATE TRANSFER ---
+        
+        window.open(`/student/exam/${exam._id}`, "_blank");
+    }} 
+    className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"
+>
+                      <UploadCloud className="w-5 h-5" /> Start Exam</Button>
                   ) : (
                     <div 
                     className="w-full mt-6 text-center text-gray-400 text-sm">
@@ -205,48 +223,50 @@ export default function StudentDashboard() {
       </div>
     );
   }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
-      <MessageToast />
-      <div className="max-w-5xl mx-auto space-y-6">
-        <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-700 rounded-3xl shadow-2xl border border-gray-600">
-          <Button onClick={() => setActiveExam(null)} className="flex items-center gap-2 text-blue-400 font-semibold rounded-full bg-gray-800 border border-gray-600 hover:bg-blue-900 hover:text-white"><ChevronLeft className="w-4 h-4" /> Back to Dashboard</Button>
-          <div className="text-center flex-1 mt-4 sm:mt-0"><h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-400 drop-shadow-md">{activeExam.subject.name} Exam</h1></div>
-          <div className="flex items-center space-x-2 text-red-600 font-bold bg-gradient-to-r from-red-200 to-red-100 px-5 py-2 rounded-full shadow-md mt-4 sm:mt-0"><Clock className="w-5 h-5" /><span className="text-red-800">{formatTime(timeLeft)}</span></div>
-        </header>
-
-        <section className="space-y-8">
-          {allQuestions.map((q, index) => (
-            <Card key={q.Q_ID || index} className="p-8 rounded-3xl shadow-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700">
-              <CardHeader className="p-0 mb-6"><CardTitle className="text-xl font-bold text-blue-300">Question {index + 1}</CardTitle></CardHeader>
-              <CardContent className="p-0 space-y-6">
-                <p className="text-lg font-medium text-white">{q.question}</p>
-                {q.type === 'MCQ' && q.options && (
-                  <div className="space-y-4">
-                    {q.options.map((option, optIndex) => (
-                      <div key={optIndex} className="flex items-center space-x-3 p-4 border border-gray-600 rounded-lg cursor-pointer bg-gray-800 hover:bg-blue-700">
-                        <input type="radio" id={`${q.Q_ID}-opt${optIndex}`} name={q.Q_ID} value={option} onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="form-radio text-blue-500 w-4 h-4" />
-                        <label htmlFor={`${q.Q_ID}-opt${optIndex}`} className="text-white font-medium flex-1 cursor-pointer">{option}</label>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {q.type === 'Theory' && (
-                  <textarea rows={8} placeholder="Write your detailed answer here..." onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="w-full p-4 border border-gray-600 rounded-lg bg-gray-900 text-white placeholder-gray-300" />
-                )}
-                {q.type === 'Coding' && (
-                  <textarea rows={12} placeholder="// Write your code here..." onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="w-full font-mono p-4 border border-gray-600 rounded-lg bg-gray-950 text-green-400 placeholder-gray-400" />
-                )}
-              </CardContent>
-            </Card>
-          ))}
-          { /* FIX 6: Removed the duplicate and incorrect mapping loop that was here */ }
-          <Button onClick={handleExamSubmission} className="w-full flex items-center justify-center gap-3 py-4 text-white font-bold rounded-3xl shadow-lg bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 hover:from-blue-500 hover:to-blue-800">
-            <UploadCloud className="w-6 h-6" /> Submit Exam
-          </Button>
-        </section>
-      </div>
-    </div>
-  );
 }
+
+  // return (
+  //   <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
+  //     <MessageToast />
+  //     <div className="max-w-5xl mx-auto space-y-6">
+  //       <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-700 rounded-3xl shadow-2xl border border-gray-600">
+  //         <Button onClick={() => setActiveExam(null)} className="flex items-center gap-2 text-blue-400 font-semibold rounded-full bg-gray-800 border border-gray-600 hover:bg-blue-900 hover:text-white"><ChevronLeft className="w-4 h-4" /> Back to Dashboard</Button>
+  //         <div className="text-center flex-1 mt-4 sm:mt-0"><h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-400 drop-shadow-md">{activeExam.subject.name} Exam</h1></div>
+  //         <div className="flex items-center space-x-2 text-red-600 font-bold bg-gradient-to-r from-red-200 to-red-100 px-5 py-2 rounded-full shadow-md mt-4 sm:mt-0"><Clock className="w-5 h-5" /><span className="text-red-800">{formatTime(timeLeft)}</span></div>
+  //       </header>
+
+  //       <section className="space-y-8">
+  //         {allQuestions.map((q, index) => (
+  //           <Card key={q.Q_ID || index} className="p-8 rounded-3xl shadow-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700">
+  //             <CardHeader className="p-0 mb-6"><CardTitle className="text-xl font-bold text-blue-300">Question {index + 1}</CardTitle></CardHeader>
+  //             <CardContent className="p-0 space-y-6">
+  //               <p className="text-lg font-medium text-white">{q.question}</p>
+  //               {q.type === 'MCQ' && q.options && (
+  //                 <div className="space-y-4">
+  //                   {q.options.map((option, optIndex) => (
+  //                     <div key={optIndex} className="flex items-center space-x-3 p-4 border border-gray-600 rounded-lg cursor-pointer bg-gray-800 hover:bg-blue-700">
+  //                       <input type="radio" id={`${q.Q_ID}-opt${optIndex}`} name={q.Q_ID} value={option} onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="form-radio text-blue-500 w-4 h-4" />
+  //                       <label htmlFor={`${q.Q_ID}-opt${optIndex}`} className="text-white font-medium flex-1 cursor-pointer">{option}</label>
+  //                     </div>
+  //                   ))}
+  //                 </div>
+  //               )}
+  //               {q.type === 'Theory' && (
+  //                 <textarea rows={8} placeholder="Write your detailed answer here..." onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="w-full p-4 border border-gray-600 rounded-lg bg-gray-900 text-white placeholder-gray-300" />
+  //               )}
+  //               {q.type === 'Coding' && (
+  //                 <textarea rows={12} placeholder="// Write your code here..." onChange={(e) => handleAnswerChange(q.Q_ID, e.target.value)} className="w-full font-mono p-4 border border-gray-600 rounded-lg bg-gray-950 text-green-400 placeholder-gray-400" />
+  //               )}
+  //             </CardContent>
+  //           </Card>
+  //         ))}
+  //         { /* FIX 6: Removed the duplicate and incorrect mapping loop that was here */ }
+  //         <Button onClick={handleExamSubmission} className="w-full flex items-center justify-center gap-3 py-4 text-white font-bold rounded-3xl shadow-lg bg-gradient-to-r from-blue-600 via-blue-700 to-blue-900 hover:from-blue-500 hover:to-blue-800">
+  //           <UploadCloud className="w-6 h-6" /> Submit Exam
+  //         </Button>
+  //       </section>
+  //     </div>
+  //   </div>
+  // );
+// }
+

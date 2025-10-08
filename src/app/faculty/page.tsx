@@ -211,28 +211,19 @@ export default function FacultyDashboardPage() {
     )
       return;
     setGenerating(examId);
-     setLoading(true);
+  
+
     try {
+   setLoading(true);
+      const res = await fetch(`/api/exams/${examId}/generate`, { 
+        method: "POST"
 
-      const res = await fetch(`/api/exams/${examId}/generate`, { method: "POST" });
-      if (!res.ok) {
+       });
 
-      const res = await fetch(`/api/exams/${examId}/generate`, {
-        method: "POST",
-      });
       
       if (res.status === 200) {
         toast.success("Paper generated successfully!");
-      } else {
-
-      setLoading(true);
-
-      const res = await fetch(`/api/exams/${examId}/generate`, {
-        method: "POST",
-      });
-      if (res.status === 200) {
-        toast.success("Paper generated successfully!");
-      
+      } else {      
         const errorData = await res.json();
         toast.error("Failed to generate paper.");
         throw new Error(

@@ -19,7 +19,7 @@ const ExamTaker = () => {
     const router = useRouter();
     const { user } = useAuth();
     const examId = params.id as string;
-
+  
     const [exam, setExam] = useState<Exam | null>(null);
     const [timeLeft, setTimeLeft] = useState(0);
     const [loading, setLoading] = useState(true);
