@@ -25,7 +25,7 @@ const ExamTaker = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [answers, setAnswers] = useState<{ [key: string]: string }>({});
-
+    const authUserId = user?.id || (typeof window !== 'undefined' ? sessionStorage.getItem('temp_exam_student_id') : null);
     // --- Data Fetching ---
     useEffect(() => {
         const fetchExam = async () => {
@@ -46,14 +46,15 @@ const ExamTaker = () => {
 
     // --- Submission Logic ---
     const handleExamSubmission = useCallback(async () => {
-        if (!exam || !user) {
+        console.log("Submission Attempt: Exam:", !!exam, "User ID:",  user?.id);
+        if (!exam || !authUserId) {
             setError("Cannot submit, exam or user not found.");
             return;
         }
         try {
             const payload = {
                 examId: exam._id,
-                studentId: user.id,
+                studentId: user?.id || authUserId,
                 answers: answers,
             };
             await axios.post("/api/submit-exam", payload);
@@ -67,7 +68,7 @@ const ExamTaker = () => {
             console.error("Submission failed:", err);
             setError("There was an error submitting your exam.");
         }
-    }, [exam, user, answers]);
+    }, [exam, user, answers , authUserId]);
 
     // --- Timer Logic ---
     useEffect(() => {
@@ -111,7 +112,17 @@ const ExamTaker = () => {
 
 
     // --- Render Logic ---
-    if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Exam...</div>;
+
+if (loading) return <div className="min-h-screen flex items-center justify-center">Loading Exam...</div>;
+
+// CHECK 1: If the user is authenticated via the hook OR we have a temp ID, proceed.
+if (!user && !authUserId) { 
+    // This happens if the user state hasn't loaded and no temp ID was set.
+    return <div className="min-h-screen flex items-center justify-center text-red-500">
+        Error: You must be logged in to take this exam.
+        <Button onClick={() => window.close()} className="mt-4 bg-gray-700 hover:bg-gray-600">Close Window</Button>
+    </div>;
+}
     if (error || !exam) return <div className="min-h-screen flex items-center justify-center text-red-500">Error: {error || "Exam data is missing."}</div>;
 
     return (

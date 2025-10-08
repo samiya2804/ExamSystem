@@ -94,11 +94,9 @@ export default function StudentDashboard() {
         setAvailableExams(publishedExams);
 
         // FIX 4: Uncommented to fetch real results
-  //       const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
-  //       setPastResults(resultsResponse.data);
-  // // Populate finishedExams set
-  //       const completedExamIds = new Set(resultsResponse.data.map((res: Result) => res.exam_id));
-  //       setFinishedExams(completedExamIds);
+        // const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
+        // setPastResults(resultsResponse.data);
+
       } catch (err) {
         console.error("Failed to fetch data:", err);
         setError("Failed to load dashboard data.");
@@ -192,7 +190,7 @@ export default function StudentDashboard() {
                   </CardContent>
                   {/* FIX 5: This is the corrected conditional check */}
                   {(exam.questions && ((exam.questions.MCQs?.length ?? 0) > 0 || (exam.questions.Theory?.length ?? 0) > 0)) ? (
-                    <Button onClick={() => setActiveExam(exam)} className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"><UploadCloud className="w-5 h-5" /> Start Exam</Button>
+                    <Button onClick={() =>  window.open(`/student/exam/${exam._id}`, "_blank")} className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"><UploadCloud className="w-5 h-5" /> Start Exam</Button>
                   ) : (
                     <div 
                     className="w-full mt-6 text-center text-gray-400 text-sm">

@@ -632,6 +632,14 @@ export default function FacultyDashboardPage() {
                 Questions: {countQuestions(exam.questions)}
               </div>
               <div className="mt-3 flex gap-2">
+              <Link href={`/faculty/results/${exam._id}`} passHref> 
+    <Button
+        className="bg-purple-700 hover:bg-purple-600 text-white"
+        size="sm"
+    >
+        Results
+    </Button>
+</Link>
                 <Button
                   variant="outline"
                   onClick={() => handleDelete(exam._id)}
