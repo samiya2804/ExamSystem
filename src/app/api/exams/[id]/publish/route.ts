@@ -15,28 +15,21 @@ export async function PUT(req: Request) {
 
     await connectDB();
 
-    const updatedExam = await Exam.findByIdAndUpdate(
+  const updatedExam = await Exam.findByIdAndUpdate(
+        examId,
+        { 
+          status: "published", 
+          isPublished: true, 
+          publishedAt: new Date() // <-- THIS saves the current date/time
+        },
+        { new: true } // This returns the updated document
+    ).populate("subject", "name code");
+    
+    if (!updatedExam) {
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+    }
 
-        examId,
-        { status: "published", isPublished: true },
-        { new: true } // This option returns the updated document
-
-      examId,
-      { status: "published", isPublished: true , publishedAt: new Date() },
-      { new: true } // return updated document
-
-
-      examId,
-      { status: "published", isPublished: true },
-      { new: true } // return updated document
-
-    ).populate("subject", "name code");
-
-    if (!updatedExam) {
-      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
-    }
-
-    return NextResponse.json({ message: "Exam published successfully", exam: updatedExam });
+    return NextResponse.json(updatedExam); // Return the updated exam data
 
   } catch (err: any) {
     console.error("Publish API Error:", err.message);
