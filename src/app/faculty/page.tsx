@@ -241,22 +241,39 @@ export default function FacultyDashboardPage() {
 
   const handlePublish = async (examId: string) => {
     if (!confirm("Publish this exam to students?")) return;
+
     try {
+      // Immediately update UI before API response
+      setExams((prev) =>
+        prev.map((e) => (e._id === examId ? { ...e, status: "publishing" } : e))
+      );
+
       const res = await fetch(`/api/exams/${examId}/publish`, {
         method: "PUT",
       });
+
+      const data = await res.json();
+
       if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || "Publish failed");
+        throw new Error(data.error || "Publish failed");
       }
-      const updated = await res.json();
+
+      // ✅ If response contains { exam: {...} }
+      const updatedExam = data.exam || data;
+
+      // ✅ Update local state instantly
       setExams((prev) =>
-        prev.map((e) => (e._id === updated._id ? updated : e))
+        prev.map((e) =>
+          e._id === updatedExam._id
+            ? { ...updatedExam, status: "published", isPublished: true }
+            : e
+        )
       );
-      alert("Exam published.");
+
+      alert("✅ Exam published successfully!");
     } catch (err: any) {
       console.error("Publish Error:", err);
-      alert(`Publish done: ${err.message}`);
+      alert(`❌ Publish failed: ${err.message}`);
     }
   };
 
@@ -603,13 +620,19 @@ export default function FacultyDashboardPage() {
                     <Button
                       onClick={() => handlePublish(exam._id)}
                       className={`bg-indigo-700 hover:bg-indigo-600 ${
-                        exam.status === "published"
+                        exam.status === "published" ||
+                        exam.status === "publishing"
                           ? "opacity-50 cursor-not-allowed"
                           : ""
                       }`}
-                      disabled={exam.status === "published"}
+                      disabled={
+                        exam.status === "published" ||
+                        exam.status === "publishing"
+                      }
                     >
-                      Publish
+                      {exam.status === "publishing"
+                        ? "Publishing..."
+                        : "Publish"}
                     </Button>{" "}
                   </div>
                 </div>

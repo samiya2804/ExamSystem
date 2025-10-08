@@ -17,7 +17,7 @@ export async function PUT(req: Request) {
 
     const updatedExam = await Exam.findByIdAndUpdate(
       examId,
-      { status: "published", isPublished: true },
+      { status: "published", isPublished: true, publishedAt: new Date() },
       { new: true } // return updated document
     ).populate("subject", "name code");
 
