@@ -31,19 +31,19 @@ export default function AdminPage() {
             </Link> */}
             <Link
               href="/admin/question-bank"
-              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
             >
               Question Bank
             </Link>
             <Link
               href="/admin/analytics"
-              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
             >
               Analytics
             </Link>
             <Link
               href="/admin/addFaculty"
-              className="px-3 sm:px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 text-sm sm:text-base"
             >
               Add Faculty
             </Link>
@@ -55,7 +55,7 @@ export default function AdminPage() {
             </Link>
             <Link
               href="/admin/addDepartment"
-              className="px-3 sm:px-4 py-2 bg-teal-600 text-white rounded-md shadow hover:bg-teal-700 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 text-sm sm:text-base"
             >
               Add Department
             </Link>

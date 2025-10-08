@@ -1,60 +1,54 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 
-
-export async function PUT(
-    req: NextRequest,
-    { params }: { params: { id: string } }
-) {
+// PUT: Publish exam
+export async function PUT(req: Request) {
   try {
-    const examId = params.id;
+    const url = new URL(req.url);
+    const segments = url.pathname.split("/").filter(Boolean);
+    const examId = segments[segments.length - 2]; // [id] segment
+
     if (!examId) {
       return NextResponse.json({ error: "Exam ID is missing" }, { status: 400 });
     }
 
     await connectDB();
-    
-    // Find the exam and update its status to 'published'
+
     const updatedExam = await Exam.findByIdAndUpdate(
-<<<<<<< Updated upstream
+
         examId,
         { status: "published", isPublished: true },
         { new: true } // This option returns the updated document
-=======
+
       examId,
       { status: "published", isPublished: true , publishedAt: new Date() },
       { new: true } // return updated document
->>>>>>> Stashed changes
+
+
+      examId,
+      { status: "published", isPublished: true },
+      { new: true } // return updated document
+
     ).populate("subject", "name code");
 
     if (!updatedExam) {
-        return NextResponse.json({ error: "Exam not found" }, { status: 404 });
+      return NextResponse.json({ error: "Exam not found" }, { status: 404 });
     }
 
-    return NextResponse.json(updatedExam);
+    return NextResponse.json({ message: "Exam published successfully", exam: updatedExam });
 
   } catch (err: any) {
     console.error("Publish API Error:", err.message);
-    return NextResponse.json(
-      { error: err.message || "Server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
   }
 }
 
-
-//How to Get Started**
-
-//1.  **Replace your files:** Copy the code above and replace the content of your placeholder `route.ts` files.
-//2.  **Run Both Servers:** For this to work, you must have both your Python backend and your Next.js frontend running at the same time.
-    //* **Terminal 1 (Python Backend):**
-        //```bash
-      //  # Navigate to your Python project folder
-      //  python -m uvicorn main:app --reload
-        //```
-   // * **Terminal 2 (Next.js Frontend):**
-     //```bash
-    //    # Navigate to your Next.js project folder
-     //     npm run dev
-      
+// POST: Placeholder (optional)
+export async function POST(req: Request) {
+  try {
+    return NextResponse.json({ message: "We are working on it 🚧" });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
+}

@@ -1,23 +1,9 @@
-// app/api/auth/logout/route.ts
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
-export async function GET(req: Request) {
-  // Get the host from the request headers
-  const url = new URL(req.url);
-
-  // Create redirect response
-  const response = NextResponse.redirect(`${url.origin}/`); // absolute URL required
-
-  // Clear the JWT cookie
-  response.cookies.set({
-    name: "exam_system_token",
-    value: "",
-    httpOnly: true,
-    path: "/",
-    maxAge: 0, // expire immediately
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
-
+export async function POST() {
+  // Clear the JWT token cookie
+  const response = NextResponse.json({ message: "Logged out" }, { status: 200 });
+  response.cookies.set("exam_system_token", "", { httpOnly: true, expires: new Date(0) });
   return response;
 }

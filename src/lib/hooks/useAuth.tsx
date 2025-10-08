@@ -1,45 +1,58 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
+import {jwtDecode} from "jwt-decode";
 
 interface User {
   id: string;
   email: string;
   role: string;
-  name?: string;
+  firstName?: string;
+  lastName?: string;
 }
+ 
 
 interface AuthContextType {
   user: User | null;
   setUser: (u: User | null) => void;
-  refreshUser: () => void;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-
-  const refreshUser = async () => {
-    try {
-      const res = await fetch("/api/auth/me");
-      if (res.ok) {
-        const data = await res.json();
-        setUser(data.user);
-      } else {
-        setUser(null);
-      }
-    } catch (err) {
-      setUser(null);
-    }
-  };
+  const [loading, setLoading] = useState(true); // <-- loading flag
 
   useEffect(() => {
-    refreshUser(); // check user on mount
+    const token = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("exam_system_token="))
+      ?.split("=")[1];
+
+    if (token) {
+      try {
+        const decoded: any = jwtDecode(token);
+        setUser({
+          id: decoded.id,
+          email: decoded.email,
+          role: decoded.role,
+          firstName: decoded.firstName,
+          lastName: decoded.lastName,
+        });
+      } catch (err) {
+        console.error("Token decode error:", err);
+        setUser(null);
+      }
+    } else {
+      setUser(null);
+    }
+
+    setLoading(false); // <-- finished checking
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, refreshUser }}>
+    <AuthContext.Provider value={{ user, setUser, loading }}>
       {children}
     </AuthContext.Provider>
   );

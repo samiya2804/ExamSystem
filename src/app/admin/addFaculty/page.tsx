@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { UserPlus, Trash2 } from "lucide-react";
+import { UserPlus, Trash2,ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import Link from "next/link";
 import {
   Select,
   SelectTrigger,
@@ -69,13 +70,21 @@ export default function AddFacultyPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-gray-950 min-h-screen text-gray-100">
-      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2 text-blue-400">
-        <UserPlus className="w-6 h-6 text-blue-500" /> Manage Faculty
-      </h1>
+    <div className=" mx-auto p-6 bg-gray-950 min-h-screen text-gray-100">
+      {/* Header + Back */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-blue-400 ml-2">
+          <UserPlus className="w-6 h-6 text-teal-400" /> Manage Faculties
+        </h1>
+        <Link href="/admin" className="w-full md:w-auto">
+          <Button className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700">
+            <ArrowLeft className="w-4 h-4" /> Back to Dashboard
+          </Button>
+        </Link>
+      </div>
 
       {/* Form */}
-      <div className="flex gap-3 mb-8 flex-wrap">
+      <div className="flex gap-3 mb-8 flex-wrap mt-10">
         <Input
           placeholder="Full Name"
           value={name}

@@ -13,7 +13,7 @@ const LoginPage = () => {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
-  const { refreshUser } = useAuth();
+  const { setUser } = useAuth(); // <-- directly update user
 
   const roles = ["student", "faculty", "admin"];
 
@@ -39,14 +39,15 @@ const LoginPage = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password, role }),
+        credentials: "include",
       });
 
       const data = await res.json();
 
       if (res.ok) {
         toast.success("Login successful! 🎉");
-        refreshUser();
-        router.push(`/${role}`);
+        setUser(data.user); // <-- update context immediately
+        router.push(`/${data.user.role}`); // <-- role-based redirect
       } else {
         toast.error(data.error || "Login failed");
       }

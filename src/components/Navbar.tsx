@@ -26,14 +26,17 @@ import { motion, AnimatePresence } from "framer-motion";
 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, refreshUser } = useAuth();
+  const { user, loading, setUser } = useAuth(); // <-- loading added
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/auth/logout");
+      const res = await fetch("/api/auth/logout", {
+        method: "POST",
+        credentials: "include",
+      });
       if (res.ok) {
         toast.success("Logged out successfully!");
-        refreshUser();
+        setUser(null);
       } else {
         toast.error("Logout failed.");
       }
@@ -75,50 +78,61 @@ export default function Navbar() {
             <BarChart2 className="w-5 h-5" /> Results
           </Link>
 
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="flex items-center gap-2 rounded-full px-4 py-2 text-white font-medium hover:bg-blue-700/40 transition-all duration-200"
-                >
-                  <User className="w-5 h-5" />
-                  {user.email.split("@")[0]}
-                  <ChevronDown className="w-4 h-4 opacity-70" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="w-44 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
-              >
-                <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
-                  <User className="w-4 h-4 text-blue-600" /> Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
-                  <Settings className="w-4 h-4 text-blue-600" /> Settings
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  className="flex items-center gap-2 p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="w-4 h-4" /> Logout
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex gap-3">
-              <Link href="/login">
-                <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-5 py-2 shadow-md transition-all duration-200">
-                  Login
-                </Button>
-              </Link>
-            </div>
+          {!loading && ( // <-- only render after loading
+            <>
+              {user ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="flex items-center gap-2 rounded-full px-4 py-2 text-white font-medium hover:bg-blue-700/40 transition-all duration-200"
+                    >
+                      <User className="w-5 h-5" />
+                      {user.firstName || user.email.split("@")[0]}
+                      <ChevronDown className="w-4 h-4 opacity-70" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="w-44 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
+                  >
+                    <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <User className="w-4 h-4 text-blue-600" /> Profile
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                      <Settings className="w-4 h-4 text-blue-600" /> Settings
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="flex items-center gap-2 p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                      onClick={async () => {
+                        await fetch("/api/auth/logout", {
+                          method: "POST",
+                          credentials: "include",
+                        });
+                        setUser(null);
+                        window.location.href = "/";
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" /> Logout
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <div className="flex gap-3">
+                  <Link href="/login">
+                    <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-5 py-2 shadow-md transition-all duration-200">
+                      Login
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
 
         {/* Mobile Menu Button */}
         <button
-          className="md:hidden p-2 rounded-lg text-white  hover:bg-blue-700/40 transition-colors"
+          className="md:hidden p-2 rounded-lg text-white hover:bg-blue-700/40 transition-colors"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <ChevronUp className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -155,30 +169,34 @@ export default function Navbar() {
             </Link>
             <hr className="border-blue-600" />
 
-            {user ? (
-              <div className="flex flex-col gap-2">
-                <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
-                  <User className="w-5 h-5" /> Profile
-                </button>
-                <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
-                  <Settings className="w-5 h-5" /> Settings
-                </button>
-                <button
-                  className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200 transition-colors"
-                  onClick={handleLogout}
-                >
-                  <LogOut className="w-5 h-5" /> Logout
-                </button>
-              </div>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <Link
-                  href="/login"
-                  className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-                >
-                  <User className="w-5 h-5" /> Login
-                </Link>
-              </div>
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="flex flex-col gap-2">
+                    <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
+                      <User className="w-5 h-5" /> Profile
+                    </button>
+                    <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
+                      <Settings className="w-5 h-5" /> Settings
+                    </button>
+                    <button
+                      className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200 transition-colors"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-5 h-5" /> Logout
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+                    >
+                      <User className="w-5 h-5" /> Login
+                    </Link>
+                  </div>
+                )}
+              </>
             )}
           </motion.div>
         )}

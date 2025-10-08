@@ -1,71 +1,66 @@
-// src/app/api/exams/route.ts
-import { NextResponse } from 'next/server';
+// app/api/exams/route.ts
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Exam from '@/lib/models/Exam';
-// NOTE: Since the new model uses embedded documents for 'questions',
-// we no longer need to import Question model here for the initial save.
-// import Question from '@/lib/models/Question'; 
+import Exam from "@/lib/models/Exam";
+import Subject from "@/lib/models/subject";
 
-export async function POST(request: Request) {
-    try {
-        await connectDB();
-        const body = await request.json();
-        // Destructure all expected fields. 'questions' and 'paper_solutions_map' will be undefined
-        // during initial exam creation from the form.
-        const { title, subject, duration, questions, paper_solutions_map, ...examDetails } = body;
 
-        // FIX 1: Handle initial exam creation where 'questions' is undefined.
-        // If questions is present and is an array/object, it means we are trying to save questions
-        // which should ideally happen on a separate GENERATE or UPDATE route.
-        // For initial creation, we skip any question saving logic.
+export async function GET(req: Request) {
+  try {
+    await connectDB();
 
-        // We are no longer trying to save separate Question documents or gather IDs.
-        // The structure is now designed for an embedded QuestionPaper.
+    const url = new URL(req.url);
+    const facultyId = url.searchParams.get("facultyId");
 
-        // Initialize question fields to empty if not provided in the payload
-        const initialQuestions = questions || {};
-        const initialSolutions = paper_solutions_map || {};
+    const query: any = {};
+    if (facultyId) query.facultyId = facultyId;
 
-        // 2. Create the exam document
-        const newExam = new Exam({
-            title,
-            subject,
-            duration: duration, // FIX 3: Corrected field name to 'duration'
-            questions: initialQuestions, // Initialize with empty object or the structure if provided
-            paper_solutions_map: initialSolutions,
-            ...examDetails, // Include course, facultyId, veryShort, short, long, coding, instructions, etc.
-        });
+    const exams = await Exam.find(query)
+      .sort({ createdAt: -1 })
+      .populate("subject", "name code");
 
-        const savedExam = await newExam.save();
-        return NextResponse.json(savedExam, { status: 201 });
-
-    } catch (error) {
-        console.error('Error creating exam:', error);
-        // FIX 4: Improve error response to show the specific error (useful for debugging)
-        const errorMessage = error instanceof Error ? error.message : "Internal Server Error";
-        return NextResponse.json({ error: `Error creating exam: ${errorMessage}` }, { status: 500 });
-    }
+    return NextResponse.json(exams);
+  } catch (err: any) {
+    console.error("Exams GET error:", err);
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
 }
 
-export async function GET(request: Request) {
-    try {
-        await connectDB();
-        const { searchParams } = new URL(request.url);
-        const facultyId = searchParams.get('facultyId');
+export async function POST(req: Request) {
+  try {
+    await connectDB();
+    const body = await req.json();
 
-        let query = {};
-        if (facultyId) {
-            query = { facultyId: facultyId };
-        }
-
-        // NOTE: populate('questions') is unnecessary and incorrect because 'questions' is an embedded sub-document, not a reference.
-        // Only populate('subject') is needed if you want the subject name/code.
-        const exams = await Exam.find(query).populate('subject').sort({ createdAt: -1 });
-
-        return NextResponse.json(exams, { status: 200 });
-
-    } catch (error) {
-        console.error('Error fetching exams:', error);
-        return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    // validate required fields
+    if (!body.title || !body.subject) {
+      return NextResponse.json({ error: "Missing title or subject" }, { status: 400 });
     }
+
+    // optionally check subject exists
+    const subj = await Subject.findById(body.subject);
+    if (!subj) {
+      return NextResponse.json({ error: "Subject not found" }, { status: 400 });
+    }
+
+    const exam = await Exam.create({
+      title: body.title,
+      course: body.course,
+      subject: body.subject,
+      facultyId: body.facultyId || null,
+      duration: body.duration || 180,
+      veryShort: body.veryShort || { count: 0, difficulty: "easy" },
+      short: body.short || { count: 0, difficulty: "medium" },
+      long: body.long || { count: 0, difficulty: "hard" },
+      coding: body.coding || { count: 0 },
+      instructions: body.instructions || "",
+      status: "draft",
+      
+    });
+
+    const populated = await Exam.findById(exam._id).populate("subject", "name code");
+    return NextResponse.json(populated, { status: 201 });
+  } catch (err: any) {
+    console.error("Exams POST error:", err);
+    return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+  }
 }
