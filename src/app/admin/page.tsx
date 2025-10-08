@@ -49,7 +49,7 @@ export default function AdminPage() {
             </Link>
             <Link
               href="/admin/addSubject"
-              className="px-3 sm:px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-blue-700 text-sm sm:text-base"
             >
               Add Subject
             </Link>
