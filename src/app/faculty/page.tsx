@@ -211,15 +211,19 @@ export default function FacultyDashboardPage() {
     )
       return;
     setGenerating(examId);
-    try {
-      setLoading(true);
+  
 
-      const res = await fetch(`/api/exams/${examId}/generate`, {
-        method: "POST",
-      });
+    try {
+   setLoading(true);
+      const res = await fetch(`/api/exams/${examId}/generate`, { 
+        method: "POST"
+
+       });
+
+      
       if (res.status === 200) {
         toast.success("Paper generated successfully!");
-      } else {
+      } else {      
         const errorData = await res.json();
         toast.error("Failed to generate paper.");
         throw new Error(
@@ -241,39 +245,22 @@ export default function FacultyDashboardPage() {
 
   const handlePublish = async (examId: string) => {
     if (!confirm("Publish this exam to students?")) return;
-
     try {
-      // Immediately update UI before API response
-      setExams((prev) =>
-        prev.map((e) => (e._id === examId ? { ...e, status: "publishing" } : e))
-      );
-
       const res = await fetch(`/api/exams/${examId}/publish`, {
         method: "PUT",
       });
-
-      const data = await res.json();
-
       if (!res.ok) {
-        throw new Error(data.error || "Publish failed");
+        const errorData = await res.json();
+        throw new Error(errorData.error || "Publish failed");
       }
-
-      // ✅ If response contains { exam: {...} }
-      const updatedExam = data.exam || data;
-
-      // ✅ Update local state instantly
+      const updated = await res.json();
       setExams((prev) =>
-        prev.map((e) =>
-          e._id === updatedExam._id
-            ? { ...updatedExam, status: "published", isPublished: true }
-            : e
-        )
+        prev.map((e) => (e._id === updated._id ? updated : e))
       );
-
-      alert("✅ Exam published successfully!");
+      alert("Exam published.");
     } catch (err: any) {
       console.error("Publish Error:", err);
-      alert(`❌ Publish failed: ${err.message}`);
+      alert(`Publish done: ${err.message}`);
     }
   };
 
@@ -620,19 +607,13 @@ export default function FacultyDashboardPage() {
                     <Button
                       onClick={() => handlePublish(exam._id)}
                       className={`bg-indigo-700 hover:bg-indigo-600 ${
-                        exam.status === "published" ||
-                        exam.status === "publishing"
+                        exam.status === "published"
                           ? "opacity-50 cursor-not-allowed"
                           : ""
                       }`}
-                      disabled={
-                        exam.status === "published" ||
-                        exam.status === "publishing"
-                      }
+                      disabled={exam.status === "published"}
                     >
-                      {exam.status === "publishing"
-                        ? "Publishing..."
-                        : "Publish"}
+                      Publish
                     </Button>{" "}
                   </div>
                 </div>
@@ -642,6 +623,14 @@ export default function FacultyDashboardPage() {
                 Questions: {countQuestions(exam.questions)}
               </div>
               <div className="mt-3 flex gap-2">
+              <Link href={`/faculty/results/${exam._id}`} passHref> 
+    <Button
+        className="bg-purple-700 hover:bg-purple-600 text-white"
+        size="sm"
+    >
+        Results
+    </Button>
+</Link>
                 <Button
                   variant="outline"
                   onClick={() => handleDelete(exam._id)}
