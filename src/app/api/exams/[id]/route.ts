@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
-import Subject from "@/lib/models/subject";
+import "@/lib/models/subject";
 
 // GET exam by ID
 export async function GET(
