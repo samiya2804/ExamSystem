@@ -1,169 +1,255 @@
 "use client";
 
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
+import { useEffect, useState } from "react";
+import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, CheckCircle2, Trophy, Clock, BookOpen } from "lucide-react";
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import { useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
-import { useRouter } from "next/navigation"; // Import the useRouter hook
+import {
+  ChevronLeft,
+  Trophy,
+  BookOpen,
+  Clock,
+  Loader2,
+  Hourglass,
+  CheckCircle2,
+}
+ from "lucide-react";
+import { motion } from "framer-motion";
+import { useAuth } from "@/lib/hooks/useAuth"; // Reverting to alias for robustness
 
-// --- DATA TYPES ---
-type TopicPerformance = {
-  topic: string;
-  marks: number;
-};
-
-type Result = {
-  id: string;
+type Submission = {
+  _id: string;
   examTitle: string;
   subject: string;
   marksObtained: number;
   totalMarks: number;
   durationInMinutes: number;
-  topicPerformance: TopicPerformance[];
+  status: string;
 };
 
-// --- MAIN COMPONENT ---
 export default function StudentResultsPage() {
-  const router = useRouter(); // Initialize the router
+  const { user } = useAuth();
   
-  const [result, setResult] = useState<Result>({
-    id: "result-001",
-    examTitle: "Mid-Term Exam",
-    subject: "Data Structures",
-    marksObtained: 78,
-    totalMarks: 100,
-    durationInMinutes: 120,
-    topicPerformance: [
-      { topic: "Arrays", marks: 15 },
-      { topic: "Linked Lists", marks: 12 },
-      { topic: "Trees", marks: 18 },
-      { topic: "Graphs", marks: 16 },
-      { topic: "Sorting", marks: 17 },
-    ],
-  });
+  // Initialize with sample data to ensure the UI is visible immediately
+  const [submissions, setSubmissions] = useState<Submission[]>([
+    {
+      _id: "sample-001",
+      examTitle: "Sample Mid-Term (Evaluated)",
+      subject: "Data Structures",
+      marksObtained: 78,
+      totalMarks: 100,
+      durationInMinutes: 120,
+      status: "evaluated",
+    },
+    {
+      _id: "sample-002",
+      examTitle: "Sample Final (Pending)",
+      subject: "Database Systems",
+      marksObtained: 0,
+      totalMarks: 100,
+      durationInMinutes: 180,
+      status: "pending_evaluation",
+    },
+  ]);
+  const [loading, setLoading] = useState(true);
 
-  // Calculate percentage
-  const percentage = (result.marksObtained / result.totalMarks) * 100;
+  useEffect(() => {
+    // Use user?.id in dependency array for stable fetching
+    if (!user?.id) {
+        // If user ID is not available, stop loading and keep sample data visible
+        setLoading(false); 
+        return;
+    }
 
-  // Function to navigate back to the dashboard using the router
-  const handleBackToDashboard = () => {
-    router.push('/student');
-  };
+    const fetchResults = async () => {
+      // Start loading before fetch
+      setLoading(true); 
+      try {
+        const res = await fetch(`/api/results?studentId=${user.id}`);
+        const data = await res.json();
+
+        if (Array.isArray(data) && data.length > 0) {
+          // Mapping structure updated for clarity and safety based on populated fields
+          const formatted = data.map((sub: any) => {
+            const exam = sub.examId || {};
+            const subjectObj = exam.subject || {};
+            
+            return {
+              _id: sub._id,
+              examTitle: exam.title || "Unknown Exam",
+              subject: subjectObj.name || "Unknown Subject",
+              marksObtained: sub.total_score || 0,
+              // Backend is setting max_score to 80, but let's default to a safe value
+              totalMarks: exam.totalMarks || sub.max_score || 100, 
+              // Assuming examId population includes duration
+              durationInMinutes: exam.duration || 0, 
+              status: sub.status || "pending_evaluation",
+            };
+          });
+          setSubmissions(formatted);
+        } else {
+          // If the fetch succeeds but returns no data, clear the sample data
+          setSubmissions([]); 
+        }
+      } catch (err) {
+        console.error("Error fetching results:", err);
+        // On error, clear actual data but leave sample data if you uncomment initial state
+        setSubmissions([]);
+      } finally {
+        // Stop loading after fetch completes (success or failure)
+        setLoading(false); 
+      }
+    };
+
+    fetchResults();
+  // Changed dependency to user.id for stable fetching
+  }, [user?.id]); 
+
+  // Use window.location.href for robust navigation
+  const handleBack = () => (window.location.href = "/student");
+  
+  // Use window.location.href for robust navigation
+  const handleViewAnalytics = (id: string) => (window.location.href = `/student/analytics`);
+
+
+  // Group submissions by subject
+  const groupedBySubject = submissions.reduce(
+    (acc: Record<string, Submission[]>, sub) => {
+      // Ensure subject is a string and non-empty for grouping. 
+      const subjectKey = sub.subject && typeof sub.subject === 'string' ? sub.subject : 'Unknown';
+      if (!acc[subjectKey]) acc[subjectKey] = [];
+      acc[subjectKey].push(sub);
+      return acc;
+    },
+    {}
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans p-6 sm:p-10">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-gray-900 to-blue-950 text-white font-sans p-6 sm:p-10">
+      <div className="max-w-6xl mx-auto space-y-10">
         {/* Header */}
-        <header className="p-8 bg-gradient-to-r from-teal-500 to-cyan-600 text-white rounded-3xl shadow-xl">
+        <motion.header
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="bg-gradient-to-r from-blue-700 via-cyan-700 to-blue-900 rounded-3xl p-8 shadow-xl"
+        >
           <Button
-            onClick={handleBackToDashboard}
-            className="flex items-center gap-2 text-white font-semibold rounded-full px-4 py-2 bg-white/10 hover:bg-white/20 transition-transform duration-200 transform hover:scale-105 mb-6"
+            onClick={handleBack}
+            className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 rounded-full px-4 py-2 transition-all mb-4"
           >
             <ChevronLeft className="w-5 h-5" /> Back to Dashboard
           </Button>
-          <h1 className="text-4xl font-bold">{result.examTitle} - Results</h1>
-          <p className="text-xl opacity-90 mt-2">Subject: {result.subject}</p>
-        </header>
+          <h1 className="text-4xl font-bold text-white">Your Exam Results</h1>
+          <p className="text-blue-200 text-lg mt-2">
+            Subject-wise performance overview
+          </p>
+        </motion.header>
 
-        {/* Performance Summary Section */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6"
-        >
-          {/* Marks Card */}
-          <Card className="rounded-3xl shadow-lg p-6 bg-white transform transition-transform hover:scale-105">
-            <CardHeader className="p-0 mb-4 flex-row justify-between items-center">
-              <CardTitle className="text-xl font-bold text-gray-800">Your Score</CardTitle>
-              <CheckCircle2 className="w-8 h-8 text-green-500" />
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-5xl font-extrabold text-teal-600">
-                {result.marksObtained}
-                <span className="text-2xl font-normal text-gray-500">/{result.totalMarks}</span>
+        {/* Loading State */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20 text-blue-400">
+            <Loader2 className="w-10 h-10 animate-spin mb-3" />
+            <p>Loading your results...</p>
+          </div>
+        )}
+
+        {/* No Submissions */}
+        {!loading && submissions.length === 0 && (
+          <div className="text-center py-20 text-gray-400 text-lg">
+            No submissions found. Try completing an exam first.
+          </div>
+        )}
+
+        {/* Subject-wise Results */}
+        {!loading &&
+          Object.keys(groupedBySubject).map((subject) => (
+            <motion.section
+              key={subject}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-6"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-cyan-400 flex items-center gap-2">
+                  <BookOpen className="w-6 h-6 text-blue-400" />
+                  {subject}
+                </h2>
+                <div className="h-[1px] bg-gradient-to-r from-blue-700 to-cyan-700 flex-1 ml-4"></div>
               </div>
-              <p className="text-sm text-gray-500 mt-2">Marks obtained in the exam.</p>
-            </CardContent>
-          </Card>
 
-          {/* Percentage Card */}
-          <Card className="rounded-3xl shadow-lg p-6 bg-white transform transition-transform hover:scale-105">
-            <CardHeader className="p-0 mb-4 flex-row justify-between items-center">
-              <CardTitle className="text-xl font-bold text-gray-800">Overall Percentage</CardTitle>
-              <Trophy className="w-8 h-8 text-yellow-500" />
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-5xl font-extrabold text-cyan-600">
-                {percentage.toFixed(2)}%
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {groupedBySubject[subject].map((sub) => {
+                  const percentage =
+                    sub.totalMarks > 0
+                      ? (sub.marksObtained / sub.totalMarks) * 100
+                      : 0;
+
+                  return (
+                    <Card
+                      key={sub._id}
+                      className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 border border-gray-700 rounded-2xl shadow-lg hover:shadow-blue-600/40 hover:scale-[1.02] transition-all"
+                    >
+                      <CardHeader className="flex justify-between items-start">
+                        <CardTitle className="text-lg text-blue-300 font-semibold">
+                          {sub.examTitle}
+                        </CardTitle>
+
+                        {/* Status Indicator */}
+                        {sub.status === "evaluated" ? (
+                          <CheckCircle2 className="w-6 h-6 text-green-400 shrink-0" />
+                        ) : (
+                          <Hourglass className="w-6 h-6 text-yellow-400 shrink-0" />
+                        )}
+                      </CardHeader>
+
+                      <CardContent className="space-y-3">
+                        <p className="text-gray-300">
+                          <span className="font-semibold text-blue-400">
+                            Score:
+                          </span>{" "}
+                          {sub.status === "evaluated" ? (
+                            <>
+                              {sub.marksObtained}/{sub.totalMarks}{" "}
+                              <span className="text-gray-400">
+                                ({percentage.toFixed(2)}%)
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-yellow-400 italic">
+                              Pending Evaluation
+                            </span>
+                          )}
+                        </p>
+
+                        <p className="text-gray-300 flex items-center gap-2">
+                          <Clock className="w-4 h-4 text-blue-400" />{" "}
+                          Duration: {sub.durationInMinutes} min
+                        </p>
+
+                        {/* Button to view Detailed Analytics (only if evaluated) */}
+                        {sub.status === "evaluated" ? (
+                            <Button 
+                                onClick={() => handleViewAnalytics(sub._id)}
+                                className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white"
+                            >
+                                View Details
+                            </Button>
+                        ) : (
+                            <Button 
+                                disabled
+                                className="mt-4 w-full bg-gray-700 text-gray-400 cursor-not-allowed"
+                            >
+                                Analysis Not Ready
+                            </Button>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
               </div>
-              <p className="text-sm text-gray-500 mt-2">Your total performance.</p>
-            </CardContent>
-          </Card>
-
-          {/* Duration Card */}
-          <Card className="rounded-3xl shadow-lg p-6 bg-white transform transition-transform hover:scale-105">
-            <CardHeader className="p-0 mb-4 flex-row justify-between items-center">
-              <CardTitle className="text-xl font-bold text-gray-800">Time Taken</CardTitle>
-              <Clock className="w-8 h-8 text-blue-500" />
-            </CardHeader>
-            <CardContent className="p-0">
-              <div className="text-5xl font-extrabold text-gray-600">
-                {result.durationInMinutes}
-                <span className="text-2xl font-normal text-gray-500"> min</span>
-              </div>
-              <p className="text-sm text-gray-500 mt-2">Total time spent on the exam.</p>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        {/* Topic-wise Performance Chart */}
-        <motion.section
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="space-y-6"
-        >
-          <Card className="rounded-3xl shadow-lg p-6 bg-white">
-            <CardHeader className="p-0 mb-4">
-              <CardTitle className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-                <BookOpen className="w-6 h-6 text-purple-600" /> Topic-wise Performance
-              </CardTitle>
-              <CardDescription className="text-sm text-gray-500">
-                A detailed breakdown of your marks across each topic.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-0 w-full h-80">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={result.topicPerformance} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-                  <XAxis dataKey="topic" className="text-xs" />
-                  <YAxis domain={[0, 20]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="marks" stroke="#14b8a6" strokeWidth={2} activeDot={{ r: 8 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </motion.section>
-
-        {/* Concluding message and navigation */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="text-center mt-10"
-        >
-          <p className="text-lg text-gray-700">Congratulations on completing your exam!</p>
-          <Button
-            onClick={handleBackToDashboard}
-            className="mt-6 flex items-center justify-center mx-auto gap-2 py-3 px-8 text-white font-bold bg-teal-600 hover:bg-teal-700 rounded-full shadow-md transition-transform duration-200 transform hover:scale-105"
-          >
-            <ChevronLeft className="w-5 h-5" /> Go to Dashboard
-          </Button>
-        </motion.div>
+            </motion.section>
+          ))}
       </div>
     </div>
   );

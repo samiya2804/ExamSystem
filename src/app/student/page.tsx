@@ -158,8 +158,30 @@ export default function StudentDashboard() {
               <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center shadow-inner"><span className="text-3xl font-bold text-blue-900">{user?.firstName?.charAt(0)}{user?.lastName?.charAt(0)}</span></div>
               <div><h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1><p className="text-sm opacity-90 mt-1">Ready for your next challenge?</p></div>
             </div>
+<<<<<<< Updated upstream
             <div className="mt-4 sm:mt-0"><Link href="/student/results"><Button className="bg-white text-teal-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View All Results</Button></Link></div>
           </header>
+=======
+            <div>
+              <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
+              <p className="text-sm opacity-90 mt-1">
+                Ready for your next challenge?
+              </p>
+            </div>
+          </div>
+       <div className="flex">
+            <div className="mt-4 sm:mt-0"><Link href="/student/results">
+            <Button className="bg-white text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View Results</Button>
+            
+            </Link>
+            </div>
+               <div className="mt-4 sm:mt-0 ml-4"><Link href="/student/analytics">
+            <Button className="bg-white text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View Analytics</Button>
+            </Link>
+          </div>
+          </div>
+        </header>
+>>>>>>> Stashed changes
 
           {/* Key Stats */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
