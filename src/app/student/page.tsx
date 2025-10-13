@@ -14,13 +14,12 @@ import {
 import { useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-const Link = ({ href, children, target, passHref, className }: { href: string; children: React.ReactNode; target?: string; passHref?: boolean; className?: string }) => <a href={href} target={target} className={className}>{children}</a>;
+
 import { useAuth } from "@/lib/hooks/useAuth";
 import axios from "axios";
 
 
-import { useAuth } from "@/lib/hooks/useAuth";
-import axios from "axios";
+
 
 
 const Link = ({
@@ -52,10 +51,7 @@ type Exam = {
   date: string;
   questions: QuestionPaper;
   isPublished: boolean;
-
-   publishedAt?: string; 
-
-  publishedAt?: string;
+  publishedAt?: string; 
 
 };
 type EvaluationDetail = {
@@ -87,10 +83,7 @@ export default function StudentDashboard() {
   const [finishedExams, setFinishedExams] = useState<Set<string>>(new Set()); 
   const [answers, setAnswers] = useState<{ [key: string]: string }>({});
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [submittedExams, setSubmittedExams] = useState<Set<string>>(new Set());
+  
 
   // Fetch submitted exams for this student
   useEffect(() => {
