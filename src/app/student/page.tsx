@@ -244,15 +244,7 @@ export default function StudentDashboard() {
   </div>
 </header>
 
-          </div>
-          <div className="mt-4 sm:mt-0">
-            <Link href="/student/results">
-              <Button className="bg-white text-teal-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
-                View All Results
-              </Button>
-            </Link>
-          </div>
-        </header>
+          
 
         {/* Key Stats */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
