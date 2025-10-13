@@ -3,10 +3,6 @@ import UserModel from "@/lib/models/User";
 import { connectDB } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
-import { NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { connectDB } from "@/lib/db";
-import UserModel from "@/lib/models/User";
 
 export async function PATCH(req: Request) {
   try {
