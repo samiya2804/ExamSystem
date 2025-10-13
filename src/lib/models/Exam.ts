@@ -36,7 +36,11 @@ const ExamSchema = new Schema(
             default: "draft",
         },
         isPublished: { type: Boolean, default: false },
+
            publishedAt: { type: Date, required: false },
+
+        publishedAt: { type: Date ,required:false},
+
 
         // This field stores the structure of the question paper for display
         questions: QuestionPaperSchema,

@@ -1,12 +1,20 @@
 
+
 "use client";
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
+
+"use client";
+
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useParams } from "next/navigation";
+
 import axios from "axios";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
 import { UploadCloud, Clock } from "lucide-react";
 
 // You must redefine your data types here or import them
@@ -189,3 +197,361 @@ if (!user && !authUserId) {
 };
 
 export default ExamTaker;
+
+import { UploadCloud, Clock, Loader2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+
+type Question = { Q_ID: string; question: string; options?: string[]; type?: string };
+type QuestionPaper = {
+  MCQs?: Question[];
+  Theory?: Question[];
+  Coding?: Question[];
+};
+type Exam = {
+  _id: string;
+  title: string;
+  subject: { name: string; code?: string };
+  duration: number;
+  questions: QuestionPaper;
+};
+
+type Answer = {
+  questionText: string;
+  studentAnswer: string;
+  marks: number;
+};
+
+export default function ExamTaker() {
+  const params = useParams();
+  const { user } = useAuth();
+  const examId = params.id as string;
+
+  const [exam, setExam] = useState<Exam | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Dialog states
+  const [showReloadDialog, setShowReloadDialog] = useState(false);
+  const [showSubmitDialog, setShowSubmitDialog] = useState(false);
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false);
+  const [answers, setAnswers] = useState<Answer[]>([]);
+
+  const authUserId =
+    user?.id || (typeof window !== "undefined" ? sessionStorage.getItem("temp_exam_student_id") : null);
+
+  // Fetch Exam
+  useEffect(() => {
+    async function fetchExam() {
+      try {
+        const res = await axios.get(`/api/exams/${examId}`);
+        const data: Exam = res.data;
+        setExam(data);
+        setTimeLeft(data.duration * 60);
+      } catch {
+        setError("Failed to load exam. It might not exist or be published.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (examId) fetchExam();
+  }, [examId]);
+
+  // Timer auto-submit
+  useEffect(() => {
+    if (!exam) return;
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleExamSubmission(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [exam]);
+
+  // Auto-save answers
+  useEffect(() => {
+    if (answers.length > 0)
+      localStorage.setItem(`exam_${examId}_answers`, JSON.stringify(answers));
+  }, [answers, examId]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(`exam_${examId}_answers`);
+    if (saved) setAnswers(JSON.parse(saved));
+  }, [examId]);
+
+  // Prevent accidental reload
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      setShowReloadDialog(true);
+      return "";
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
+
+  // Handle answer change with marks
+  const handleAnswerChange = (question: Question, studentAnswer: string) => {
+    const marks = question.type === "MCQ" ? 2 : question.type === "Theory" ? 10 : 10;
+
+    setAnswers((prev) => {
+      const existing = prev.find((a) => a.questionText === question.question);
+      if (existing) {
+        return prev.map((a) =>
+          a.questionText === question.question ? { questionText: question.question, studentAnswer, marks } : a
+        );
+      }
+      return [...prev, { questionText: question.question, studentAnswer, marks }];
+    });
+  };
+
+  // Submission
+  const handleExamSubmission = useCallback(
+    async (auto = false) => {
+      if (!exam || !authUserId) {
+        setError("Exam or user not found.");
+        return;
+      }
+
+      if (answers.length === 0) {
+        alert("You must answer at least one question before submitting.");
+        return;
+      }
+
+      if (!auto) {
+        setShowSubmitDialog(true);
+        return;
+      }
+
+      setSubmitting(true);
+      try {
+        const payload = {
+          examId: exam._id,
+          studentId: authUserId,
+          answers,
+        };
+        const res = await axios.post("/api/submit-exam", payload);
+        if (res.status === 201) {
+          localStorage.removeItem(`exam_${examId}_answers`);
+          setShowSuccessDialog(true);
+        }
+      } catch (err) {
+        console.error("Submission failed:", err);
+        if (axios.isAxiosError(err) && err.response?.status === 409) {
+          toast.error("⚠️ You have already submitted this exam!");
+        } else {
+          toast.error("❌ There was an error submitting your exam.");
+        }
+      } finally {
+        setSubmitting(false);
+      }
+    },
+    [exam, authUserId, answers, examId]
+  );
+
+  const formatTime = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m}:${s < 10 ? "0" : ""}${s}`;
+  };
+
+  const allQuestions = useMemo(() => {
+    if (!exam?.questions) return [];
+    const { MCQs = [], Theory = [], Coding = [] } = exam.questions;
+    return [
+      ...MCQs.map((q) => ({ ...q, type: "MCQ" })),
+      ...Theory.map((q) => ({ ...q, type: "Theory" })),
+      ...Coding.map((q) => ({ ...q, type: "Coding" })),
+    ];
+  }, [exam]);
+
+  if (loading)
+    return <div className="min-h-screen flex items-center justify-center text-gray-300 text-lg">Loading Exam...</div>;
+
+  if (error || !exam)
+    return <div className="min-h-screen flex items-center justify-center text-red-500">Error: {error || "Exam not found."}</div>;
+
+  return (
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
+        <div className="max-w-5xl mx-auto space-y-6">
+          {/* HEADER */}
+          <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-700 rounded-3xl shadow-2xl border border-gray-600">
+            <Button
+              onClick={() => handleExamSubmission(false)}
+              disabled={submitting}
+              className="flex items-center gap-2 font-semibold rounded-full bg-red-600 border border-red-800 hover:bg-red-700 text-white shadow-xl px-5 py-3 order-3 sm:order-1 mt-4 sm:mt-0"
+            >
+              {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <UploadCloud className="w-4 h-4" />}
+              {submitting ? "Submitting..." : "Finish Exam"}
+            </Button>
+
+            <div className="text-center flex-1 mt-4 sm:mt-0 order-1 sm:order-2">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-400 drop-shadow-md">
+                {exam.subject.name} Exam
+              </h1>
+            </div>
+
+            <div className="flex items-center space-x-2 text-red-600 font-bold bg-gradient-to-r from-red-200 to-red-100 px-5 py-2 rounded-full shadow-md mt-4 sm:mt-0 order-2 sm:order-3">
+              <Clock className="w-5 h-5" />
+              <span className="text-red-800">{formatTime(timeLeft)}</span>
+            </div>
+          </header>
+
+          {/* QUESTIONS */}
+          <section className="space-y-8">
+            {allQuestions.map((q, index) => (
+              <Card
+                key={q.Q_ID || index}
+                className="p-8 rounded-3xl shadow-xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700"
+              >
+                <CardHeader className="p-0 mb-6">
+                  <CardTitle className="text-xl font-bold text-blue-300">Question {index + 1}</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0 space-y-6">
+                  <p className="text-lg font-medium text-white">{q.question}</p>
+
+                  {/* MCQ */}
+                  {q.type === "MCQ" && q.options && (
+                    <div className="space-y-4">
+                      {q.options.map((option, optIndex) => (
+                        <div
+                          key={optIndex}
+                          className={`flex items-center space-x-3 p-4 border rounded-lg cursor-pointer ${
+                            answers.find((a) => a.questionText === q.question)?.studentAnswer === option
+                              ? "bg-blue-700 border-blue-400"
+                              : "bg-gray-800 border-gray-600 hover:bg-blue-700"
+                          }`}
+                          onClick={() => handleAnswerChange(q, option)}
+                        >
+                          <input
+                            type="radio"
+                            checked={answers.find((a) => a.questionText === q.question)?.studentAnswer === option}
+                            readOnly
+                            className="form-radio text-blue-500 w-4 h-4"
+                          />
+                          <label className="text-white font-medium flex-1 cursor-pointer">{option}</label>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* THEORY */}
+                  {q.type === "Theory" && (
+                    <textarea
+                      rows={8}
+                      placeholder="Write your answer..."
+                      value={answers.find((a) => a.questionText === q.question)?.studentAnswer || ""}
+                      onChange={(e) => handleAnswerChange(q, e.target.value)}
+                      className="w-full p-4 border border-gray-600 rounded-lg bg-gray-900 text-white placeholder-gray-300"
+                    />
+                  )}
+
+                  {/* CODING */}
+                  {q.type === "Coding" && (
+                    <textarea
+                      rows={12}
+                      placeholder="// Write your code here..."
+                      value={answers.find((a) => a.questionText === q.question)?.studentAnswer || ""}
+                      onChange={(e) => handleAnswerChange(q, e.target.value)}
+                      className="w-full font-mono p-4 border border-gray-600 rounded-lg bg-gray-950 text-green-400 placeholder-gray-400"
+                    />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+
+            <Button
+              onClick={() => handleExamSubmission(false)}
+              disabled={submitting}
+              className="w-full flex items-center justify-center gap-3 py-4 text-white font-bold cursor-pointer rounded-3xl shadow-lg bg-gradient-to-r from-blue-800 to-blue-900 hover:to-blue-800"
+            >
+              {submitting ? <Loader2 className="w-6 h-6 animate-spin" /> : <UploadCloud className="w-6 h-6" />}
+              {submitting ? "Submitting..." : "Submit Exam"}
+            </Button>
+          </section>
+        </div>
+      </div>
+
+      {/* 🔒 Reload Confirmation Dialog */}
+      <AlertDialog open={showReloadDialog} onOpenChange={setShowReloadDialog}>
+        <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              If you reload or leave this page, all unsaved answers may be lost. Please confirm before refreshing.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowReloadDialog(false)} className="bg-gray-700 text-gray-200 hover:bg-gray-600">
+              Stay on Page
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => window.location.reload()} className="bg-red-600 text-white hover:bg-red-700">
+              Reload Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ✅ Submit Confirmation Dialog */}
+      <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
+        <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to submit your exam? You won't be able to change your answers after submission.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setShowSubmitDialog(false)} className="bg-gray-700 text-gray-200 hover:bg-gray-600">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setShowSubmitDialog(false);
+                handleExamSubmission(true);
+              }}
+              className="bg-blue-600 text-white hover:bg-blue-700"
+            >
+              Yes, Submit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* ✅ Success Dialog */}
+      <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
+        <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
+          <AlertDialogHeader>
+            <AlertDialogTitle>✅ Exam Submitted</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your exam has been submitted successfully. Click below to close this tab.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => window.close()} className="bg-green-600 text-white hover:bg-green-700">
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
+  );
+}
+
