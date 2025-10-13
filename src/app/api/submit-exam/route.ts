@@ -1,6 +1,4 @@
 
-
-
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Submission from "@/lib/models/Submission";
@@ -78,4 +76,3 @@ export async function POST(req: Request) {
     );
   }
 }
-
