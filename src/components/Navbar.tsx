@@ -23,10 +23,16 @@ import {
 import { useAuth } from "@/lib/hooks/useAuth";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-
+import { usePathname } from "next/navigation"; 
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { user, loading, setUser } = useAuth(); // <-- loading added
+
+
+const pathname = usePathname();
+    if (pathname && pathname.startsWith("/student/exam/")) {
+    return null; // Return null to render nothing (hide the navbar)
+  }
 
   const handleLogout = async () => {
     try {
@@ -45,6 +51,14 @@ export default function Navbar() {
       toast.error("Something went wrong.");
     }
   };
+  const handleProtectedRoute = (path: string) => {
+  if (!user) {
+    toast("Please login first!");
+    window.location.href = "/login";
+  } else {
+    window.location.href = path;
+  }
+};
 
   return (
     <nav className="bg-gradient-to-r from-blue-800 to-blue-900 text-white shadow-lg border-b border-blue-700">
@@ -65,18 +79,19 @@ export default function Navbar() {
           >
             <Home className="w-5 h-5" /> Home
           </Link>
-          <Link
-            href="/exams"
-            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-          >
-            <BookOpen className="w-5 h-5" /> Exams
-          </Link>
-          <Link
-            href="/results"
-            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-          >
-            <BarChart2 className="w-5 h-5" /> Results
-          </Link>
+         <button
+    onClick={() => handleProtectedRoute("/exams")}
+    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+  >
+    <BookOpen className="w-5 h-5" /> Exams
+  </button>
+
+  <button
+    onClick={() => handleProtectedRoute("/student/results")}
+    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+  >
+    <BarChart2 className="w-5 h-5" /> Results
+  </button>
 
           {!loading && ( // <-- only render after loading
             <>
@@ -155,18 +170,19 @@ export default function Navbar() {
             >
               <Home className="w-5 h-5" /> Home
             </Link>
-            <Link
-              href="/exams"
-              className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-            >
-              <BookOpen className="w-5 h-5" /> Exams
-            </Link>
-            <Link
-              href="/results"
-              className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-            >
-              <BarChart2 className="w-5 h-5" /> Results
-            </Link>
+                <button
+    onClick={() => handleProtectedRoute("/exams")}
+    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+  >
+    <BookOpen className="w-5 h-5" /> Exams
+  </button>
+
+  <button
+    onClick={() => handleProtectedRoute("/student/results")}
+    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+  >
+    <BarChart2 className="w-5 h-5" /> Results
+  </button>
             <hr className="border-blue-600" />
 
             {!loading && (
