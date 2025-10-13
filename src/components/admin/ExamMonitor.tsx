@@ -1,97 +1,130 @@
-// components/admin/ExamMonitor.tsx
 "use client";
 
-import { Eye, Monitor } from "lucide-react";
-
-const ongoingExams = [
-  {
-    id: "E101",
-    title: "Computer Science Midterm",
-    course: "CS-101",
-    teacher: "Dr. Sarah Johnson",
-    start: "03:22 PM",
-    end: "06:22 PM",
-    total: 45,
-    active: 42,
-    submitted: 3,
-    remaining: "2h 0m",
-    alerts: [
-      { id: "A1", type: "warning", text: "Student switched tabs multiple times", student: "S001" },
-      { id: "A2", type: "info", text: "Low battery warning from mobile device", student: "S023" },
-    ],
-  },
-];
+import { useEffect, useState } from "react";
+import { Loader2, CalendarDays, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function ExamMonitor() {
-  return (
-    <div className="bg-gray-800 rounded-lg p-6 shadow-sm border">
-      <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-lg font-medium text-white">Active Exam Monitor</h3>
-          <p className="text-sm text-white">Real-time monitoring of ongoing examinations</p>
-        </div>
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState<string>(
+    new Date().toISOString().split("T")[0]
+  );
 
-        <div className="text-sm text-white">{new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</div>
+  const fetchData = async (date: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`/api/admin/exam-monitor?date=${date}`);
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData(selectedDate);
+  }, [selectedDate]);
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-40 text-gray-300">
+        <Loader2 className="w-6 h-6 animate-spin" />
+        <p className="ml-2">Loading exam monitor...</p>
+      </div>
+    );
+
+  const { kpis, exams } = data || {};
+
+  return (
+    <div className="bg-gray-900 p-6 rounded-lg shadow-md text-white border border-gray-800">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+        <h2 className="text-2xl font-semibold">Exam Monitor</h2>
+
+        <div className="flex items-center gap-3">
+          <CalendarDays className="w-5 h-5 text-gray-400" />
+          <input
+            type="date"
+            className="bg-gray-800 border border-gray-700 text-white rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+          />
+        </div>
       </div>
 
-      {ongoingExams.map((e) => (
-        <div key={e.id} className="border rounded-md p-4 bg-gray-800">
-          <div className="flex items-center justify-between">
-            <div>
-              <h4 className="font-semibold text-slate-800">{e.title}</h4>
-              <div className="text-sm text-white mt-1">{e.course} • {e.teacher} • {e.start} - {e.end}</div>
-            </div>
+      {/* KPI Section */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <KpiCard title="Total Exams" value={kpis.totalExams} />
+        <KpiCard title="Total Students" value={kpis.totalStudents} />
+        <KpiCard
+          title="Total Submissions"
+          value={kpis.totalSubmissions}
+          color="text-emerald-500"
+        />
+        <KpiCard
+          title="Unevaluated Exams"
+          value={kpis.totalUnevaluated}
+          color="text-yellow-500"
+        />
+      </div>
 
-            <div className="flex items-center gap-4 text-white">
-              <div className="flex items-center gap-2">
-                <Eye className="w-4 h-4" /> <span className="text-sm">View Details</span>
+      {/* Exam Details */}
+      {exams.length === 0 ? (
+        <p className="text-gray-400 text-center py-10">
+          No exams found for {selectedDate}.
+        </p>
+      ) : (
+        <div className="space-y-4">
+          {exams.map((exam: any) => (
+            <div
+              key={exam.id}
+              className="bg-gray-800 p-4 rounded-md border border-gray-700"
+            >
+              <div className="flex justify-between items-center mb-2">
+                <div>
+                  <h4 className="text-lg font-semibold">{exam.title}</h4>
+                  <p className="text-sm text-gray-400">
+                    {exam.subject} • {exam.faculty}
+                  </p>
+                </div>
+                <Button variant="ghost" className="text-gray-300">
+                  <Eye className="w-4 h-4 mr-1" /> View
+                </Button>
               </div>
-              <div className="flex items-center gap-2">
-                <Monitor className="w-4 h-4" />
-              </div>
-            </div>
-          </div>
 
-          <div className="mt-4">
-            <div className="h-3 bg-gray-700 rounded-full overflow-hidden border">
-              <div className="h-full bg-teal-600" style={{ width: `${(e.active / e.total) * 100}%` }} />
-            </div>
-            <div className="grid grid-cols-3 text-center mt-4">
-              <div>
-                <div className="text-2xl font-semibold text-white">{e.total}</div>
-                <div className="text-sm text-white">Total Students</div>
+              <div className="grid grid-cols-3 text-center mt-3">
+                <div>
+                  <p className="text-xl font-semibold">{exam.totalStudents}</p>
+                  <p className="text-xs text-gray-400">Unique Students</p>
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-emerald-500">
+                    {exam.totalSubmissions}
+                  </p>
+                  <p className="text-xs text-gray-400">Submissions</p>
+                </div>
+                <div>
+                  <p className="text-xl font-semibold text-yellow-500">
+                    {exam.unevaluated}
+                  </p>
+                  <p className="text-xs text-gray-400">Unevaluated</p>
+                </div>
               </div>
-              <div>
-                <div className="text-2xl font-semibold text-emerald-600">{e.active}</div>
-                <div className="text-sm text-white">Currently Active</div>
-              </div>
-              <div>
-                <div className="text-2xl font-semibold text-white">{e.submitted}</div>
-                <div className="text-sm text-white">Submitted</div>
-              </div>
             </div>
-
-            <div className="mt-4">
-              <h5 className="font-medium text-slate-800">Recent Alerts</h5>
-              <ul className="mt-2 space-y-3">
-                {e.alerts.map(a => (
-                  <li key={a.id} className="flex items-start gap-3">
-                    <div>
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center ${a.type === 'warning' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'}`}>!</div>
-                    </div>
-                    <div>
-                      <div className="text-sm font-medium text-white">{a.text}</div>
-                      <div className="text-xs text-white">Student ID: {a.student}</div>
-                    </div>
-                    <div className="ml-auto text-white">↗</div>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-          </div>
+          ))}
         </div>
-      ))}
+      )}
+    </div>
+  );
+}
+
+function KpiCard({ title, value, color }: { title: string; value: number; color?: string }) {
+  return (
+    <div className="bg-gray-800 p-4 rounded-lg text-center">
+      <h3 className="text-sm text-gray-400">{title}</h3>
+      <p className={`text-2xl font-bold ${color || "text-white"}`}>{value}</p>
     </div>
   );
 }

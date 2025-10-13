@@ -5,8 +5,29 @@ import UsersTable from "@/components/admin/UsersTable";
 import ExamMonitor from "@/components/admin/ExamMonitor";
 import ChartsPanel from "@/components/admin/ChartsPanel";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export default function AdminPage() {
+    const [stats, setStats] = useState({
+    totalStudents: 0,
+    totalActiveExams: 0,
+    totalUnevaluatedExams: 0,
+    totalSubmissions: 0,
+  });
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch("/api/admin/stats");
+        const data = await res.json();
+        setStats(data);
+      } catch (err) {
+        console.error("Failed to load admin stats:", err);
+      }
+    };
+    fetchStats();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <div className="flex flex-col p-4 sm:p-6 md:p-8">
@@ -65,31 +86,31 @@ export default function AdminPage() {
         {/* KPI Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
           <StatsCard
-            title="Total Users"
-            value="2,847"
-            subtitle="Active students and faculty"
-            trend="+12.5%"
+            title="Total Students"
+            value={stats.totalStudents.toString()}
+            subtitle="All registered students"
+            // trend="+12.5%"
             icon="users"
           />
           <StatsCard
             title="Active Exams"
-            value="23"
+            value={stats.totalActiveExams.toString()}
             subtitle="Currently running examinations"
-            trend="+3"
+            // trend="+3"
             icon="file"
           />
           <StatsCard
-            title="Platform Usage"
-            value="94.2%"
-            subtitle="System uptime this month"
-            trend="+2.1%"
+            title="Unevaluated Exams"
+            value={stats.totalUnevaluatedExams.toString()}
+            subtitle="Pending evaluation submissions"
+            // trend="+2.1%"
             icon="pulse"
           />
           <StatsCard
-            title="Storage Used"
-            value="67.8%"
-            subtitle="Of total allocated storage"
-            trend="-5.2%"
+            title="Total Submissions"
+            value={stats.totalSubmissions.toString()}
+            subtitle="All submitted Exams"
+            // trend="-5.2%"
             icon="database"
           />
         </div>
