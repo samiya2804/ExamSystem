@@ -1,4 +1,4 @@
-
+"use client"
 import * as React from "react"
 import { cn } from "@/lib/utils" // Assumes you have a utility function for class merging
 
