@@ -213,43 +213,36 @@ export default function StudentDashboard() {
       <MessageToast />
       <div className="max-w-7xl mx-auto space-y-12">
         {/* Header */}
-        <header className="p-8 bg-gradient-to-br from-indigo-900 to-gray-900 text-white rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center shadow-inner">
-              <span className="text-3xl font-bold text-blue-900">
-                {user?.firstName?.charAt(0)}
-                {user?.lastName?.charAt(0)}
-              </span>
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
-              <p className="text-sm opacity-90 mt-1">
-                Ready for your next challenge?
-              </p>
-            </div>
+       {/* Header */}
+<header className="p-8 bg-gradient-to-br from-indigo-900 to-gray-900 text-white rounded-3xl shadow-xl flex flex-col sm:flex-row items-center justify-between">
+  {/* Left - Avatar and Welcome */}
+  <div className="flex items-center space-x-4">
+    <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center shadow-inner">
+      <span className="text-3xl font-bold text-blue-300">
+        {user?.firstName?.charAt(0)}
+        {user?.lastName?.charAt(0)}
+      </span>
+    </div>
+    <div>
+      <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
+      <p className="text-sm opacity-90 mt-1">Ready for your next challenge?</p>
+    </div>
+  </div>
 
-            <div className="mt-4 sm:mt-0"><Link href="/student/results"><Button className="bg-white text-teal-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View All Results</Button></Link></div>
-          </header>
-
-            <div>
-              <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
-              <p className="text-sm opacity-90 mt-1">
-                Ready for your next challenge?
-              </p>
-            </div>
-          </div>
-       <div className="flex">
-            <div className="mt-4 sm:mt-0"><Link href="/student/results">
-            <Button className="bg-white text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View Results</Button>
-            
-            </Link>
-            </div>
-               <div className="mt-4 sm:mt-0 ml-4"><Link href="/student/analytics">
-            <Button className="bg-white text-blue-600 hover:bg-teal-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">View Analytics</Button>
-            </Link>
-          </div>
-          </div>
-        </header>
+  {/* Right - Buttons */}
+  <div className="mt-4 sm:mt-0 flex gap-3">
+    <Link href="/student/results">
+      <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
+        View Results
+      </Button>
+    </Link>
+    <Link href="/student/analytics">
+      <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
+        View Analytics
+      </Button>
+    </Link>
+  </div>
+</header>
 
           </div>
           <div className="mt-4 sm:mt-0">
