@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Edit3, Trash2, User } from "lucide-react";
 import {
   Dialog,
@@ -54,7 +54,7 @@ export default function UsersTable() {
     setLoading(true);
     try {
       const res = await fetch(`/api/users/${editUser._id}`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(editUser),
       });
@@ -91,22 +91,22 @@ export default function UsersTable() {
     setLoading(false);
   };
 
-  // Filter + Search
-const filteredUsers = users.filter((u) => {
-  const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
-  const searchMatch =
-    fullName.includes(searchTerm.toLowerCase()) ||
-    u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    u.username.includes(searchTerm.toLowerCase());
+  // ✅ Use useMemo for stable filtering
+  const filteredUsers = useMemo(() => {
+    return users.filter((u) => {
+      const fullName = `${u.firstName} ${u.lastName}`.toLowerCase();
+      const searchMatch =
+        fullName.includes(searchTerm.toLowerCase()) ||
+        u.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.username && u.username.toLowerCase().includes(searchTerm.toLowerCase()));
 
-  // Normalize role strings
-  const roleMatch = 
-    filterRole === "All" || 
-    (u.role && u.role.toLowerCase() === filterRole.toLowerCase());
+      const roleMatch =
+        filterRole === "All" ||
+        (u.role && u.role.toLowerCase() === filterRole.toLowerCase());
 
-  return searchMatch && roleMatch;
-});
-
+      return searchMatch && roleMatch;
+    });
+  }, [users, searchTerm, filterRole]);
 
   return (
     <div className="space-y-4 text-white">
@@ -154,12 +154,12 @@ const filteredUsers = users.filter((u) => {
               <tr key={u._id} className="bg-gray-800 text-white">
                 <td className="py-4 px-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gray-800 text-white flex items-center justify-center text-indigo-600">
-                      <User className="w-5 h-5" />
+                    <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center">
+                      <User className="w-5 h-5 text-indigo-400" />
                     </div>
                     <div>
-                      <div className="font-medium text-white">{u.firstName} {u.lastName}</div>
-                      <div className="text-sm text-white">{u.email}</div>
+                      <div className="font-medium">{u.firstName} {u.lastName}</div>
+                      <div className="text-sm text-gray-300">{u.email}</div>
                     </div>
                   </div>
                 </td>
@@ -169,13 +169,13 @@ const filteredUsers = users.filter((u) => {
 
                 <td className="py-4 px-4 text-right">
                   <div className="inline-flex items-center gap-3">
-                    <Dialog>
+                    {/* Edit Dialog */}
+                    <Dialog open={editUser?._id === u._id} onOpenChange={(open) => !open && setEditUser(null)}>
                       <DialogTrigger asChild>
-                        <button className="text-white hover:text-white" onClick={() => setEditUser(u)}>
+                        <button className="text-white hover:text-indigo-400" onClick={() => setEditUser(u)}>
                           <Edit3 className="w-4 h-4" />
                         </button>
                       </DialogTrigger>
-
                       {editUser && editUser._id === u._id && (
                         <DialogContent>
                           <DialogHeader>
@@ -184,38 +184,28 @@ const filteredUsers = users.filter((u) => {
                           <div className="space-y-4 py-4">
                             <Input
                               value={editUser.firstName}
-                              onChange={(e) =>
-                                setEditUser({ ...editUser, firstName: e.target.value })
-                              }
+                              onChange={(e) => setEditUser({ ...editUser, firstName: e.target.value })}
                               placeholder="First Name"
                             />
                             <Input
                               value={editUser.lastName}
-                              onChange={(e) =>
-                                setEditUser({ ...editUser, lastName: e.target.value })
-                              }
+                              onChange={(e) => setEditUser({ ...editUser, lastName: e.target.value })}
                               placeholder="Last Name"
                             />
                             <Input
                               value={editUser.email}
-                              onChange={(e) =>
-                                setEditUser({ ...editUser, email: e.target.value })
-                              }
+                              onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
                               placeholder="Email"
                             />
                             <Input
                               value={editUser.username}
-                              onChange={(e) =>
-                                setEditUser({ ...editUser, username: e.target.value })
-                              }
+                              onChange={(e) => setEditUser({ ...editUser, username: e.target.value })}
                               placeholder="Username"
                             />
                             <Input
                               type="password"
                               value={editUser.password || ""}
-                              onChange={(e) =>
-                                setEditUser({ ...editUser, password: e.target.value })
-                              }
+                              onChange={(e) => setEditUser({ ...editUser, password: e.target.value })}
                               placeholder="Password"
                             />
                           </div>
@@ -226,16 +216,21 @@ const filteredUsers = users.filter((u) => {
                       )}
                     </Dialog>
 
-                    <button
-                      className="text-red-500 hover:text-red-600"
-                      onClick={() => handleDelete(u._id)}
-                    >
+                    <button className="text-red-500 hover:text-red-600" onClick={() => handleDelete(u._id)}>
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
                 </td>
               </tr>
             ))}
+
+            {filteredUsers.length === 0 && (
+              <tr>
+                <td colSpan={4} className="text-center py-6 text-gray-400">
+                  No users found
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
