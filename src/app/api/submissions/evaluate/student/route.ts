@@ -5,7 +5,8 @@ import Submission, { ISubmission } from "@/lib/models/Submission";
 import ExamResult, { IExamResult } from "@/lib/models/ExamResult";
 import axios from "axios";
 
-const PYTHON_API_URL = "http://127.0.0.1:8000/api/v1/evaluate-submission";
+const PYTHON_API_URL = (process.env.NEXT_PUBLIC_EXAM_MODEL_URL || "http://127.0.0.1:8000") +
+  "/api/v1/evaulate-submission";
 
 type EvaluateRequest = {
   examId: string;
