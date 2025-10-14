@@ -1,0 +1,43 @@
+import mongoose, { Schema, Document } from "mongoose";
+
+export interface IExamResult extends Document {
+  examId: mongoose.Types.ObjectId;
+  studentId: mongoose.Types.ObjectId;
+  facultyId: mongoose.Types.ObjectId;
+  totalMarksObtained: number;
+  totalMaxMarks: number;
+  percentage: number;
+  feedback: string;
+  evaluationDetails: {
+    questionText: string;
+    scoreObtained: number;
+    maximumScore: number;
+    feedback: string;
+  }[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ExamResultSchema = new Schema<IExamResult>(
+  {
+    examId: { type: Schema.Types.ObjectId, ref: "Exam", required: true },
+    studentId: { type: Schema.Types.ObjectId, ref: "Student", required: true },
+    facultyId: { type: Schema.Types.ObjectId, ref: "Faculty", required: true },
+    totalMarksObtained: { type: Number, required: true },
+    totalMaxMarks: { type: Number, required: true },
+    percentage: { type: Number, required: true },
+    feedback: { type: String },
+    evaluationDetails: [
+      {
+        questionText: { type: String, required: true },
+        scoreObtained: { type: Number, required: true },
+        maximumScore: { type: Number, required: true },
+        feedback: { type: String },
+      },
+    ],
+  },
+  { timestamps: true }
+);
+
+export default mongoose.models.ExamResult ||
+  mongoose.model<IExamResult>("ExamResult", ExamResultSchema);
