@@ -5,7 +5,11 @@ import Submission, { ISubmission } from "@/lib/models/Submission";
 import ExamResult, { IExamResult } from "@/lib/models/ExamResult";
 import axios from "axios";
 
+
 const PYTHON_API_URL = `${process.env.NEXT_PUBLIC_EXAM_MODEL_URL}/api/v1/evaluate-submission`;  
+
+
+
 
 type EvaluateRequest = {
   examId: string;
