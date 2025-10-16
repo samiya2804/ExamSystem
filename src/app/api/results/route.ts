@@ -1,46 +1,49 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
-import Submission from "@/lib/models/Submission";
+import ExamResult from "@/lib/models/ExamResult";
 import Exam from "@/lib/models/Exam";
 import Subject from "@/lib/models/subject";
 
-export async function GET(req: Request) {
-    try {
-        await connectDB();
-        const url = new URL(req.url);
-        const studentId = url.searchParams.get("studentId");
+export const dynamic = "force-dynamic"; // optional, ensures latest data on each request
 
-        if (!studentId) {
-            return NextResponse.json({ error: "Missing studentId query parameter" }, { status: 400 });
-        }
+export async function GET(req: NextRequest) {
+  try {
+    await connectDB();
 
-        const results = await Submission.find({ 
-            studentId,
-            status: 'evaluated'
-        })
-        .sort({ createdAt: -1 })
-        .populate({
-            path: 'examId',
-            select: 'title subject',
-            populate: {
-                path: 'subject',
-                select: 'name code'
-            }
-        })
-        .lean(); // ✅ use lean for plain JS objects
+    const url = new URL(req.url);
+    const studentId = url.searchParams.get("studentId");
 
-        const formattedResults = results.map(sub => ({
-            _id: sub._id,
-            subject: sub.examId?.subject || { name: "Unknown", code: "" }, // ✅ fallback
-            student_id: sub.studentId,
-            total_score: sub.total_score ?? 0,
-            max_score: sub.max_score ?? 0,
-            evaluation_details: sub.evaluation_report?.evaluation_details || [],
-        }));
-
-        return NextResponse.json(formattedResults);
-    } catch (err: any) {
-        console.error("Results GET error:", err);
-        return NextResponse.json({ error: err.message || "Server error" }, { status: 500 });
+    if (!studentId) {
+      return NextResponse.json(
+        { error: "Missing studentId parameter" },
+        { status: 400 }
+      );
     }
+
+    // Fetch exam results and populate exam + subject details
+    const results = await ExamResult.find({ studentId })
+      .populate({
+        path: "examId",
+        model: Exam,
+        populate: {
+          path: "subject",
+          model: Subject,
+          select: "name",
+        },
+      })
+      .sort({ createdAt: -1 }) // latest first
+      .lean();
+    console.log(results);
+    if (!results || results.length === 0) {
+      return NextResponse.json([]);
+    }
+
+    return NextResponse.json(results);
+  } catch (error: any) {
+    console.error("Error fetching exam results:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch exam results", details: error.message },
+      { status: 500 }
+    );
+  }
 }

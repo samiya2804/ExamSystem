@@ -4,6 +4,7 @@ import Exam from "@/lib/models/Exam";
 import Submission from "@/lib/models/Submission";
 import Faculty from "@/lib/models/faculty";
 import User from "@/lib/models/User";
+import Subject from "@/lib/models/subject";
 
 
 interface ExamData {
