@@ -111,12 +111,16 @@ const pathname = usePathname();
                     align="end"
                     className="w-44 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
                   >
-                    <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
-                      <User className="w-4 h-4 text-blue-600" /> Profile
-                    </DropdownMenuItem>
+                  <Link href="/profile" passHref>
+          <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors duration-150">
+            <User className="w-4 h-4 text-blue-600" /> Profile
+          </DropdownMenuItem>
+        </Link>
+                       <Link href="/settings" passHref>
                     <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
                       <Settings className="w-4 h-4 text-blue-600" /> Settings
                     </DropdownMenuItem>
+                    </Link>
                     <DropdownMenuItem
                       className="flex items-center gap-2 p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
                       onClick={async () => {
@@ -155,68 +159,87 @@ const pathname = usePathname();
       </div>
 
       {/* Mobile Menu (Animated) */}
-      <AnimatePresence>
-        {menuOpen && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-gradient-to-br from-indigo-900 to-gray-900 px-6 py-4 space-y-4 overflow-hidden"
-          >
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-            >
-              <Home className="w-5 h-5" /> Home
-            </Link>
-                <button
-    onClick={() => handleProtectedRoute("/exams")}
-    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-  >
-    <BookOpen className="w-5 h-5" /> Exams
-  </button>
+   {/* Mobile Menu (Animated) */}
+<AnimatePresence>
+  {menuOpen && (
+    <motion.div
+      initial={{ height: 0, opacity: 0 }}
+      animate={{ height: "auto", opacity: 1 }}
+      exit={{ height: 0, opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      className="md:hidden bg-gradient-to-br from-indigo-900 to-gray-900 px-6 py-4 space-y-3 overflow-hidden"
+    >
+      <Link
+        href="/"
+        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+      >
+        <Home className="w-5 h-5 flex-shrink-0" /> 
+        <span className="truncate">Home</span>
+      </Link>
 
-  <button
-    onClick={() => handleProtectedRoute("/student/results")}
-    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-  >
-    <BarChart2 className="w-5 h-5" /> Results
-  </button>
-            <hr className="border-blue-600" />
+      <button
+        onClick={() => handleProtectedRoute("/exams")}
+        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+      >
+        <BookOpen className="w-5 h-5 flex-shrink-0" /> 
+        <span className="truncate">Exams</span>
+      </button>
 
-            {!loading && (
-              <>
-                {user ? (
-                  <div className="flex flex-col gap-2">
-                    <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
-                      <User className="w-5 h-5" /> Profile
-                    </button>
-                    <button className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors">
-                      <Settings className="w-5 h-5" /> Settings
-                    </button>
-                    <button
-                      className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200 transition-colors"
-                      onClick={handleLogout}
-                    >
-                      <LogOut className="w-5 h-5" /> Logout
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <Link
-                      href="/login"
-                      className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-                    >
-                      <User className="w-5 h-5" /> Login
-                    </Link>
-                  </div>
-                )}
-              </>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      <button
+        onClick={() => handleProtectedRoute("/student/results")}
+        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+      >
+        <BarChart2 className="w-5 h-5 flex-shrink-0" /> 
+        <span className="truncate">Results</span>
+      </button>
+
+      <hr className="border-blue-600" />
+
+      {!loading && (
+        <>
+          {user ? (
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors"
+              >
+                <User className="w-5 h-5 flex-shrink-0 text-blue-400" />
+                <span className="truncate">Profile</span>
+              </Link>
+
+              <Link
+                href="/settings"
+                className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors"
+              >
+                <Settings className="w-5 h-5 flex-shrink-0 text-blue-400" />
+                <span className="truncate">Settings</span>
+              </Link>
+
+              <button
+                className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200 transition-colors"
+                onClick={handleLogout}
+              >
+                <LogOut className="w-5 h-5 flex-shrink-0" />
+                <span>Logout</span>
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              <Link
+                href="/login"
+                className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+              >
+                <User className="w-5 h-5 flex-shrink-0" /> 
+                <span className="truncate">Login</span>
+              </Link>
+            </div>
+          )}
+        </>
+      )}
+    </motion.div>
+  )}
+</AnimatePresence>
+
     </nav>
   );
 }

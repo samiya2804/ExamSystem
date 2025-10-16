@@ -3,22 +3,48 @@ import UserModel from "@/lib/models/User";
 import { connectDB } from "@/lib/db";
 import bcrypt from "bcryptjs";
 
+export async function GET(req: Request, context: { params: Promise<{ id: string }>  }) {
 
-
-export async function PATCH(req: Request) {
+  const { id } =  await context.params; 
+  
+  if (!id) {
+    return NextResponse.json({ error: "Missing user ID" }, { status: 400 });
+  }
+  
   try {
     await connectDB();
+    const user = await UserModel.findById(id).select("-password");
 
-    // ✅ Extract id from URL manually (no second arg)
-    const url = new URL(req.url);
-    const id = url.pathname.split("/").pop();
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+    return NextResponse.json(user, { status: 200 });
+
+  } catch (err: any) {
+    console.error("GET /api/users/[id] error:", err);
+    return NextResponse.json({ error: err.message || "Failed to fetch user" }, { status: 500 });
+  }
+}
+
+
+export async function PATCH(req: Request , context: { params: Promise<{ id: string }> }) {
+  try {
+    await connectDB();
+    // const id = url.pathname.split("/").pop();
+    const {id} =  await context.params;
 
     if (!id) {
       return NextResponse.json({ error: "Missing user ID" }, { status: 400 });
     }
 
+    console.log("PATCH request for user ID:", id);
+
     const data = await req.json();
-    const { firstName, lastName, email, role, status, password, username } = data;
+    const { firstName, lastName, email, role, status, password, username,
+        // --- NEW DESTRUCTURED FIELDS ---
+        phone, address, zipCode, country, language 
+
+     } = data;
 
     // Build update object dynamically
     const updateData: Record<string, any> = {};
@@ -28,6 +54,11 @@ export async function PATCH(req: Request) {
     if (role) updateData.role = role;
     if (status) updateData.status = status;
     if (username) updateData.username = username;
+        if (phone !== undefined) updateData.phone = phone;
+    if (address !== undefined) updateData.address = address;
+    if (zipCode !== undefined) updateData.zipCode = zipCode;
+    if (country !== undefined) updateData.country = country;
+    if (language !== undefined) updateData.language = language;
 
     if (password) {
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -39,6 +70,7 @@ export async function PATCH(req: Request) {
     if (!updatedUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
+    console.log("Update data sent to DB:", updateData);
 
     return NextResponse.json({ message: "User updated successfully", user: updatedUser }, { status: 200 });
   } catch (err) {
@@ -73,7 +105,3 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
   }
 }
-
-
-
-
