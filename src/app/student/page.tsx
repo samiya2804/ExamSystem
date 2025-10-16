@@ -105,8 +105,8 @@ export default function StudentDashboard() {
         );
         setAvailableExams(publishedExams);
 
-        const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
-        setPastResults(resultsResponse.data);
+        // const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
+        // setPastResults(resultsResponse.data);
       } catch (err) {
         console.error("Failed to fetch dashboard data", err);
         setError("Failed to load dashboard data.");
@@ -188,7 +188,7 @@ export default function StudentDashboard() {
             </div>
 
             <div className="mt-4 sm:mt-0 flex gap-3">
-              <Link href="/student/results">
+              <Link href={`/student/results/${user?.id}`}>
                 <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
                   View Results
                 </Button>

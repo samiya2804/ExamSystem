@@ -28,7 +28,7 @@ type EvaluationDetail = {
   questionText: string;
   scoreObtained: number;
   maximumScore: number;
-    studentAnswer?: string;
+  studentAnswer?: string;
   feedback: string;
 };
 
@@ -72,11 +72,7 @@ export default function ExamResultsPage() {
   const handleEvaluateSubmission = async (studentId: string) => {
     setEvaluatingId(studentId);
     try {
-      const res = await axios.post(`/api/submissions/evaluate/student`, {
-        examId,
-        studentId,
-      });
-
+      await axios.post(`/api/submissions/evaluate/student`, { examId, studentId });
       alert("✅ Evaluation Complete!");
       fetchSubmissions();
     } catch (err) {
@@ -87,25 +83,24 @@ export default function ExamResultsPage() {
     }
   };
 
-  const handleViewResult = (submission: Submission) => {
+  const handleViewResult = async (submission: Submission) => {
     setSelectedSubmission(submission);
-    setEditingReport(submission.evaluation_report?.evaluation_details || []);
-  };
-
-  const handleUpdateMarks = async () => {
-    if (!selectedSubmission) return;
     try {
-      const res = await axios.put(`/api/update-result`, {
-        submissionId: selectedSubmission._id,
-        updatedReport: editingReport,
-      });
-
-      alert("✅ Marks updated successfully!");
-      fetchSubmissions();
-      setSelectedSubmission(null);
+      // Fetch evaluation details if not already available
+      if (!submission.evaluation_report?.evaluation_details) {
+        const res = await axios.get(`/api/exam-results/${submission._id}`);
+        const { submission: subData, examResult } = res.data;
+        const merged = examResult.evaluationDetails.map((q: any, i: number) => ({
+          ...q,
+          studentAnswer: subData.answers[i]?.studentAnswer || "",
+        }));
+        setEditingReport(merged);
+      } else {
+        setEditingReport(submission.evaluation_report.evaluation_details || []);
+      }
     } catch (err) {
-      console.error("Update failed:", err);
-      alert("Failed to update marks.");
+      console.error(err);
+      alert("Failed to fetch result");
     }
   };
 
@@ -113,19 +108,16 @@ export default function ExamResultsPage() {
     return <div className="p-10 text-center text-white">Loading submissions...</div>;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-gray-100 p-6">
+    <div className="min-h-screen bg-slate-950 text-gray-100 p-4 sm:p-6 lg:p-10">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 gap-4">
         <div className="flex items-center gap-3">
           <Link href="/faculty">
-            <Button
-              variant="ghost"
-              className="bg-transparent border border-gray-700"
-            >
+            <Button variant="ghost" className="bg-transparent border border-gray-700">
               <ArrowLeft className="w-4 h-4" />
             </Button>
           </Link>
-          <h1 className="text-2xl font-bold">Exam Submissions ({examId})</h1>
+          <h1 className="text-xl sm:text-2xl font-bold">Exam Submissions ({examId})</h1>
         </div>
         <Button
           onClick={fetchSubmissions}
@@ -180,20 +172,20 @@ export default function ExamResultsPage() {
                   {sub.status === "evaluated" ? (
                     <Button
                       onClick={() => handleViewResult(sub)}
-                      className="bg-indigo-600 hover:bg-indigo-500"
+                      className="bg-indigo-600 hover:bg-indigo-500 w-full flex items-center justify-center gap-1"
                     >
-                      <Eye className="w-4 h-4 mr-1" /> View Result
+                      <Eye className="w-4 h-4" /> View Result
                     </Button>
                   ) : (
                     <Button
                       onClick={() => handleEvaluateSubmission(sub.studentId)}
                       disabled={evaluatingId === sub.studentId}
-                      className="bg-teal-600 hover:bg-teal-500"
+                      className="bg-teal-600 hover:bg-teal-500 w-full flex items-center justify-center gap-1"
                     >
                       {evaluatingId === sub.studentId ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
                       ) : (
-                        <BarChart2 className="w-4 h-4 mr-1" />
+                        <BarChart2 className="w-4 h-4" />
                       )}
                       Evaluate
                     </Button>
@@ -203,10 +195,7 @@ export default function ExamResultsPage() {
             ))}
             {submissions.length === 0 && (
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center text-gray-500 py-8"
-                >
+                <TableCell colSpan={5} className="text-center text-gray-500 py-8">
                   No submissions yet for this exam.
                 </TableCell>
               </TableRow>
@@ -217,114 +206,92 @@ export default function ExamResultsPage() {
 
       {/* Evaluation Modal */}
       <Dialog
-  open={!!selectedSubmission}
-  onOpenChange={() => setSelectedSubmission(null)}
->
-  <DialogContent className="bg-gray-900 text-gray-100 max-w-4xl">
-    <DialogHeader>
-      <DialogTitle>
-        Evaluation Report – Student: {selectedSubmission?.studentId}
-      </DialogTitle>
-    </DialogHeader>
+        open={!!selectedSubmission}
+        onOpenChange={() => setSelectedSubmission(null)}
+      >
+        <DialogContent className="bg-gray-900 text-gray-100 max-w-4xl w-[90vw] sm:w-[80vw] lg:w-[60vw] max-h-[90vh] overflow-y-auto rounded-2xl p-6 shadow-xl">
+          <DialogHeader>
+            <DialogTitle>
+              Evaluation Report – Student: {selectedSubmission?.studentId}
+            </DialogTitle>
+          </DialogHeader>
 
-    <div className="space-y-4 max-h-[70vh] overflow-y-auto p-4">
-      {editingReport.length === 0 ? (
-        <Button
-          onClick={async () => {
-            if (!selectedSubmission) return;
-            try {
-              const res = await axios.get(`/api/exam-results/${selectedSubmission._id}`);
-              const { submission, examResult } = res.data;
-              const merged = examResult.evaluationDetails.map((q: any, i: number) => ({
-                ...q,
-                studentAnswer: submission.answers[i]?.studentAnswer || "",
-              }));
-              setEditingReport(merged);
-            } catch (err) {
-              console.error(err);
-              alert("Failed to fetch result");
-            }
-          }}
-          className="bg-indigo-600 hover:bg-indigo-500"
-        >
-          Load Result
-        </Button>
-      ) : (
-        editingReport.map((q, idx) => (
-          <div key={idx} className="border border-gray-700 rounded-lg p-4">
-            <p className="font-semibold text-indigo-400">
-              Q{idx + 1}: {q.questionText}
-            </p>
-            <p className="text-sm text-gray-300 mb-2">
-              <strong>Student Answer:</strong> {q.studentAnswer}
-            </p>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-sm text-gray-400">Score</label>
-                <Input
-                  type="number"
-                  value={q.scoreObtained}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setEditingReport((prev) =>
-                      prev.map((item, i) => (i === idx ? { ...item, scoreObtained: val } : item))
-                    );
-                  }}
-                />
+          <div className="space-y-4 mt-4">
+            {editingReport.map((q, idx) => (
+              <div key={idx} className="border border-gray-700 rounded-lg p-4">
+                <p className="font-semibold text-indigo-400">
+                  Q{idx + 1}: {q.questionText}
+                </p>
+                <p className="text-sm text-gray-300 mb-2">
+                  <strong>Student Answer:</strong> {q.studentAnswer}
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-sm text-gray-400">Score</label>
+                    <Input
+                      type="number"
+                      value={q.scoreObtained}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        setEditingReport((prev) =>
+                          prev.map((item, i) =>
+                            i === idx ? { ...item, scoreObtained: val } : item
+                          )
+                        );
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400">Max Marks</label>
+                    <Input value={q.maximumScore} disabled />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <label className="text-sm text-gray-400">Feedback</label>
+                  <Textarea
+                    value={q.feedback}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setEditingReport((prev) =>
+                        prev.map((item, i) => (i === idx ? { ...item, feedback: val } : item))
+                      );
+                    }}
+                  />
+                </div>
               </div>
-              <div>
-                <label className="text-sm text-gray-400">Max Marks</label>
-                <Input value={q.maximumScore} disabled />
-              </div>
-            </div>
-            <div className="mt-3">
-              <label className="text-sm text-gray-400">Feedback</label>
-              <Textarea
-                value={q.feedback}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setEditingReport((prev) =>
-                    prev.map((item, i) => (i === idx ? { ...item, feedback: val } : item))
-                  );
-                }}
-              />
-            </div>
+            ))}
           </div>
-        ))
-      )}
-    </div>
 
-    <DialogFooter className="mt-4 flex gap-2">
-      <Button
-        onClick={async () => {
-          if (!selectedSubmission) return;
-          try {
-            await axios.put(`/api/exam-results/${selectedSubmission._id}`, {
-              submissionId: selectedSubmission._id,
-              updatedReport: editingReport,
-            });
-            alert("✅ Updated successfully!");
-            fetchSubmissions();
-            setSelectedSubmission(null);
-          } catch (err) {
-            console.error(err);
-            alert("Failed to save updates");
-          }
-        }}
-        className="bg-green-600 hover:bg-green-500"
-      >
-        Save Updates
-      </Button>
-      <Button
-        onClick={() => setSelectedSubmission(null)}
-        className="bg-gray-700"
-      >
-        Close
-      </Button>
-    </DialogFooter>
-    </DialogContent>
-</Dialog>
-
+          <DialogFooter className="mt-4 flex flex-col sm:flex-row gap-2">
+            <Button
+              onClick={async () => {
+                if (!selectedSubmission) return;
+                try {
+                  await axios.put(`/api/exam-results/${selectedSubmission._id}`, {
+                    submissionId: selectedSubmission._id,
+                    updatedReport: editingReport,
+                  });
+                  alert("✅ Updated successfully!");
+                  fetchSubmissions();
+                  setSelectedSubmission(null);
+                } catch (err) {
+                  console.error(err);
+                  alert("Failed to save updates");
+                }
+              }}
+              className="bg-green-600 hover:bg-green-500 w-full sm:w-auto"
+            >
+              Save Updates
+            </Button>
+            <Button
+              onClick={() => setSelectedSubmission(null)}
+              className="bg-gray-700 w-full sm:w-auto"
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
