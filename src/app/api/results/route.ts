@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Submission from "@/lib/models/Submission";
+import Exam from "@/lib/models/Exam";
+import Subject from "@/lib/models/subject";
 
 export async function GET(req: Request) {
     try {
