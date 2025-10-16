@@ -153,8 +153,9 @@ export default function StudentDashboard() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p>Loading dashboard...</p>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
+        <p>Loading dashboard...</p><br />
+        <p>If you didn't see any data then please login again...</p>
       </div>
     );
   if (error)

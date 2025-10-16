@@ -3,12 +3,14 @@
 import StatsCard from "@/components/admin/StatsCard";
 import UsersTable from "@/components/admin/UsersTable";
 import ExamMonitor from "@/components/admin/ExamMonitor";
-import ChartsPanel from "@/components/admin/ChartsPanel";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import Link from "next/link";import { useEffect, useState } from "react";
+import { BarChart3 } from "lucide-react"; // optional icon
+
+
+
 
 export default function AdminPage() {
-    const [stats, setStats] = useState({
+  const [stats, setStats] = useState({
     totalStudents: 0,
     totalActiveExams: 0,
     totalUnevaluatedExams: 0,
@@ -28,6 +30,7 @@ export default function AdminPage() {
     fetchStats();
   }, []);
 
+
   return (
     <div className="min-h-screen bg-gray-950 text-gray-100">
       <div className="flex flex-col p-4 sm:p-6 md:p-8">
@@ -44,23 +47,11 @@ export default function AdminPage() {
 
           {/* Action Menu */}
           <div className="flex flex-wrap gap-2 sm:gap-3">
-            {/* <Link
-              href="/admin"
-              className="px-3 sm:px-4 py-2 bg-gray-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
-            >
-              Dashboard
-            </Link> */}
             <Link
               href="/admin/question-bank"
               className="px-3 sm:px-4 py-2 bg-indigo-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
             >
               Question Bank
-            </Link>
-            <Link
-              href="/admin/analytics"
-              className="px-3 sm:px-4 py-2 bg-indigo-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
-            >
-              Analytics
             </Link>
             <Link
               href="/admin/addFaculty"
@@ -84,11 +75,11 @@ export default function AdminPage() {
         </div>
 
         {/* KPI Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 sm:gap-6 mb-8">
           <StatsCard
-            title="Total Students"
+            title="Total Student"
             value={stats.totalStudents.toString()}
-            subtitle="All registered students"
+            subtitle="Active students"
             // trend="+12.5%"
             icon="users"
           />
@@ -96,29 +87,48 @@ export default function AdminPage() {
             title="Active Exams"
             value={stats.totalActiveExams.toString()}
             subtitle="Currently running examinations"
-            // trend="+3"
+            // trend="+3%"
             icon="file"
           />
           <StatsCard
             title="Unevaluated Exams"
             value={stats.totalUnevaluatedExams.toString()}
-            subtitle="Pending evaluation submissions"
+            subtitle="Pending evaluation"
             // trend="+2.1%"
+            icon="pulse"
+          />
+          <StatsCard
+            title="Submissions"
+            value={stats.totalSubmissions.toString()}
+            subtitle="All submitted exams"
+            icon="file"
+          />
+          {/* <StatsCard
+            title="Unevaluated Exams"
+            value={stats.totalUnevaluatedExams.toString()}
+            subtitle="Pending evaluation"
             icon="pulse"
           />
           <StatsCard
             title="Total Submissions"
             value={stats.totalSubmissions.toString()}
-            subtitle="All submitted Exams"
-            // trend="-5.2%"
+            subtitle="All submitted exams"
             icon="database"
-          />
+          /> */}
+
+          {/* New "Show Analytics" Card */}
+          <Link href="/admin/graphs">
+            <div className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-md text-white flex flex-col justify-center items-center text-center p-6 transition-all duration-300 cursor-pointer border border-black">
+              <BarChart3 className="w-8 h-8 mb-3" />
+              <h3 className="text-lg font-semibold">View Analytics</h3>
+              <p className="text-sm opacity-90">Detailed insights & trends</p>
+            </div>
+          </Link>
         </div>
 
-        {/* User Management + Charts */}
+        {/* User Management + Exam Monitor */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
-            {/* User Management (table) */}
+          <div className="lg:col-span-3 space-y-6">
             <div className="bg-gray-900 rounded-lg shadow-md p-4 sm:p-6 border border-gray-800 overflow-x-auto">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
                 <div>
@@ -133,14 +143,10 @@ export default function AdminPage() {
               <UsersTable />
             </div>
 
-            {/* Exam Monitor */}
             <ExamMonitor />
           </div>
 
-          {/* Right column charts */}
-          <div className="space-y-6">
-            <ChartsPanel />
-          </div>
+          {/* Removed ChartsPanel (moved to /admin/analytics) */}
         </div>
       </div>
     </div>
