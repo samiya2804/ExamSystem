@@ -13,7 +13,6 @@ import {
   ChevronUp,
   ChevronDown,
   Bell,
-  MailOpen
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -87,13 +86,7 @@ const pathname = usePathname();
           >
             <Bell className="w-5 h-5" /> Notifications
           </Link>
-          <Link
-            href="/contact"
-            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-          >
-            <MailOpen className="w-5 h-5" /> Grievance
-
-          </Link>
+          
          <button
     onClick={() => handleProtectedRoute("/exams")}
     className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
