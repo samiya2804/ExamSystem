@@ -13,9 +13,9 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
-import { ChevronLeft, BookOpen, Clock, Loader2, Hourglass, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, BookOpen, Clock, Loader2, Hourglass, CheckCircle2 , TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-
+import { useRouter } from "next/navigation";
 type EvaluationDetail = {
   questionText: string;
   scoreObtained: number;
@@ -37,7 +37,7 @@ type Submission = {
 export default function StudentResultsPage() {
   const params = useParams();
   const studentId = params?.id;
-
+const router = useRouter();
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -108,12 +108,26 @@ export default function StudentResultsPage() {
           transition={{ duration: 0.4 }}
           className="bg-gradient-to-r from-blue-700 via-cyan-700 to-blue-900 rounded-3xl p-8 shadow-xl"
         >
-          <Button
+        <div className="flex justify-between items-center mb-4"> {/* ADDED WRAPPER DIV */}
+        <Button
             onClick={handleBack}
-            className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 rounded-full px-4 py-2 transition-all mb-4"
-          >
+            className="flex items-center gap-2 bg-blue-500/20 hover:bg-blue-500/30 text-blue-100 rounded-full px-4 py-2 transition-all"
+        >
             <ChevronLeft className="w-5 h-5" /> Back to Dashboard
-          </Button>
+        </Button>
+        {/* ADDED NEW ANALYTICS BUTTON */}
+        {!loading && submissions.length > 0 && (
+            // Note: Assuming your Next.js route is /student/analytics/[id]
+            <Button
+                onClick={() => router.push(`/student/analytics/${studentId}`)} 
+                className="flex items-center gap-2 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-100 rounded-full px-4 py-2 transition-all"
+            >
+                <TrendingUp className="w-5 h-5" /> View Analytics
+            </Button>
+        )}
+    </div>
+
+
           <h1 className="text-4xl font-bold text-white">Your Exam Results</h1>
           <p className="text-blue-200 text-lg mt-2">Subject-wise performance overview</p>
         </motion.header>

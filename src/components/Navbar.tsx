@@ -12,6 +12,7 @@ import {
   BarChart2,
   ChevronUp,
   ChevronDown,
+  Bell,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -78,6 +79,12 @@ const pathname = usePathname();
             className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
           >
             <Home className="w-5 h-5" /> Home
+          </Link>
+          <Link
+            href="/notifications"
+            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+          >
+            <Bell className="w-5 h-5" /> Notifications
           </Link>
          <button
     onClick={() => handleProtectedRoute("/exams")}
@@ -176,7 +183,13 @@ const pathname = usePathname();
         <Home className="w-5 h-5 flex-shrink-0" /> 
         <span className="truncate">Home</span>
       </Link>
-
+    <Link
+        href="/notifications"
+        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
+      >
+        <Bell className="w-5 h-5 flex-shrink-0" /> 
+        <span className="truncate">Notifications</span>
+      </Link>
       <button
         onClick={() => handleProtectedRoute("/exams")}
         className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"

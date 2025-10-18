@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useParams } from "next/navigation";
+import { useRef } from "react";
 import axios from "axios";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -41,9 +42,21 @@ export default function ExamTaker() {
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
+const [showInstructions, setShowInstructions] = useState(true);
+const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+const [tabSwitchCount, setTabSwitchCount] = useState(0);
+const videoRef = useRef<HTMLVideoElement>(null);
+const [isProctoringStarted, setIsProctoringStarted] = useState(false);
 
   const authUserId =
     user?.id || (typeof window !== "undefined" ? sessionStorage.getItem("temp_exam_student_id") : null);
+
+
+    useEffect(() => {
+  if (videoRef.current) {
+    console.log("🎬 Video element ready:", videoRef.current);
+  }
+}, []);
 
   // --- Fetch Exam ---
   useEffect(() => {
@@ -78,9 +91,144 @@ export default function ExamTaker() {
     return () => clearInterval(timer);
   }, [exam]);
 
+
+  //camera access and full screen
+
+  useEffect(() => {
+  // Disable copy, paste, right-click, inspect
+  const disableActions = (e: any) => e.preventDefault();
+  document.addEventListener("contextmenu", disableActions);
+  document.addEventListener("copy", disableActions);
+  document.addEventListener("cut", disableActions);
+  document.addEventListener("paste", disableActions);
+  document.onkeydown = function (e) {
+    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) return false;
+  };
+
+  // Detect tab change / visibility loss
+  const handleVisibility = () => {
+    if (document.hidden) {
+      setTabSwitchCount((prev) => prev + 1);
+    }
+  };
+  document.addEventListener("visibilitychange", handleVisibility);
+
+  return () => {
+    document.removeEventListener("contextmenu", disableActions);
+    document.removeEventListener("copy", disableActions);
+    document.removeEventListener("cut", disableActions);
+    document.removeEventListener("paste", disableActions);
+    document.removeEventListener("visibilitychange", handleVisibility);
+  };
+}, []);
+
+//auto submit on tab switch
+
+useEffect(() => {
+  if (tabSwitchCount === 1) {
+    toast.warning("⚠️ Warning: You switched tabs. Next time will auto-submit your exam!");
+  } else if (tabSwitchCount >= 2) {
+    toast.warning("⚠️ You switched tabs twice. Auto-submitting exam...");
+    handleExamSubmission(true);
+  }
+}, [tabSwitchCount]);
+
+
+
+
+//request for camera access
+
+const startProctoring = async () => {
+  try {
+    console.log("🎥 Requesting camera access...");
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { width: 320, height: 240, facingMode: "user" },
+    });
+
+    if (!videoRef.current) {
+      console.error("❌ videoRef is null — cannot attach stream.");
+      return;
+    }
+
+    // Attach and play
+    videoRef.current.srcObject = stream;
+    setCameraStream(stream);
+
+    // Try multiple times to start the feed (for autoplay issues)
+    const tryPlay = async () => {
+      try {
+        await videoRef.current?.play();
+        console.log("✅ Camera feed playing successfully");
+      } catch (err) {
+        console.warn("Retrying video play due to autoplay restriction...");
+        setTimeout(tryPlay, 1000);
+      }
+    };
+    tryPlay();
+
+    // Fullscreen
+    if (document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  } catch (err) {
+    console.error("Camera access error:", err);
+    alert("Camera access denied or not available. Please enable your webcam and refresh.");
+  }
+};
+
+
+useEffect(() => {
+  const initCamera = async () => {
+    if (!isProctoringStarted || !videoRef.current) return;
+
+    try {
+      console.log("🎥 Starting live camera after render...");
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 320, height: 240, facingMode: "user" },
+      });
+
+      videoRef.current.srcObject = stream;
+      setCameraStream(stream);
+
+      await videoRef.current.play().catch((err) => {
+        console.warn("Autoplay blocked, retrying...", err);
+        setTimeout(() => videoRef.current?.play(), 1000);
+      });
+
+      console.log("✅ Camera live inside box now.");
+    } catch (err) {
+      console.error("Camera error:", err);
+      alert("Camera access denied or unavailable. Please allow webcam.");
+    }
+
+      if (document.documentElement.requestFullscreen) {
+      await document.documentElement.requestFullscreen();
+    }
+  };
+
+  initCamera();
+}, [isProctoringStarted]);
+
+
+
+
+
+
+useEffect(() => {
+  navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+    stream.getTracks().forEach((t) => t.stop()); 
+  }).catch(() => {
+    console.warn("User denied camera permission initially");
+  });
+}, []);
+
+
+
+
+
   // --- Save/Load Answers ---
   useEffect(() => {
-    if (answers.length > 0)
+    if (answers.length >= 0)
       localStorage.setItem(`exam_${examId}_answers`, JSON.stringify(answers));
   }, [answers, examId]);
 
@@ -122,10 +270,10 @@ export default function ExamTaker() {
         return;
       }
 
-      if (answers.length === 0) {
-        alert("You must answer at least one question before submitting.");
-        return;
-      }
+      // if (answers.length === 0) {
+      //   alert("You must answer at least one question before submitting.");
+      //   return;
+      // }
 
       if (!auto) {
         setShowSubmitDialog(true);
@@ -179,6 +327,31 @@ export default function ExamTaker() {
 
   return (
     <>
+
+    {showInstructions && (
+  <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
+    <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
+      <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
+      <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
+        <li>Keep your camera on throughout the exam.</li>
+        <li>Switching tabs more than twice will auto-submit.</li>
+        <li>Do not reload, copy, or leave fullscreen.</li>
+        <li>Submit before time ends — auto-submit when time runs out.</li>
+      </ul>
+ <Button
+  onClick={() => {
+    setShowInstructions(false);
+    setIsProctoringStarted(true); // 👈 Add this new state trigger
+  }}
+  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
+>
+  I’m Ready
+</Button>
+
+    </div>
+  </div>
+)}
+
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
         <div className="max-w-5xl mx-auto space-y-6">
           <header className="flex flex-col sm:flex-row items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-700 rounded-3xl shadow-2xl border border-gray-600">
@@ -269,7 +442,23 @@ export default function ExamTaker() {
             </Button>
           </section>
         </div>
-      </div>
+     
+<div className="fixed bottom-5 right-5 w-32 h-32 sm:w-40 sm:h-40 bg-black border-2 border-blue-500 rounded-lg overflow-hidden shadow-lg z-[9999] flex items-center justify-center">
+  <video
+    ref={videoRef}
+    autoPlay
+    playsInline
+    muted
+    className="w-full h-full object-cover"
+    style={{ transform: "scaleX(-1)" }}
+  />
+  {!cameraStream && (
+    <span className="text-xs text-gray-400 absolute">Loading camera...</span>
+  )}
+</div>
+
+
+</div>
 
 
       {/* 🔒 Reload Confirmation Dialog */}
@@ -298,7 +487,7 @@ export default function ExamTaker() {
           <AlertDialogHeader>
             <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to submit your exam? You won't be able to change your answers after submission.
+              Are you sure you want to submit your exam? You won&lsquo;t be able to change your answers after submission.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
