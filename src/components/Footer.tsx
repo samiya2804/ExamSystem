@@ -28,6 +28,13 @@ export default function Footer() {
           >
             Visit Us
           </a>
+          <a
+            href="/contact"
+            
+            className="hover:text-white transition-colors"
+          >
+            Contact Us
+          </a>
         </div>
       </div>
     </footer>

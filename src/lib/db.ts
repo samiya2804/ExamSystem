@@ -1,5 +1,10 @@
 import mongoose from "mongoose";
 
+import "@/lib/models/Exam";
+import "@/lib/models/Submission";
+import "@/lib/models/faculty"; // ✅ always lowercase if filename is lowercase
+import "@/lib/models/subject"; // ✅ always lowercase if filename is lowercase
+import "@/lib/models/User";
 const MONGODB_URI = process.env.MONGODB_URI || "";
 
 if (!MONGODB_URI) {

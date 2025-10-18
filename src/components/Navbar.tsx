@@ -86,6 +86,7 @@ const pathname = usePathname();
           >
             <Bell className="w-5 h-5" /> Notifications
           </Link>
+          
          <button
     onClick={() => handleProtectedRoute("/exams")}
     className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
