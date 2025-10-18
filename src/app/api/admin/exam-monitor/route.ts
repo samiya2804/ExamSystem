@@ -32,7 +32,7 @@ export async function GET(req: Request) {
     end.setHours(23, 59, 59, 999);
 
     const exams = await Exam.find({ createdAt: { $gte: start, $lte: end } })
-      .populate("subject")
+      .populate("subject" , "name code")
       .lean();
 
     const examData: ExamData[] = await Promise.all(
