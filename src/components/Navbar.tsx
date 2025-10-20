@@ -87,12 +87,6 @@ const pathname = usePathname();
             <Bell className="w-5 h-5" /> Notifications
           </Link>
           
-         <button
-    onClick={() => handleProtectedRoute("/exams")}
-    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-  >
-    <BookOpen className="w-5 h-5" /> Exams
-  </button>
 
   <button
     onClick={() => handleProtectedRoute("/student/results")}
@@ -191,13 +185,6 @@ const pathname = usePathname();
         <Bell className="w-5 h-5 flex-shrink-0" /> 
         <span className="truncate">Notifications</span>
       </Link>
-      <button
-        onClick={() => handleProtectedRoute("/exams")}
-        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-      >
-        <BookOpen className="w-5 h-5 flex-shrink-0" /> 
-        <span className="truncate">Exams</span>
-      </button>
 
       <button
         onClick={() => handleProtectedRoute("/student/results")}
