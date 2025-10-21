@@ -73,12 +73,47 @@ export default function StudentDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [finishedExams] = useState<Set<string>>(new Set());
   const [submittedExams, setSubmittedExams] = useState<Set<string>>(new Set());
+  type SubmissionStats = {
+    totalSubmissions: number;
+    lastExam: { examTitle?: string } | null;
+    averageScore: string;
+  };
+
+  const [stats, setStats] = useState<SubmissionStats>({
+    totalSubmissions: 0,
+    lastExam: null,
+    averageScore: "0",
+  });
+
+  // display real data into kpi card 
+
+  const fetchSubmissionStats = async () => {
+    try {
+      setLoading(true);
+      const { data } = await axios.get("/api/submissions/stats?studentId=" + user?.id);
+      // Normalize response to the expected shape to satisfy TypeScript
+      setStats({
+        totalSubmissions: data?.totalSubmissions ?? 0,
+        lastExam: data?.lastExam ?? null,
+        averageScore: data?.averageScore ?? "0",
+      });
+    } catch (err: any) {
+      console.error("Failed to fetch submission stats", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // call the fetch stat functions
+  useEffect(() => {
+    fetchSubmissionStats();
+  }, []);
+  const { totalSubmissions, lastExam, averageScore } = stats;
 
   // Fetch submitted exams
   useEffect(() => {
     if (!user?.id) return;
 
-    const fetchSubmittedExams = async () => {
+    const fetchSubmittedExams = async (): Promise<void> => {
       try {
         const res = await axios.get(`/api/submit-exam/check?studentId=${user.id}`);
         const submittedIds: Set<string> = new Set(
@@ -229,20 +264,7 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="text-5xl font-extrabold text-green-600 mt-2">
-                  {pastResults.length > 0
-                    ? `${(
-                        (pastResults.reduce(
-                          (sum, res) =>
-                            sum +
-                            (res.max_score > 0
-                              ? res.total_score / res.max_score
-                              : 0),
-                          0
-                        ) /
-                          pastResults.length) *
-                        100
-                      ).toFixed(0)}%`
-                    : "N/A"}
+                 {averageScore}%
                 </div>
                 <p className="text-sm text-white mt-2">
                   Your average performance.
@@ -259,7 +281,7 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="text-5xl font-extrabold text-yellow-600 mt-2">
-                  {pastResults.length}
+                  {totalSubmissions}
                 </div>
                 <p className="text-sm text-white mt-2">
                   Exams you have completed.
@@ -276,9 +298,7 @@ export default function StudentDashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="text-4xl font-bold text-blue-600 mt-2 mb-4">
-                  {pastResults.length > 0
-                    ? pastResults[pastResults.length - 1].subject?.name
-                    : "None"}
+                  {lastExam?.examTitle ?? "None"}
                 </div>
                 <p className="text-sm text-white mt-2">
                   Most recent subject completed.
