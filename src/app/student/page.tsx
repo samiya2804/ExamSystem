@@ -228,7 +228,7 @@ export default function StudentDashboard() {
                   View Results
                 </Button>
               </Link>
-              <Link href="/student/analytics">
+              <Link href={`/student/analytics/${user?.id}`}>
                 <Button className="bg-white text-blue-600 hover:bg-blue-50 font-semibold transition-transform duration-200 transform hover:scale-105 rounded-full px-6 py-3 shadow">
                   View Analytics
                 </Button>
