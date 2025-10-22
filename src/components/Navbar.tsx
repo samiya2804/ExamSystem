@@ -13,6 +13,7 @@ import {
   ChevronUp,
   ChevronDown,
   Bell,
+  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -65,11 +66,24 @@ const pathname = usePathname();
     <nav className="bg-gradient-to-r from-blue-800 to-blue-900 text-white shadow-lg border-b border-blue-700">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
         {/* Logo / App Name */}
-        <Link
+        {/* <Link
           href="/"
           className="text-2xl font-bold tracking-wide transition-transform duration-200 hover:scale-105"
         >
           AI Exam System
+        </Link> */}
+
+            <Link
+        href="/"
+       className="flex items-center space-x-2 text-2xl font-bold tracking-wide text-white transition-all duration-300 hover:scale-105 hover:text-blue-400" 
+       >
+        <div className="relative w-6 h-6 md:w-7 md:h-7">
+          <Brain className="absolute top-0 left-0 w-full h-full text-blue-500 fill-blue-500/20" />
+          
+          </div>
+          <span className="text-2xl md:text-lg lg:text-xl font-extrabold tracking-widest  bg-clip-text text-white drop-shadow-lg">
+            AI Exam System
+            </span>
         </Link>
 
         {/* Desktop Links */}
@@ -80,12 +94,19 @@ const pathname = usePathname();
           >
             <Home className="w-5 h-5" /> Home
           </Link>
-          <Link
+          {/* <Link
             href="/notifications"
             className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
           >
-            <Bell className="w-5 h-5" /> Notifications
-          </Link>
+            <Bell className="w-5 h-5" />
+          </Link> */}
+
+            <button
+    onClick={() => handleProtectedRoute("/notifications")}
+    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+  >
+    <Bell className="w-5 h-5" />  Notifications
+  </button>
           
 
   <button

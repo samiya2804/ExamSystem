@@ -17,9 +17,9 @@ export default function TermsPage() {
         variants={sectionVariants}
         className="max-w-4xl mx-auto space-y-12"
       >
-        <h1 className="text-5xl font-bold text-blue-400 text-center mb-12">
+        <h3 className="text-5xl font-bold text-blue-400 text-center mb-12 ">
           Terms of Service
-        </h1>
+        </h3>
 
         <section className="space-y-4">
           <p className="text-blue-200 text-lg">

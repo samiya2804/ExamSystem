@@ -17,7 +17,7 @@ export default function PrivacyPage() {
         variants={sectionVariants}
         className="max-w-4xl mx-auto space-y-12"
       >
-        <h1 className="text-5xl font-bold text-blue-400 text-center mb-12">
+        <h1 className="text-5xl font-bold text-blue-400 text-center mb-12 sm:text-[2rem]">
           Privacy Policy
         </h1>
 
