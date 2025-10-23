@@ -123,7 +123,7 @@ export default function AdminPage() {
           /> */}
 
           {/* New "Show Analytics" Card */}
-          <Link href="/admin/graphs">
+          <Link href="/admin/analytics" className="lg:col-span-1">
             <div className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-md text-white flex flex-col justify-center items-center text-center p-6 transition-all duration-300 cursor-pointer border border-black">
               <BarChart3 className="w-8 h-8 mb-3" />
               <h3 className="text-lg font-semibold">View Analytics</h3>
