@@ -366,7 +366,7 @@ useEffect(() => {
 
             <div className="text-center flex-1 mt-4 sm:mt-0 order-1 sm:order-2">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-teal-400 drop-shadow-md">
-                {exam.subject.name} Exam
+                {exam.subject?.name} Exam
               </h1>
             </div>
 

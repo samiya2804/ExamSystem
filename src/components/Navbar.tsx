@@ -8,12 +8,12 @@ import {
   LogOut,
   Settings,
   Home,
-  BookOpen,
   BarChart2,
   ChevronUp,
   ChevronDown,
   Bell,
   Brain,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,19 +21,22 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { toast } from "sonner";
 import { motion, AnimatePresence } from "framer-motion";
-import { usePathname } from "next/navigation"; 
+import { usePathname, useRouter } from "next/navigation";
+
 export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const { user, loading, setUser } = useAuth(); // <-- loading added
+  const { user, loading, setUser } = useAuth();
+  const pathname = usePathname();
+  const router = useRouter();
 
-
-const pathname = usePathname();
-    if (pathname && pathname.startsWith("/student/exam/")) {
-    return null; // Return null to render nothing (hide the navbar)
+  if (pathname && pathname.startsWith("/student/exam/")) {
+    return null;
   }
 
   const handleLogout = async () => {
@@ -44,7 +47,9 @@ const pathname = usePathname();
       });
       if (res.ok) {
         toast.success("Logged out successfully!");
+        localStorage.removeItem("token"); // ensure token removed
         setUser(null);
+        router.push("/"); // ✅ client-side redirect (no reload)
       } else {
         toast.error("Logout failed.");
       }
@@ -53,70 +58,69 @@ const pathname = usePathname();
       toast.error("Something went wrong.");
     }
   };
+
+  const getDashboardPath = () => {
+    if (!user) return "/";
+    if (user.role === "admin") return "/admin";
+    if (user.role === "faculty") return "/faculty";
+    return "/student";
+  };
+
   const handleProtectedRoute = (path: string) => {
-  if (!user) {
-    toast("Please login first!");
-    window.location.href = "/login";
-  } else {
-    window.location.href = path;
-  }
-};
+    if (!user) {
+      toast("Please login first!");
+      router.push("/login"); // ✅ client-side navigation
+    } else {
+      router.push(path); // ✅ fixed: no full reload
+    }
+  };
 
   return (
     <nav className="bg-gradient-to-r from-blue-800 to-blue-900 text-white shadow-lg border-b border-blue-700">
       <div className="container mx-auto px-6 py-4 flex justify-between items-center">
-        {/* Logo / App Name */}
-        {/* <Link
+        {/* Logo */}
+        <Link
           href="/"
-          className="text-2xl font-bold tracking-wide transition-transform duration-200 hover:scale-105"
+          className="flex items-center space-x-2 text-2xl font-bold tracking-wide text-white transition-all duration-300 hover:scale-105 hover:text-blue-400"
         >
-          AI Exam System
-        </Link> */}
-
-            <Link
-        href="/"
-       className="flex items-center space-x-2 text-2xl font-bold tracking-wide text-white transition-all duration-300 hover:scale-105 hover:text-blue-400" 
-       >
-        <div className="relative w-6 h-6 md:w-7 md:h-7">
-          <Brain className="absolute top-0 left-0 w-full h-full text-blue-500 fill-blue-500/20" />
-          
+          <div className="relative w-6 h-6 md:w-7 md:h-7">
+            <Brain className="absolute top-0 left-0 w-full h-full text-blue-500 fill-blue-500/20" />
           </div>
-          <span className="text-2xl md:text-lg lg:text-xl font-extrabold tracking-widest  bg-clip-text text-white drop-shadow-lg">
+          <span className="text-2xl md:text-lg lg:text-xl font-extrabold tracking-widest text-white drop-shadow-lg">
             AI Exam System
-            </span>
+          </span>
         </Link>
 
         {/* Desktop Links */}
         <div className="hidden md:flex gap-6 items-center">
-          <Link
-            href="/"
-            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-          >
+          <Link href="/" className="flex items-center gap-1 font-medium hover:text-blue-200">
             <Home className="w-5 h-5" /> Home
           </Link>
-          {/* <Link
-            href="/notifications"
-            className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
+
+          <button
+            onClick={() => handleProtectedRoute("/notifications")}
+            className="flex items-center gap-1 font-medium hover:text-blue-200"
           >
-            <Bell className="w-5 h-5" />
-          </Link> */}
+            <Bell className="w-5 h-5" /> Notifications
+          </button>
 
+          {/* <button
+            onClick={() => handleProtectedRoute("/student/results")}
+            className="flex items-center gap-1 font-medium hover:text-blue-200"
+          >
+            <BarChart2 className="w-5 h-5" /> Results
+          </button> */}
+
+          {user && (
             <button
-    onClick={() => handleProtectedRoute("/notifications")}
-    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-  >
-    <Bell className="w-5 h-5" />  Notifications
-  </button>
-          
+              onClick={() => handleProtectedRoute(getDashboardPath())}
+              className="flex items-center gap-1 font-medium hover:text-blue-200"
+            >
+              <LayoutDashboard className="w-5 h-5" /> Dashboard
+            </button>
+          )}
 
-  <button
-    onClick={() => handleProtectedRoute("/student/results")}
-    className="flex items-center gap-1 font-medium transition-colors duration-200 hover:text-blue-200"
-  >
-    <BarChart2 className="w-5 h-5" /> Results
-  </button>
-
-          {!loading && ( // <-- only render after loading
+          {!loading && (
             <>
               {user ? (
                 <DropdownMenu>
@@ -132,136 +136,132 @@ const pathname = usePathname();
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-44 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
+                    className="w-48 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
                   >
-                  <Link href="/profile" passHref>
-          <DropdownMenuItem className="flex items-center gap-2 px-2 py-2 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors duration-150">
-            <User className="w-4 h-4 text-blue-600" /> Profile
-          </DropdownMenuItem>
-        </Link>
-                       <Link href="/settings" passHref>
-                    <DropdownMenuItem className="flex items-center gap-2 p-2 hover:bg-blue-50 rounded-lg cursor-pointer">
+                    <DropdownMenuLabel className="text-sm font-semibold text-gray-700">
+                      Signed in as
+                      <div className="truncate text-gray-600">{user.email}</div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+
+                    <DropdownMenuItem
+                      onClick={() => router.push("/profile")}
+                      className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
+                    >
+                      <User className="w-4 h-4 text-blue-600" /> Profile
+                    </DropdownMenuItem>
+
+                    <DropdownMenuItem
+                      onClick={() => router.push("/settings")}
+                      className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
+                    >
                       <Settings className="w-4 h-4 text-blue-600" /> Settings
                     </DropdownMenuItem>
-                    </Link>
+
+                    <DropdownMenuSeparator />
+
                     <DropdownMenuItem
-                      className="flex items-center gap-2 p-2 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
-                      onClick={async () => {
-                        await fetch("/api/auth/logout", {
-                          method: "POST",
-                          credentials: "include",
-                        });
-                        setUser(null);
-                        window.location.href = "/";
-                      }}
+                      className="flex items-center gap-2 text-red-500 hover:bg-red-50 rounded-lg"
+                      onClick={handleLogout}
                     >
                       <LogOut className="w-4 h-4" /> Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <div className="flex gap-3">
-                  <Link href="/login">
-                    <Button className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full px-5 py-2 shadow-md transition-all duration-200">
-                      Login
-                    </Button>
-                  </Link>
-                </div>
+                <Link href="/login">
+                  <Button className="bg-blue-600 hover:bg-blue-700 rounded-full px-5 py-2 shadow-md">
+                    Login
+                  </Button>
+                </Link>
               )}
             </>
           )}
         </div>
 
-        {/* Mobile Menu Button */}
+        {/* Mobile Menu */}
         <button
-          className="md:hidden p-2 rounded-lg text-white hover:bg-blue-700/40 transition-colors"
+          className="md:hidden p-2 rounded-lg text-white hover:bg-blue-700/40"
           onClick={() => setMenuOpen(!menuOpen)}
         >
           {menuOpen ? <ChevronUp className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
 
-      {/* Mobile Menu (Animated) */}
-   {/* Mobile Menu (Animated) */}
-<AnimatePresence>
-  {menuOpen && (
-    <motion.div
-      initial={{ height: 0, opacity: 0 }}
-      animate={{ height: "auto", opacity: 1 }}
-      exit={{ height: 0, opacity: 0 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      className="md:hidden bg-gradient-to-br from-indigo-900 to-gray-900 px-6 py-4 space-y-3 overflow-hidden"
-    >
-      <Link
-        href="/"
-        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-      >
-        <Home className="w-5 h-5 flex-shrink-0" /> 
-        <span className="truncate">Home</span>
-      </Link>
-    <Link
-        href="/notifications"
-        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-      >
-        <Bell className="w-5 h-5 flex-shrink-0" /> 
-        <span className="truncate">Notifications</span>
-      </Link>
+      {/* Mobile Dropdown */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+            className="md:hidden bg-gradient-to-br from-indigo-900 to-gray-900 px-6 py-4 space-y-3 overflow-hidden"
+          >
+            <Link href="/" className="flex items-center gap-2 text-white hover:text-blue-200">
+              <Home className="w-5 h-5" /> Home
+            </Link>
 
-      <button
-        onClick={() => handleProtectedRoute("/student/results")}
-        className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-      >
-        <BarChart2 className="w-5 h-5 flex-shrink-0" /> 
-        <span className="truncate">Results</span>
-      </button>
+            <button
+              onClick={() => handleProtectedRoute("/notifications")}
+              className="flex items-center gap-2 text-white hover:text-blue-200"
+            >
+              <Bell className="w-5 h-5" /> Notifications
+            </button>
 
-      <hr className="border-blue-600" />
+            {/* <button
+              onClick={() => handleProtectedRoute("/student/results")}
+              className="flex items-center gap-2 text-white hover:text-blue-200"
+            >
+              <BarChart2 className="w-5 h-5" /> Results
+            </button> */}
 
-      {!loading && (
-        <>
-          {user ? (
-            <div className="flex flex-col gap-2">
-              <Link
-                href="/profile"
-                className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors"
-              >
-                <User className="w-5 h-5 flex-shrink-0 text-blue-400" />
-                <span className="truncate">Profile</span>
-              </Link>
-
-              <Link
-                href="/settings"
-                className="flex items-center gap-2 text-white hover:text-blue-200 transition-colors"
-              >
-                <Settings className="w-5 h-5 flex-shrink-0 text-blue-400" />
-                <span className="truncate">Settings</span>
-              </Link>
-
+            {user && (
               <button
-                className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200 transition-colors"
-                onClick={handleLogout}
+                onClick={() => handleProtectedRoute(getDashboardPath())}
+                className="flex items-center gap-2 text-white hover:text-blue-200"
               >
-                <LogOut className="w-5 h-5 flex-shrink-0" />
-                <span>Logout</span>
+                <LayoutDashboard className="w-5 h-5" /> Dashboard
               </button>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              <Link
-                href="/login"
-                className="flex items-center gap-2 text-white font-medium hover:text-blue-200 transition-colors"
-              >
-                <User className="w-5 h-5 flex-shrink-0" /> 
-                <span className="truncate">Login</span>
-              </Link>
-            </div>
-          )}
-        </>
-      )}
-    </motion.div>
-  )}
-</AnimatePresence>
+            )}
 
+            <hr className="border-blue-600" />
+
+            {!loading && (
+              <>
+                {user ? (
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => router.push("/profile")}
+                      className="flex items-center gap-2 text-white hover:text-blue-200"
+                    >
+                      <User className="w-5 h-5 text-blue-400" /> Profile
+                    </button>
+
+                    <button
+                      onClick={() => router.push("/settings")}
+                      className="flex items-center gap-2 text-white hover:text-blue-200"
+                    >
+                      <Settings className="w-5 h-5 text-blue-400" /> Settings
+                    </button>
+
+                    <button
+                      className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200"
+                      onClick={handleLogout}
+                    >
+                      <LogOut className="w-5 h-5" /> Logout
+                    </button>
+                  </div>
+                ) : (
+                  <Link href="/login" className="flex items-center gap-2 text-white hover:text-blue-200">
+                    <User className="w-5 h-5" /> Login
+                  </Link>
+                )}
+              </>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 }
