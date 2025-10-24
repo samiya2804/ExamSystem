@@ -4,6 +4,7 @@ import Submission from "@/lib/models/Submission";
 import Exam from "@/lib/models/Exam";
 import Subject from "@/lib/models/subject";
 import ExamResult from "@/lib/models/ExamResult";
+import mongoose from "mongoose";
 
 export async function GET(req: Request) {
   try {
@@ -12,12 +13,20 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const studentId = url.searchParams.get("studentId");
 
-    if (!studentId) {
-        return NextResponse.json(
-        { error: "Missing student id." },
+    // 🔒 Defensive check
+    if (!studentId || studentId === "undefined" || studentId === "null") {
+      return NextResponse.json(
+        { error: "Invalid or missing studentId" },
         { status: 400 }
       );
-    }   
+    }
+     // Validate MongoDB ObjectId
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return NextResponse.json(
+        { error: "Invalid studentId format" },
+        { status: 400 }
+      );
+    }
     
 
     const totalSubmissions = await Submission.countDocuments({ studentId });

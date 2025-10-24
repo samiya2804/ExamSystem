@@ -31,35 +31,44 @@ const Link = ({
 );
 
 // --- DATA TYPES ---
-type Question = { Q_ID: string; question: string; options?: string[] };
+type Question = { Q_ID?: string; question?: string; options?: string[] };
 type QuestionPaper = {
   MCQs?: Question[];
   Theory?: Question[];
   Coding?: Question[];
 };
+type Subject = {
+  name?: string;
+  code?: string;
+};
 type Exam = {
   _id: string;
-  title: string;
-  subject: { name: string; code?: string };
-  duration: number;
-  date: string;
-  questions: QuestionPaper;
-  isPublished: boolean;
+  title?: string;
+  subject?: Subject | null;
+  duration?: number;
+  date?: string;
+  questions?: QuestionPaper | null;
+  isPublished?: boolean;
   publishedAt?: string;
 };
 type EvaluationDetail = {
-  question_id: string;
-  question_type: string;
+  question_id?: string;
+  question_type?: string;
   evaluation?: Record<string, any>;
   error?: string;
 };
 type Result = {
   _id: string;
-  subject: { name: string; code?: string };
-  student_id: string;
-  total_score: number;
-  max_score: number;
-  evaluation_details: EvaluationDetail[];
+  subject?: Subject | null;
+  student_id?: string;
+  total_score?: number;
+  max_score?: number;
+  evaluation_details?: EvaluationDetail[];
+};
+type SubmissionStats = {
+  totalSubmissions: number;
+  lastExam: { examTitle?: string } | null;
+  averageScore: string;
 };
 
 export default function StudentDashboard() {
@@ -67,81 +76,65 @@ export default function StudentDashboard() {
   const [availableExams, setAvailableExams] = useState<Exam[]>([]);
   const [pastResults, setPastResults] = useState<Result[]>([]);
   const [activeExam, setActiveExam] = useState<Exam | null>(null);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [finishedExams] = useState<Set<string>>(new Set());
+  const [message, setMessage] = useState<string | null>(null);
   const [submittedExams, setSubmittedExams] = useState<Set<string>>(new Set());
-  type SubmissionStats = {
-    totalSubmissions: number;
-    lastExam: { examTitle?: string } | null;
-    averageScore: string;
-  };
-
   const [stats, setStats] = useState<SubmissionStats>({
     totalSubmissions: 0,
     lastExam: null,
     averageScore: "0",
   });
 
-  // display real data into kpi card 
-
+  // --- Fetch Submission Stats ---
   const fetchSubmissionStats = async () => {
+    if (!user?.id) return;
     try {
-      setLoading(true);
-      const { data } = await axios.get("/api/submissions/stats?studentId=" + user?.id);
-      // Normalize response to the expected shape to satisfy TypeScript
+      const { data } = await axios.get(`/api/submissions/stats?studentId=${user.id}`);
       setStats({
         totalSubmissions: data?.totalSubmissions ?? 0,
         lastExam: data?.lastExam ?? null,
         averageScore: data?.averageScore ?? "0",
       });
-    } catch (err: any) {
-      console.error("Failed to fetch submission stats", err);
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      console.error("Failed to fetch submission stats:", err);
     }
   };
-  // call the fetch stat functions
+
   useEffect(() => {
-    fetchSubmissionStats();
-  }, []);
+    if (user?.id) fetchSubmissionStats();
+  }, [user]);
+
   const { totalSubmissions, lastExam, averageScore } = stats;
 
-  // Fetch submitted exams
+  // --- Fetch submitted exams ---
   useEffect(() => {
     if (!user?.id) return;
-
-    const fetchSubmittedExams = async (): Promise<void> => {
+    const fetchSubmittedExams = async () => {
       try {
         const res = await axios.get(`/api/submit-exam/check?studentId=${user.id}`);
         const submittedIds: Set<string> = new Set(
-          res.data.submissions.map((s: any) => String(s.examId))
+          (res.data?.submissions || []).map((s: any) => String(s.examId))
         );
         setSubmittedExams(submittedIds);
       } catch (err) {
         console.error("Failed to fetch submitted exams", err);
       }
     };
-
     fetchSubmittedExams();
   }, [user]);
 
-  // Fetch dashboard data
+  // --- Fetch available exams ---
   useEffect(() => {
     if (!user?.id) return;
     const fetchData = async () => {
       setLoading(true);
       try {
         const examsResponse = await axios.get("/api/exams");
-        const publishedExams = examsResponse.data.filter(
-          (exam: Exam) => exam.isPublished
+        const publishedExams = (examsResponse.data || []).filter(
+          (exam: Exam) => exam?.isPublished
         );
         setAvailableExams(publishedExams);
-
-        // const resultsResponse = await axios.get(`/api/results?studentId=${user.id}`);
-        // setPastResults(resultsResponse.data);
       } catch (err) {
         console.error("Failed to fetch dashboard data", err);
         setError("Failed to load dashboard data.");
@@ -152,17 +145,20 @@ export default function StudentDashboard() {
     fetchData();
   }, [user]);
 
+  // --- Derived Data ---
   const averageMarksData = useMemo(
     () =>
-      pastResults.map((res) => ({
+      (pastResults || []).map((res) => ({
         subject: res.subject?.name || "Exam",
-        marks: res.max_score > 0 ? (res.total_score / res.max_score) * 100 : 0,
+        marks:
+          (res.max_score ?? 0) > 0
+            ? ((res.total_score ?? 0) / (res.max_score ?? 1)) * 100
+            : 0,
       })),
     [pastResults]
   );
 
-  const handleCloseMessage = () => setMessage(null);
-
+  // --- Message Toast ---
   const MessageToast = () => (
     <AnimatePresence>
       {message && (
@@ -175,7 +171,7 @@ export default function StudentDashboard() {
           <CheckCircle className="text-green-400 w-6 h-6" />
           <span>{message}</span>
           <Button
-            onClick={handleCloseMessage}
+            onClick={() => setMessage(null)}
             variant="ghost"
             className="p-1 h-auto text-gray-400 hover:text-white"
           >
@@ -186,20 +182,25 @@ export default function StudentDashboard() {
     </AnimatePresence>
   );
 
+  // --- Loading/Error Handling ---
   if (loading)
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-white">
-        <p>Loading dashboard...</p><br />
-        <p>If you didn't see any data then please login again...</p>
-      </div>
-    );
-  if (error)
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <p className="text-red-500">Error: {error}</p>
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-white">
+        <p>Loading dashboard...</p>
+        <p className="text-sm opacity-70 mt-2">
+          If no data appears, please log in again.
+        </p>
       </div>
     );
 
+  if (error)
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-red-500">
+        <p>Error: {error}</p>
+      </div>
+    );
+
+  // --- Main Dashboard ---
   if (!activeExam) {
     return (
       <div className="min-h-screen bg-slate-950 text-gray-100 font-sans p-6 sm:p-10">
@@ -210,12 +211,14 @@ export default function StudentDashboard() {
             <div className="flex items-center space-x-4">
               <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center shadow-inner">
                 <span className="text-3xl font-bold text-blue-300">
-                  {user?.firstName?.charAt(0)}
-                  {user?.lastName?.charAt(0)}
+                  {user?.firstName?.[0] ?? ""}
+                  {user?.lastName?.[0] ?? ""}
                 </span>
               </div>
               <div>
-                <h1 className="text-3xl font-bold">Welcome, {user?.firstName}</h1>
+                <h1 className="text-3xl font-bold">
+                  Welcome, {user?.firstName ?? "Student"}
+                </h1>
                 <p className="text-sm opacity-90 mt-1">
                   Ready for your next challenge?
                 </p>
@@ -236,75 +239,32 @@ export default function StudentDashboard() {
             </div>
           </header>
 
-          {/* Key Stats */}
+          {/* Stats */}
           <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700">
-              <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
-                  <BookOpen className="w-6 h-6 text-white" />
-                  <span>Exams Available</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="text-5xl font-extrabold text-teal-600 mt-2">
-                  {availableExams.length}
-                </div>
-                <p className="text-sm text-white mt-2">
-                  Upcoming tests on your schedule.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700">
-              <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
-                  <BarChart2 className="w-6 h-6 text-green-500" />
-                  <span>Average Score</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="text-5xl font-extrabold text-green-600 mt-2">
-                 {averageScore}%
-                </div>
-                <p className="text-sm text-white mt-2">
-                  Your average performance.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700">
-              <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
-                  <FileText className="w-6 h-6 text-yellow-500" />
-                  <span>Exams Completed</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="text-5xl font-extrabold text-yellow-600 mt-2">
-                  {totalSubmissions}
-                </div>
-                <p className="text-sm text-white mt-2">
-                  Exams you have completed.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700">
-              <CardHeader className="p-0 pb-3">
-                <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
-                  <Calendar className="w-6 h-6 text-blue-500" />
-                  <span>Last Exam</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
-                <div className="text-4xl font-bold text-blue-600 mt-2 mb-4">
-                  {lastExam?.examTitle ?? "None"}
-                </div>
-                <p className="text-sm text-white mt-2">
-                  Most recent subject completed.
-                </p>
-              </CardContent>
-            </Card>
+            <StatCard
+              icon={<BookOpen className="w-6 h-6 text-white" />}
+              title="Exams Available"
+              value={availableExams.length}
+              color="text-teal-600"
+            />
+            <StatCard
+              icon={<BarChart2 className="w-6 h-6 text-green-500" />}
+              title="Average Score"
+              value={`${averageScore}%`}
+              color="text-green-600"
+            />
+            <StatCard
+              icon={<FileText className="w-6 h-6 text-yellow-500" />}
+              title="Exams Completed"
+              value={totalSubmissions}
+              color="text-yellow-600"
+            />
+            <StatCard
+              icon={<Calendar className="w-6 h-6 text-blue-500" />}
+              title="Last Exam"
+              value={lastExam?.examTitle ?? "None"}
+              color="text-blue-600"
+            />
           </section>
 
           {/* Upcoming Exams */}
@@ -316,12 +276,14 @@ export default function StudentDashboard() {
               {availableExams.map((exam) => {
                 const isSubmitted = submittedExams.has(exam._id);
                 const hasQuestions =
-                  (exam.questions.MCQs?.length ?? 0) > 0 ||
-                  (exam.questions.Theory?.length ?? 0) > 0;
+                  (exam.questions?.MCQs?.length ?? 0) > 0 ||
+                  (exam.questions?.Theory?.length ?? 0) > 0 ||
+                  (exam.questions?.Coding?.length ?? 0) > 0;
 
-                const displayDate = exam.publishedAt
-                  ? new Date(exam.publishedAt).toLocaleDateString()
-                  : new Date(exam.date).toLocaleDateString();
+                const displayDate =
+                  exam.publishedAt || exam.date
+                    ? new Date(exam.publishedAt ?? exam.date!).toLocaleDateString()
+                    : "N/A";
 
                 return (
                   <Card
@@ -330,31 +292,30 @@ export default function StudentDashboard() {
                   >
                     <CardHeader className="p-0">
                       <CardTitle className="text-2xl font-semibold text-blue-800 flex items-center gap-3">
-                        <BookOpen className="w-7 h-7" /> {exam.subject.name}
+                        <BookOpen className="w-7 h-7" />{" "}
+                        {exam.subject?.name || "Untitled Subject"}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="p-0 mt-4 flex-grow space-y-2 text-white">
                       <div className="flex items-center gap-2">
                         <FileText className="w-4 h-4" />
-                        <span>Duration: {exam.duration} Minutes</span>
+                        <span>Duration: {exam.duration ?? "N/A"} Minutes</span>
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
                         <span>Published: {displayDate}</span>
                       </div>
                     </CardContent>
+
                     {isSubmitted ? (
-                      <div className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-green-600 hover:bg-green-700 text-white rounded-3xl font-semibold shadow-lg">
+                      <div className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-green-600 text-white rounded-3xl font-semibold shadow-lg">
                         <CheckCircle className="w-5 h-5" /> Already Submitted
                       </div>
                     ) : hasQuestions ? (
                       <Button
                         onClick={() => {
                           if (user?.id)
-                            sessionStorage.setItem(
-                              "temp_exam_student_id",
-                              user.id
-                            );
+                            sessionStorage.setItem("temp_exam_student_id", user.id);
                           window.open(`/student/exam/${exam._id}`, "_blank");
                         }}
                         className="w-full mt-6 flex items-center justify-center gap-2 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-3xl"
@@ -377,5 +338,31 @@ export default function StudentDashboard() {
   }
 
   return null;
+}
 
+// Small reusable stat card
+function StatCard({
+  icon,
+  title,
+  value,
+  color,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  value: string | number;
+  color: string;
+}) {
+  return (
+    <Card className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700">
+      <CardHeader className="p-0 pb-3">
+        <CardTitle className="text-xl font-semibold text-white flex items-center space-x-2">
+          {icon}
+          <span>{title}</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div className={`text-5xl font-extrabold ${color} mt-2`}>{value}</div>
+      </CardContent>
+    </Card>
+  );
 }
