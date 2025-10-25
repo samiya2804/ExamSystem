@@ -8,7 +8,8 @@ import GlobalLoader from "@/components/GlobalLoader";
 
 export const metadata: Metadata = {
   title: "AI Exam System",
-  description: "Automated Question Paper & Evaluation System",
+  description: "Automated Question Paper & Evaluation System of Invertis University Login to continue your examination.",
+  icons: "/favicon.ico",
 };
 
 export default function RootLayout({
