@@ -117,10 +117,10 @@ export default function UsersTable() {
       )}
 
       {/* Filters & Search */}
-      <div className="flex flex-wrap gap-4 items-center">
+      <div className="flex flex-wrap gap-4 items-center placeholder:text-gray-300">
         <Input
           placeholder="Search by name, email or username..."
-          className="w-60"
+          className="w-60 placeholder:text-gray-300"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
@@ -129,7 +129,7 @@ export default function UsersTable() {
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="bg-gray-800 text-white">
             <SelectItem value="All">All Roles</SelectItem>
             <SelectItem value="Faculty">Faculty</SelectItem>
             <SelectItem value="Student">Student</SelectItem>
