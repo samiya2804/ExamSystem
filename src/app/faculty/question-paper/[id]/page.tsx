@@ -18,7 +18,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import { useAuth } from "@/lib/hooks/useAuth";
 import { toast } from "sonner";
-
+import {jsPDF} from "jspdf";
 /**
  * Page: faculty/generate-paper/[id]/page.tsx
  *
@@ -247,36 +247,174 @@ export default function GeneratedPaperPage() {
   }
 
   // Print / download PDF using html2canvas + jspdf (dynamic import)
-  async function handlePrint() {
-  if (!printRef.current) return;
-  try {
-    const element = printRef.current;
+  // add at top of file
 
-    // temporarily replace color tokens
-    const originalBg = element.style.background;
-    element.style.background = "rgb(20,20,30)";
 
-    const [{ default: html2canvas }, { jsPDF }] = await Promise.all([
-      import("html2canvas"),
-      import("jspdf"),
-    ]);
+// replace your handlePrint with this function
 
-    const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-    const imgData = canvas.toDataURL("image/png");
-    const pdf = new jsPDF("p", "pt", "a4");
 
-    const width = pdf.internal.pageSize.getWidth();
-    const height = (canvas.height * width) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, width, height);
-    pdf.save(`${exam?.title || "paper"}.pdf`);
-
-    // restore
-    element.style.background = originalBg;
-  } catch (err: any) {
-    console.error("Print error:", err);
-    toast.error("PDF generation failed — retry with Chrome.");
+async function handleDownloadPaper() {
+  if (!exam) {
+    toast.error("No exam loaded to generate PDF");
+    return;
   }
+
+  
+// ✅ Safely extract subject details
+  const subjectName =
+    typeof exam.subject === "object"
+      ? exam.subject?.name || "Subject"
+      : String(exam.subject || "Subject");
+
+  const subjectCode =
+    typeof exam.subject === "object"
+      ? exam.subject?.code || "N/A"
+      : String(exam.subject || "N/A");
+  const doc = new jsPDF({ unit: "pt", format: "a4" });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginLeft = 50;
+  const marginRight = 50;
+  const usableWidth = pageWidth - marginLeft - marginRight;
+  const lineHeight = 14;
+
+  const totalMCQMarks = mcqs.reduce((s, q) => s + (q.marks || 0), 0);
+  const totalTheoryMarks = theory.reduce((s, q) => s + (q.marks || 0), 0);
+  const totalCodingMarks = coding.reduce((s, q) => s + (q.marks || 0), 0);
+  const totalMarks = totalMCQMarks + totalTheoryMarks + totalCodingMarks;
+
+  let currentY = 60;
+  let pageNo = 1;
+
+  // HEADER
+  const drawHeader = () => {
+    doc.setFont("Times", "Bold");
+    doc.setFontSize(11);
+    doc.text(`Subject Code: ${subjectCode}`, pageWidth - marginRight - 120, 40);
+
+    doc.setFont("Times", "Bold");
+    doc.setFontSize(13);
+    doc.text("PAPER ID: " + (exam._id?.toString().slice(0, 8) || "N/A"), pageWidth / 2, currentY, { align: "center" });
+    currentY += 20;
+
+    doc.setFontSize(18);
+    doc.text("INVERTIS UNIVERSITY", pageWidth / 2, currentY, { align: "center" });
+    currentY += 20;
+
+    doc.setFont("Times", "Normal");
+    doc.setFontSize(13);
+    doc.text((exam.course || "B.Tech"), pageWidth / 2, currentY, { align: "center" });
+    currentY += 18;
+
+    const subjLine = `${subjectName} (${subjectCode})`;
+    doc.text(subjLine, pageWidth / 2, currentY, { align: "center" });
+    currentY += 16;
+
+    doc.setFontSize(11);
+    doc.text(`Time: ${exam.duration ?? "3"} Hours`, marginLeft, currentY);
+    doc.text(`Total Marks: ${totalMarks}`, pageWidth - marginRight - 100, currentY);
+    currentY += 20;
+
+    doc.setFontSize(10);
+    doc.text("Note: 1. Attempt all Sections. If any data missing, choose suitably.", marginLeft, currentY);
+    currentY += 24;
+
+    doc.setLineWidth(0.5);
+    doc.line(marginLeft, currentY, pageWidth - marginRight, currentY);
+    currentY += 20;
+  };
+
+  const addSectionHeading = (label: string) => {
+    doc.setFont("Times", "Bold");
+    doc.setFontSize(12);
+    doc.text(label, pageWidth / 2, currentY, { align: "center" });
+    currentY += 18;
+  };
+
+  const addQuestion = (qNo: string, text: string, marks?: number) => {
+    const xQ = marginLeft;
+    const xM = pageWidth - marginRight - 40; // marks aligned right
+    const yStart = currentY;
+
+    // Split long question text
+    doc.setFont("Times", "Normal");
+    doc.setFontSize(11);
+    const splitText = doc.splitTextToSize(text, usableWidth - 80);
+    const qHeight = splitText.length * lineHeight + 6;
+
+    if (currentY + qHeight > pageHeight - 60) {
+      doc.addPage();
+      pageNo++;
+      currentY = 60;
+      drawHeader();
+    }
+
+    // Question number
+    doc.setFont("Times", "Bold");
+    doc.text(`${qNo}.`, xQ, currentY);
+
+    // Question text
+    doc.setFont("Times", "Normal");
+    doc.text(splitText, xQ + 25, currentY, { maxWidth: usableWidth - 70 });
+    if (marks) {
+      doc.text(`${marks}`, xM, yStart);
+    }
+
+    currentY += qHeight + 6;
+  };
+
+  const addMCQ = (qNo: number, q: any) => {
+    // Question line
+    addQuestion(`${qNo}`, q.question, q.marks);
+
+    // Options
+    if (q.options && q.options.length > 0) {
+      q.options.forEach((opt: string, idx: number) => {
+        const optText = `${String.fromCharCode(97 + idx)}) ${opt}`;
+        const splitOpt = doc.splitTextToSize(optText, usableWidth - 90);
+        splitOpt.forEach((line:any) => {
+          if (currentY > pageHeight - 60) {
+            doc.addPage();
+            pageNo++;
+            currentY = 60;
+            drawHeader();
+          }
+          doc.text(line, marginLeft + 35, currentY);
+          currentY += lineHeight;
+        });
+      });
+      currentY += 4;
+    }
+  };
+
+  // DRAW CONTENT
+  drawHeader();
+
+  if (mcqs.length > 0) {
+    addSectionHeading("SECTION A");
+    mcqs.forEach((q, i) => addMCQ(i + 1, q));
+  }
+
+  if (theory.length > 0) {
+    addSectionHeading("SECTION B");
+    theory.forEach((q, i) => addQuestion(`${i + 1}`, q.question, q.marks));
+  }
+
+  if (coding.length > 0) {
+    addSectionHeading("SECTION C");
+    coding.forEach((q, i) => addQuestion(`${i + 1}`, q.question, q.marks));
+  }
+
+  // FOOTER PAGE NO
+  doc.setFontSize(9);
+  doc.text(`Page ${pageNo}`, pageWidth / 2, pageHeight - 20, { align: "center" });
+
+  doc.save(`${(exam.title || "question-paper").replace(/\s+/g, "-")}.pdf`);
+  toast.success("Question Paper PDF Downloaded");
 }
+
+
 
 
   if (loading) {
@@ -314,7 +452,7 @@ export default function GeneratedPaperPage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={handlePrint} className="bg-transparent border border-gray-700">
+          <Button onClick={handleDownloadPaper} className="bg-transparent border border-gray-700">
             <Printer className="w-4 h-4 mr-2" /> Print / Download PDF
           </Button>
           <Button onClick={handleUpdatePaper} disabled={saving} className="bg-indigo-700 hover:bg-indigo-600">
