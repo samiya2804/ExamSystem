@@ -148,7 +148,7 @@ export default function Navbar() {
                       onClick={() => router.push("/profile")}
                       className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
                     >
-                      <User className="w-4 h-4 text-blue-600 " /> Profile
+                      <User className="w-4 h-4 text-blue-600 hover:text-white " /> Profile
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
