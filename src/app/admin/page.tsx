@@ -49,7 +49,7 @@ export default function AdminPage() {
           <div className="flex flex-wrap gap-2 sm:gap-3">
             <Link
               href="/admin/question-bank"
-              className="px-3 sm:px-4 py-2 bg-indigo-700 text-white rounded-md shadow hover:bg-gray-800 text-sm sm:text-base"
+              className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-800 text-sm sm:text-base"
             >
               Question Bank
             </Link>
@@ -124,7 +124,7 @@ export default function AdminPage() {
 
           {/* New "Show Analytics" Card */}
           <Link href="/admin/analytics" className="lg:col-span-1">
-            <div className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-md text-white flex flex-col justify-center items-center text-center p-6 transition-all duration-300 cursor-pointer border border-black">
+            <div className="bg-gray-800 hover:bg-gray-700 rounded-lg shadow-md text-white flex flex-col justify-center items-center text-center p-8 transition-all duration-300 cursor-pointer border border-black">
               <BarChart3 className="w-8 h-8 mb-3" />
               <h3 className="text-lg font-semibold">View Analytics</h3>
               <p className="text-sm opacity-90">Detailed insights & trends</p>
