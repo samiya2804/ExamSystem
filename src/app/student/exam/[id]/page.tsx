@@ -333,7 +333,7 @@ useEffect(() => {
     <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
       <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
       <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
-      <ul className="list-disc pl-5 mb-2 space-y-1 text-gray-200 text-xs sm:text-sm leading-relaxed">
+      <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
   <li>Keep your camera and microphone on throughout the exam - moving out of the frame may trigger a warning or auto-submit.</li>
   <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
   <li>Do not reload, copy, or navigate away from the exam window.</li>
