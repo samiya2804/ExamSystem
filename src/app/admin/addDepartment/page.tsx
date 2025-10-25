@@ -52,10 +52,10 @@ export default function AddDepartmentPage() {
       {/* Header + Back Button */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-400">
-          <Building2 className="w-6 h-6 text-teal-400" /> Manage Departments
+          <Building2 className="w-6 h-6 text-blue-400" /> Manage Departments
         </h1>
         <Link href="/admin">
-          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
+          <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto cursor-pointer">
             <ArrowLeft className="w-4 h-4" /> Back to Dashboard
           </Button>
         </Link>
@@ -67,17 +67,17 @@ export default function AddDepartmentPage() {
           placeholder="Department Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="flex-1 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
+          className="flex-1 bg-gray-900 text-gray-100 placeholder:text-gray-300 border-gray-700"
         />
         <Input
           placeholder="Code (e.g., CSE)"
           value={code}
           onChange={(e) => setCode(e.target.value)}
-          className="w-full sm:w-36 bg-gray-900 text-gray-100 placeholder-gray-400 border-gray-700"
+          className="w-full sm:w-36 bg-gray-900 text-gray-100 placeholder:text-gray-300 border-gray-700"
         />
         <Button
           onClick={handleAdd}
-          className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto"
+          className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto cursor-pointer"
         >
           Add
         </Button>
