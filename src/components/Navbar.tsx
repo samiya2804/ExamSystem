@@ -152,11 +152,12 @@ export default function Navbar() {
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                      onClick={() => router.push("/settings")}
-                      className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
-                    >
-                      <Settings className="w-4 h-4 text-blue-600  /> Settings
-                    </DropdownMenuItem>
+                     onClick={() => router.push("/settings")}
+                     className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
+                      >
+                      <Settings className="w-4 h-4 text-blue-600" /> Settings
+                      </DropdownMenuItem>
+
 
                     <DropdownMenuSeparator  />
 
