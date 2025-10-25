@@ -148,23 +148,23 @@ export default function Navbar() {
                       onClick={() => router.push("/profile")}
                       className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
                     >
-                      <User className="w-4 h-4 text-blue-600 hover:text-white" /> Profile
+                      <User className="w-4 h-4 text-blue-600 " /> Profile
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
                       onClick={() => router.push("/settings")}
                       className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
                     >
-                      <Settings className="w-4 h-4 text-blue-600 hover:text-white" /> Settings
+                      <Settings className="w-4 h-4 text-blue-600  /> Settings
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator  />
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 text-red-500 hover:bg-red-50 rounded-lg"
                       onClick={handleLogout}
                     >
-                      <LogOut className="w-4 h-4" /> Logout
+                      <LogOut className="w-4 h-4 text-red-400" /> Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -249,7 +249,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200"
                       onClick={handleLogout}
                     >
-                      <LogOut className="w-5 h-5" /> Logout
+                      <LogOut className="w-5 h-5 text-red-400" /> Logout
                     </button>
                   </div>
                 ) : (
