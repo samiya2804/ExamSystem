@@ -465,10 +465,7 @@ export default function FacultyDashboardPage() {
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
-
                     min={0}
-                    className="w-24 bg-transparent border-gray-700"
-
                     className="w-24 bg-transparent border-gray-700 text-gray-400"
 
                     value={form.veryShortCount}
@@ -503,7 +500,7 @@ export default function FacultyDashboardPage() {
                     type="number"
 
                     min={0}
-                    className="w-24 bg-transparent border-gray-700"
+                    
 
                     className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
 
@@ -536,7 +533,7 @@ export default function FacultyDashboardPage() {
                     type="number"
 
                     min={0}
-                    className="w-24 bg-transparent border-gray-700"
+                   
 
                     className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
 
@@ -568,7 +565,7 @@ export default function FacultyDashboardPage() {
                   type="number"
 
                   min={0}
-                  className="w-28 bg-transparent border-gray-700 mt-1"
+                  
 
                   className="w-28 bg-transparent border-gray-700 mt-2 text-gray-400"
 
