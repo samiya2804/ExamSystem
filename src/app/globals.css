@@ -206,3 +206,26 @@
 .animate-bounce-slow {
   animation: bounce-slow 2s infinite;
 }
+
+
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
+:root {
+  --font-heading: "Poppins", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Inter", "Roboto", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --font-code: "JetBrains Mono", monospace;
+
+  /* Override Tailwind default vars */
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-heading);
+  --font-mono: var(--font-code);
+}
+
+/* Optional (not required, but helps improve text rendering) */
+html, body {
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+

@@ -136,11 +136,11 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
                     align="end"
-                    className="w-48 bg-white shadow-2xl rounded-xl p-2 mt-2 text-gray-800 border border-gray-200"
+                    className="w-48 bg-gray-900 shadow-2xl rounded-xl p-2 mt-2 text-gray-100 "
                   >
-                    <DropdownMenuLabel className="text-sm font-semibold text-gray-700">
+                    <DropdownMenuLabel className="text-sm font-semibold text-gray-100">
                       Signed in as
-                      <div className="truncate text-gray-600">{user.email}</div>
+                      <div className="truncate text-gray-100">{user.email}</div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
 
@@ -148,23 +148,24 @@ export default function Navbar() {
                       onClick={() => router.push("/profile")}
                       className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
                     >
-                      <User className="w-4 h-4 text-blue-600" /> Profile
+                      <User className="w-4 h-4 text-blue-600 hover:text-white " /> Profile
                     </DropdownMenuItem>
 
                     <DropdownMenuItem
-                      onClick={() => router.push("/settings")}
-                      className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
-                    >
+                     onClick={() => router.push("/settings")}
+                     className="flex items-center gap-2 hover:bg-blue-50 rounded-lg"
+                      >
                       <Settings className="w-4 h-4 text-blue-600" /> Settings
-                    </DropdownMenuItem>
+                      </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+
+                    <DropdownMenuSeparator  />
 
                     <DropdownMenuItem
                       className="flex items-center gap-2 text-red-500 hover:bg-red-50 rounded-lg"
                       onClick={handleLogout}
                     >
-                      <LogOut className="w-4 h-4" /> Logout
+                      <LogOut className="w-4 h-4 text-red-400" /> Logout
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -249,7 +250,7 @@ export default function Navbar() {
                       className="flex items-center gap-2 text-red-400 font-medium hover:text-red-200"
                       onClick={handleLogout}
                     >
-                      <LogOut className="w-5 h-5" /> Logout
+                      <LogOut className="w-5 h-5 text-red-400" /> Logout
                     </button>
                   </div>
                 ) : (

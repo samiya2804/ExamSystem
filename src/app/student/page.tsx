@@ -293,7 +293,7 @@ export default function StudentDashboard() {
                     className="rounded-2xl shadow-lg p-6 bg-slate-800 border border-slate-700 flex flex-col justify-between"
                   >
                     <CardHeader className="p-0">
-                      <CardTitle className="text-2xl font-semibold text-blue-800 flex items-center gap-3">
+                      <CardTitle className="text-2xl font-semibold text-blue-400 flex items-center gap-3">
                         <BookOpen className="w-7 h-7" />{" "}
                         {exam.subject?.name || "Untitled Subject"}
                       </CardTitle>

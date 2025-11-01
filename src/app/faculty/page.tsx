@@ -372,19 +372,19 @@ export default function FacultyDashboardPage() {
       <div className="bg-[#0b1220] border border-indigo-900 rounded-xl p-6 shadow-md mb-8">
         <div className="flex justify-between items-center mb-4">
           <div className="flex items-center gap-3">
-            <BookOpen className="w-6 h-6 text-teal-300" />
+            <BookOpen className="w-6 h-6 text-indigo-500" />
             <h2 className="text-2xl font-semibold">Create New Exam</h2>
           </div>
           <div>
             <Button
               onClick={openCreateModal}
-              className="bg-indigo-700 hover:bg-indigo-600"
+              className="bg-indigo-700 hover:bg-indigo-600 cursor-pointer"
             >
               <PlusCircle className="w-4 h-4 mr-2" /> New Exam
             </Button>
           </div>
         </div>
-        <p className="text-gray-400">
+        <p className="text-gray-300">
           Quickly create an exam, generate questions automatically, preview,
           edit and publish.
         </p>
@@ -393,35 +393,36 @@ export default function FacultyDashboardPage() {
       <Dialog open={openModal} onOpenChange={setOpenModal}>
         <DialogContent className="bg-[#08101a] text-gray-100 rounded-lg w-full max-w-3xl">
           <DialogHeader>
-            <DialogTitle>
-              {editingExam ? "Edit Exam" : "Create Exam"}
+            <DialogTitle className="text-indigo-700">
+              📘 {editingExam ? "Edit Exam" : "Create Exam"}
             </DialogTitle>
           </DialogHeader>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             <div className="space-y-3 p-2">
-              <label>Exam Title</label>
+              <label>Exam Title : </label>
               <Input
                 placeholder="e.g., Mid-Term Exam"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="bg-transparent border-gray-700"
+                className="bg-transparent border-gray-700 placeholder:text-gray-400"
               />
-              <label>Select Subject</label>
+              <label>Select Subject : </label>
               <Select
                 value={form.subjectId}
                 onValueChange={(v) => setForm({ ...form, subjectId: v })}
               >
-                <SelectTrigger className="bg-transparent border-gray-700">
+                <SelectTrigger className="bg-transparent border-gray-700 placeholder:text-gray-400 mt-2">
                   <SelectValue placeholder="Choose a subject" />
                 </SelectTrigger>
                 <SelectContent>
                   {subjects.map((s) => (
-                    <SelectItem key={s._id} value={s._id}>
+                    <SelectItem key={s._id} value={s._id} className="bg-slate-800 text-white hover:bg-blue-400 border-slate-600">
                       {s.name} {s.code ? `(${s.code})` : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
+
               <label>Select Course</label>
               <Select
                 value={form.course}
@@ -440,23 +441,36 @@ export default function FacultyDashboardPage() {
               </Select>
 
               <label>Duration (minutes)</label>
+
+              <label>Class / Course : </label>
+              <Input
+                value={form.course}
+                onChange={(e) => setForm({ ...form, course: e.target.value })}
+                className="bg-transparent border-gray-700 mt-2"
+              />
+              <label>Duration (minutes) : </label>
+
               <Input
                 type="number"
                 value={form.duration}
                 onChange={(e) =>
                   setForm({ ...form, duration: Number(e.target.value) })
                 }
-                className="bg-transparent border-gray-700"
+                className="bg-transparent border-gray-700 mt-2"
               />
             </div>
             <div className="p-2 space-y-3">
               <div>
-                <label>Multiple Choice Questions(MCQ)</label>
+                <label>Multiple Choice Questions(MCQ) : </label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
                     min={0}
                     className="w-24 bg-transparent border-gray-700"
+
+                    className="w-24 bg-transparent border-gray-700 text-gray-400"
+
                     value={form.veryShortCount}
                     onChange={(e) =>
                       setForm({
@@ -471,10 +485,10 @@ export default function FacultyDashboardPage() {
                       setForm({ ...form, veryShortDifficulty: v })
                     }
                   >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40">
+                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
                       <SelectValue placeholder="Difficulty" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-800 text-white">
                       <SelectItem value="easy">Easy</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="hard">Hard</SelectItem>
@@ -483,12 +497,16 @@ export default function FacultyDashboardPage() {
                 </div>
               </div>
               <div>
-                <label>Short Questions (Theory)</label>
+                <label>Short Questions (Theory) : </label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
                     min={0}
                     className="w-24 bg-transparent border-gray-700"
+
+                    className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                     value={form.shortCount}
                     onChange={(e) =>
                       setForm({ ...form, shortCount: Number(e.target.value) })
@@ -500,10 +518,10 @@ export default function FacultyDashboardPage() {
                       setForm({ ...form, shortDifficulty: v })
                     }
                   >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40">
+                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
                       <SelectValue placeholder="Difficulty" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-800 text-white">
                       <SelectItem value="easy">Easy</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="hard">Hard</SelectItem>
@@ -512,12 +530,16 @@ export default function FacultyDashboardPage() {
                 </div>
               </div>
               <div>
-                <label>Long Questions (Theory)</label>
+                <label>Long Questions (Theory) : </label>
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
                     min={0}
                     className="w-24 bg-transparent border-gray-700"
+
+                    className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                     value={form.longCount}
                     onChange={(e) =>
                       setForm({ ...form, longCount: Number(e.target.value) })
@@ -529,10 +551,10 @@ export default function FacultyDashboardPage() {
                       setForm({ ...form, longDifficulty: v })
                     }
                   >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40">
+                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
                       <SelectValue placeholder="Difficulty" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-slate-800 text-white">
                       <SelectItem value="easy">Easy</SelectItem>
                       <SelectItem value="medium">Medium</SelectItem>
                       <SelectItem value="hard">Hard</SelectItem>
@@ -541,11 +563,15 @@ export default function FacultyDashboardPage() {
                 </div>
               </div>
               <div>
-                <label>Coding Questions</label>
+                <label>Coding Questions : </label>
                 <Input
                   type="number"
+
                   min={0}
                   className="w-28 bg-transparent border-gray-700 mt-1"
+
+                  className="w-28 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                   value={form.codingCount}
                   onChange={(e) =>
                     setForm({ ...form, codingCount: Number(e.target.value) })
@@ -555,24 +581,24 @@ export default function FacultyDashboardPage() {
             </div>
           </div>
           <div className="px-2">
-            <label>Instructions / Notes</label>
+            <label>Instructions / Notes : </label>
             <Textarea
               placeholder="Add instructions for the paper"
               value={form.instructions}
               onChange={(e) =>
                 setForm({ ...form, instructions: e.target.value })
               }
-              className="bg-transparent border-gray-700"
+              className="bg-transparent border-gray-700 placeholder:text-gray-400 mt-2"
             />
           </div>
           <DialogFooter>
-            <Button onClick={() => setOpenModal(false)} variant="ghost">
+            <Button className=" bg-red-500 hover:bg-red-600 cursor-pointer" onClick={() => setOpenModal(false)} variant="ghost">
               Cancel
             </Button>
             <Button
               onClick={handleSaveExam}
               disabled={saving}
-              className="bg-indigo-700 hover:bg-indigo-600"
+              className="bg-indigo-700 hover:bg-indigo-600 cursor-pointer"
             >
               {saving ? "Saving..." : "Save Exam"}
             </Button>
@@ -597,8 +623,8 @@ export default function FacultyDashboardPage() {
             >
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-xl font-semibold">{exam.title}</h3>
-                  <div className="text-sm text-gray-400">
+                  <h3 className="text-xl font-semibold text-blue-100 mb-4">{exam.title}</h3>
+                  <div className="text-sm text-gray-200 mb-4">
                     {exam.subject?.name}{" "}
                     {exam.subject?.code ? `(${exam.subject.code})` : ""}
                   </div>
@@ -606,7 +632,7 @@ export default function FacultyDashboardPage() {
                     Course: {typeof exam.course === "object" ? exam.course?.name : exam.course}
 
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-400">
                     Duration: {exam.duration} min
                   </div>
                 </div>
@@ -666,6 +692,7 @@ export default function FacultyDashboardPage() {
                 Questions: {countQuestions(exam.questions)}
               </div>
               <div className="mt-3 flex gap-2">
+
                 <Link href={`/faculty/results/${exam._id}`} passHref>
                   <Button
                     className="bg-purple-700 hover:bg-purple-600 text-white"
@@ -674,10 +701,20 @@ export default function FacultyDashboardPage() {
                     Results
                   </Button>
                 </Link>
+
+              <Link href={`/faculty/results/${exam._id}`} passHref> 
+    <Button
+        className="bg-purple-700 hover:bg-purple-600 border-purple-900 text-white cursor-pointer"
+      
+    >
+        Results
+    </Button>
+</Link>
+
                 <Button
                   variant="outline"
                   onClick={() => handleDelete(exam._id)}
-                  className="text-red-500 border border-red-600"
+                  className="hover:bg-red-600 border border-red-600 text-white bg-red-500 cursor-pointer"
                 >
                   Delete
                 </Button>

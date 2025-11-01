@@ -115,7 +115,7 @@ export default function AddSubjectPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
         <h1 className="text-2xl sm:text-3xl font-bold flex items-center gap-2 text-blue-400">
-          <BookOpen className="w-6 h-6 text-teal-400" /> Manage Subjects
+          <BookOpen className="w-6 h-6 text-blue-800" /> Manage Subjects
         </h1>
         <Link href="/admin">
           <Button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 w-full md:w-auto">
@@ -131,17 +131,17 @@ export default function AddSubjectPage() {
             placeholder="Enter subject name"
             value={subjectName}
             onChange={(e) => setSubjectName(e.target.value)}
-            className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-teal-500"
+            className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-500"
           />
           <Input
             placeholder="Enter subject code"
             value={subjectCode}
             onChange={(e) => setSubjectCode(e.target.value)}
-            className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-teal-500"
+            className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-500"
           />
 
           <Select value={selectedFaculty} onValueChange={setSelectedFaculty}>
-            <SelectTrigger className="w-full sm:w-60 bg-gray-900 border border-gray-700 text-gray-100 focus:ring-2 focus:ring-teal-500">
+            <SelectTrigger className="w-full sm:w-60 bg-gray-900 border border-gray-700 text-gray-100 focus:ring-2 focus:ring-blue-500">
               <SelectValue placeholder="Assign Faculty" />
             </SelectTrigger>
             <SelectContent className="bg-gray-900 border border-gray-700 text-gray-100">
@@ -164,7 +164,7 @@ export default function AddSubjectPage() {
               value={newTopic}
               onChange={(e) => setNewTopic(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleAddTopic()}
-              className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-teal-500"
+              className="flex-1 bg-gray-900 border border-gray-700 text-gray-100 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-500"
             />
             <Button
               onClick={handleAddTopic}
@@ -192,7 +192,7 @@ export default function AddSubjectPage() {
       </div>
             <Button
             onClick={handleAddSubject}
-            className="bg-teal-600 hover:bg-teal-700 w-full sm:w-auto flex items-center gap-2 justify-center mb-6"
+            className="bg-blue-600 hover:bg-blue-700 cursor-pointer w-full sm:w-auto flex items-center gap-2 justify-center mb-6"
           >
             <PlusCircle className="w-4 h-4" /> Add Subject
           </Button>
@@ -202,7 +202,7 @@ export default function AddSubjectPage() {
         placeholder="Search subjects..."
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        className="w-full md:w-64 mb-4 bg-gray-900 border border-gray-700 text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-teal-500"
+        className="w-full md:w-64 mb-4 bg-gray-900 border border-gray-700 text-gray-100 placeholder:text-gray-300 focus:ring-2 focus:ring-blue-500"
       />
 
       {/* Subjects Table */}
