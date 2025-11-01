@@ -123,7 +123,7 @@ export default function HomePage() {
                 Get Started
               </Button>
             </Link>
-            <Link href="#features">
+            <Link href="/contact">
               <Button
                 size="lg"
                 variant="outline"

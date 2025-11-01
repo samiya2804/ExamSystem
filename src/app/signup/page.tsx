@@ -115,9 +115,14 @@ const SignupPage = () => {
               type="text"
               id="firstName"
               value={firstName}
+              placeholder="Enter First Name"
               onChange={(e) => setFirstName(e.target.value)}
               required
+
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+
             />
           </div>
           <div>
@@ -128,9 +133,14 @@ const SignupPage = () => {
               type="text"
               id="lastName"
               value={lastName}
+              placeholder="Enter Last Name"
               onChange={(e) => setLastName(e.target.value)}
               required
+
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+
             />
           </div>
           <div>
@@ -141,9 +151,14 @@ const SignupPage = () => {
               type="text"
               id="username"
               value={username}
+              placeholder="Enter Username"
               onChange={(e) => setUsername(e.target.value)}
               required
+
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+
             />
           </div>
           <div>
@@ -153,10 +168,15 @@ const SignupPage = () => {
             <input
               type="email"
               id="email"
+              placeholder="Enter Email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+
             />
           </div>
           <div>
@@ -166,10 +186,15 @@ const SignupPage = () => {
             <input
               type="password"
               id="password"
+                placeholder="Enter Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+
               className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+
+              className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+
             />
           </div>
 

@@ -62,17 +62,17 @@ const AdminNotificationForm: React.FC = () => {
     'hidden'; // Hide status message initially or when idle
 
   return (
-    <div className="p-6 max-w-xl mx-auto bg-white shadow-xl rounded-lg border border-gray-100">
-      <h2 className="text-2xl font-semibold text-gray-800 mb-4">
+    <div className="p-6 max-w-xl mx-auto bg-slate-800 shadow-xl rounded-lg border border-gray-800">
+      <h2 className="text-2xl font-semibold text-blue-500 mb-4">
         Post System Notification
       </h2>
-      <p className="text-sm text-gray-500 mb-6">
+      <p className="text-sm text-white mb-6">
         This notification will be visible to all users (targetUser: &lsquo;all&lsquo;).
       </p>
 
       <form onSubmit={handleSubmit}>
         <div className="mb-6">
-          <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="message" className="block text-sm font-medium text-blue-600 mb-2">
             Notification Message
           </label>
           <textarea
@@ -80,7 +80,7 @@ const AdminNotificationForm: React.FC = () => {
             rows={5}
             value={formData.message}
             onChange={handleChange}
-            className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
+            className="w-full p-3 border border-gray-900 placeholder:text-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500 transition duration-150"
             placeholder="Enter the message you want to broadcast to users..."
             required
             disabled={status === 'posting'}
@@ -92,7 +92,7 @@ const AdminNotificationForm: React.FC = () => {
           disabled={isButtonDisabled}
           className={`w-full py-3 px-4 rounded-lg font-bold text-white transition duration-200 
             ${isButtonDisabled 
-              ? 'bg-blue-400 cursor-not-allowed' 
+              ? 'bg-blue-600 cursor-not-allowed' 
               : 'bg-blue-600 hover:bg-blue-700 shadow-md'
             }`}
         >

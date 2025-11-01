@@ -117,7 +117,7 @@ const LoginPage = () => {
           </div>
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl cursor-pointer shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
+            className="w-full px-4 py-3 bg-blue-800 hover:bg-blue-900 text-white font-semibold rounded-xl cursor-pointer shadow-lg transition-all duration-200 disabled:opacity-70 disabled:cursor-not-allowed"
             disabled={loading}
           >
             {loading ? "Processing..." : "Login"}

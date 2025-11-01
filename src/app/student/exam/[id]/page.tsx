@@ -333,10 +333,17 @@ useEffect(() => {
     <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
       <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
       <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
-        <li>Keep your camera on throughout the exam.</li>
-        <li>Switching tabs more than twice will auto-submit.</li>
-        <li>Do not reload, copy, or leave fullscreen.</li>
-        <li>Submit before time ends — auto-submit when time runs out.</li>
+      <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
+  <li>Keep your camera and microphone on throughout the exam - moving out of the frame may trigger a warning or auto-submit.</li>
+  <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
+  <li>Do not reload, copy, or navigate away from the exam window.</li>
+  <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
+  <li>Ensure proper lighting and a quiet environment for clear detection.</li>
+  <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
+  <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
+  <li>Any external assistance or use of devices is strictly prohibited.</li>
+</ul>
+
       </ul>
  <Button
   onClick={() => {
