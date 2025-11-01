@@ -72,6 +72,12 @@ export default function AdminPage() {
               Add Department
             </Link>
             <Link
+              href="/admin/addCourses"
+              className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 text-sm sm:text-base"
+            >
+              Add Course
+            </Link>
+            <Link
               href="/admin/notifications"
               className="px-3 sm:px-4 py-2 bg-indigo-600 text-white rounded-md shadow hover:bg-indigo-700 text-sm sm:text-base"
             >

@@ -1,9 +1,10 @@
-// app/api/auth/login/route.ts
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+// import Course from "@/lib/models/Course";
 import User from "@/lib/models/User";
 import { connectDB } from "@/lib/db";
+
 
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret_here";
 
@@ -12,21 +13,42 @@ export async function POST(req: Request) {
     await connectDB();
     const { email, password, role } = await req.json();
 
-    const user = await User.findOne({ email, role });
-    if (!user) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    const user = await User.findOne({ email, role }).populate("course", "name description");
+    if (!user)
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
     const valid = await bcrypt.compare(password, user.password);
-    if (!valid) return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!valid)
+      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
 
+    // ✅ keep course._id consistent with frontend naming
     const token = jwt.sign(
-      { id: user._id, email: user.email, role: user.role, firstName: user.firstName },
+      {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        course: user.course
+          ? { _id: user.course._id.toString(), name: user.course.name }
+          : null,
+      },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
 
     const res = NextResponse.json({
       message: "Login successful",
-      user: { id: user._id, email: user.email, role: user.role, firstName: user.firstName },
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        course: user.course
+          ? { _id: user.course._id.toString(), name: user.course.name }
+          : null,
+      },
     });
 
     res.cookies.set("exam_system_token", token, {

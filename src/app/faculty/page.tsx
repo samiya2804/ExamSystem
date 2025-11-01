@@ -26,6 +26,7 @@ import { toast } from "sonner";
 // --- DATA TYPES (CORRECTED) ---
 
 type Subject = { _id: string; name: string; code?: string };
+type Course = { _id: string; name: string };
 
 // This defines the structure of the generated questions object
 type QuestionPaper = {
@@ -38,7 +39,7 @@ type QuestionPaper = {
 type Exam = {
   _id: string;
   title: string;
-  course: string;
+   course: Course | string; 
   subject: Subject;
   duration: number;
   status: string;
@@ -54,7 +55,7 @@ export default function FacultyDashboardPage() {
   const { user } = useAuth();
   const facultyId = user?.id;
   const facultyName = user?.firstName;
-
+  const [courses, setCourses] = useState<Course[]>([]);
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loadingExams, setLoadingExams] = useState(false);
@@ -62,7 +63,7 @@ export default function FacultyDashboardPage() {
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [form, setForm] = useState({
     title: "",
-    course: "B.Tech",
+    course: "",
     subjectId: "",
     duration: 180,
     veryShortCount: 5,
@@ -77,6 +78,25 @@ export default function FacultyDashboardPage() {
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // fetch courses
+  async function fetchCourses() {
+    try {
+      const res = await fetch("/api/courses");
+      const data = await res.json();
+      setCourses(data || []);
+    } catch (err) {
+      console.error("Courses fetch error", err);
+    }
+  }
+
+  useEffect(() => {
+    async function loadInitialData() {
+      await Promise.all([fetchSubjects(), fetchCourses()]);
+      if (facultyId) await loadExams(facultyId);
+    }
+    loadInitialData();
+  }, []);
 
   // FIX 2: Load exams only AFTER the facultyId is available from the auth hook
   useEffect(() => {
@@ -135,7 +155,10 @@ export default function FacultyDashboardPage() {
     setEditingExam(exam);
     setForm({
       title: exam.title,
-      course: exam.course || "B.Tech",
+      course:
+      typeof exam.course === "object"
+        ? exam.course?._id
+        : exam.course || "",
       subjectId: exam.subject?._id || "",
       duration: exam.duration || 180,
       veryShortCount: exam.veryShort?.count || 0,
@@ -151,57 +174,64 @@ export default function FacultyDashboardPage() {
   }
 
   const handleSaveExam = async () => {
-    if (!form.title || !form.subjectId) {
-      alert("Please provide exam title and select a subject.");
-      return;
-    }
-    setSaving(true);
-    try {
-      const payload = {
-        title: form.title,
-        course: form.course,
-        subject: form.subjectId,
-        duration: form.duration,
-        veryShort: {
-          count: Number(form.veryShortCount),
-          difficulty: form.veryShortDifficulty,
-        },
-        short: {
-          count: Number(form.shortCount),
-          difficulty: form.shortDifficulty,
-        },
-        long: {
-          count: Number(form.longCount),
-          difficulty: form.longDifficulty,
-        },
-        coding: { count: Number(form.codingCount || 0) },
-        instructions: form.instructions,
-        facultyId: facultyId, // This is now guaranteed to exist when the form is submitted
-      };
+  if (!form.title || !form.subjectId) {
+    alert("Please provide exam title and select a subject.");
+    return;
+  }
 
-      const url = editingExam ? `/api/exams/${editingExam._id}` : "/api/exams";
-      const method = editingExam ? "PUT" : "POST";
-      const res = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const saved = await res.json();
-      if (!res.ok) throw new Error(saved.error || "Failed to save exam");
+  setSaving(true);
+  try {
+    const payload = {
+      title: form.title,
+      course: form.course,
+      subject: form.subjectId,
+      duration: Number(form.duration),
+      veryShort: {
+        count: Math.max(1, Number(form.veryShortCount)),
+        difficulty: form.veryShortDifficulty,
+      },
+      short: {
+        count: Math.max(1, Number(form.shortCount)),
+        difficulty: form.shortDifficulty,
+      },
+      long: {
+        count: Math.max(1, Number(form.longCount)),
+        difficulty: form.longDifficulty,
+      },
+      coding: { count: Math.max(0, Number(form.codingCount)) },
+      instructions: form.instructions,
+      facultyId,
+    };
 
-      if (editingExam) {
-        setExams((p) => p.map((e) => (e._id === saved._id ? saved : e)));
-      } else {
-        setExams((p) => [saved, ...p]);
-      }
-      setOpenModal(false);
-    } catch (err: any) {
-      console.error("Save exam error:", err);
-      alert(`Failed to save exam: ${err.message}`);
-    } finally {
-      setSaving(false);
-    }
-  };
+    const url = editingExam ? `/api/exams/${editingExam._id}` : "/api/exams";
+    const method = editingExam ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const saved = await res.json();
+    if (!res.ok) throw new Error(saved.error || "Failed to save exam");
+
+    // ✅ Update local state immediately with new values
+    setExams((prev) =>
+      editingExam
+        ? prev.map((e) => (e._id === saved._id ? saved : e))
+        : [saved, ...prev]
+    );
+
+    toast.success("Exam saved successfully!");
+    setOpenModal(false);
+  } catch (err: any) {
+    console.error("Save exam error:", err);
+    toast.error(`Failed to save exam: ${err.message}`);
+  } finally {
+    setSaving(false);
+  }
+};
+
 
   const handleGeneratePaper = async (examId: string) => {
     if (
@@ -211,19 +241,16 @@ export default function FacultyDashboardPage() {
     )
       return;
     setGenerating(examId);
-  
 
     try {
-   setLoading(true);
-      const res = await fetch(`/api/exams/${examId}/generate`, { 
-        method: "POST"
+      setLoading(true);
+      const res = await fetch(`/api/exams/${examId}/generate`, {
+        method: "POST",
+      });
 
-       });
-
-      
       if (res.status === 200) {
         toast.success("Paper generated successfully!");
-      } else {      
+      } else {
         const errorData = await res.json();
         toast.error("Failed to generate paper.");
         throw new Error(
@@ -395,6 +422,26 @@ export default function FacultyDashboardPage() {
                   ))}
                 </SelectContent>
               </Select>
+
+              <label>Select Course</label>
+              <Select
+                value={form.course}
+                onValueChange={(v) => setForm({ ...form, course: v })}
+              >
+                <SelectTrigger className="bg-transparent border-gray-700">
+                  <SelectValue placeholder="Choose a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map((c) => (
+                    <SelectItem key={c._id} value={c._id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <label>Duration (minutes)</label>
+
               <label>Class / Course : </label>
               <Input
                 value={form.course}
@@ -402,6 +449,7 @@ export default function FacultyDashboardPage() {
                 className="bg-transparent border-gray-700 mt-2"
               />
               <label>Duration (minutes) : </label>
+
               <Input
                 type="number"
                 value={form.duration}
@@ -417,7 +465,12 @@ export default function FacultyDashboardPage() {
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
+                    min={0}
+                    className="w-24 bg-transparent border-gray-700"
+
                     className="w-24 bg-transparent border-gray-700 text-gray-400"
+
                     value={form.veryShortCount}
                     onChange={(e) =>
                       setForm({
@@ -448,7 +501,12 @@ export default function FacultyDashboardPage() {
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
+                    min={0}
+                    className="w-24 bg-transparent border-gray-700"
+
                     className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                     value={form.shortCount}
                     onChange={(e) =>
                       setForm({ ...form, shortCount: Number(e.target.value) })
@@ -476,7 +534,12 @@ export default function FacultyDashboardPage() {
                 <div className="flex gap-2 mt-1">
                   <Input
                     type="number"
+
+                    min={0}
+                    className="w-24 bg-transparent border-gray-700"
+
                     className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                     value={form.longCount}
                     onChange={(e) =>
                       setForm({ ...form, longCount: Number(e.target.value) })
@@ -503,7 +566,12 @@ export default function FacultyDashboardPage() {
                 <label>Coding Questions : </label>
                 <Input
                   type="number"
+
+                  min={0}
+                  className="w-28 bg-transparent border-gray-700 mt-1"
+
                   className="w-28 bg-transparent border-gray-700 mt-2 text-gray-400"
+
                   value={form.codingCount}
                   onChange={(e) =>
                     setForm({ ...form, codingCount: Number(e.target.value) })
@@ -561,7 +629,8 @@ export default function FacultyDashboardPage() {
                     {exam.subject?.code ? `(${exam.subject.code})` : ""}
                   </div>
                   <div className="text-sm text-gray-500 mt-2">
-                    Class: {exam.course}
+                    Course: {typeof exam.course === "object" ? exam.course?.name : exam.course}
+
                   </div>
                   <div className="text-sm text-gray-400">
                     Duration: {exam.duration} min
@@ -623,6 +692,16 @@ export default function FacultyDashboardPage() {
                 Questions: {countQuestions(exam.questions)}
               </div>
               <div className="mt-3 flex gap-2">
+
+                <Link href={`/faculty/results/${exam._id}`} passHref>
+                  <Button
+                    className="bg-purple-700 hover:bg-purple-600 text-white"
+                    size="sm"
+                  >
+                    Results
+                  </Button>
+                </Link>
+
               <Link href={`/faculty/results/${exam._id}`} passHref> 
     <Button
         className="bg-purple-700 hover:bg-purple-600 border-purple-900 text-white cursor-pointer"
@@ -631,6 +710,7 @@ export default function FacultyDashboardPage() {
         Results
     </Button>
 </Link>
+
                 <Button
                   variant="outline"
                   onClick={() => handleDelete(exam._id)}

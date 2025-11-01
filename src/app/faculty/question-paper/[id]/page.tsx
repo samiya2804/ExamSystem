@@ -31,6 +31,7 @@ import {jsPDF} from "jspdf";
 
 /* Types */
 type Subject = { _id: string; name: string; code?: string };
+type Course = { _id: string; name: string; code?: string };
 type MCQ = { id?: string; question: string; options?: string[]; answer?: string; marks?: number };
 type Theory = { id?: string; question: string; marks?: number };
 type Coding = { id?: string; question: string; marks?: number };
@@ -42,7 +43,7 @@ type QuestionPaper =
 type Exam = {
   _id: string;
   title: string;
-  course?: string;
+  course?: Course | string;
   subject?: Subject | string;
   duration?: number;
   status?: string;
@@ -70,6 +71,16 @@ export default function GeneratedPaperPage() {
   const [mcqs, setMcqs] = useState<MCQ[]>([]);
   const [theory, setTheory] = useState<Theory[]>([]);
   const [coding, setCoding] = useState<Coding[]>([]);
+
+  type Course = {
+  _id: string;
+  name: string;
+};
+
+const isCourseObject = (value: any): value is Course => {
+  return value && typeof value === "object" && "name" in value;
+};
+
 
   useEffect(() => {
     if (!examId) return;
@@ -259,17 +270,22 @@ async function handleDownloadPaper() {
     return;
   }
 
-  
-// ✅ Safely extract subject details
+  // ✅ Safely extract course and subject details
+  const courseName =
+    typeof exam.course === "object" && exam.course !== null
+      ? exam.course.name || "Course"
+      : String(exam.course || "Course");
+
   const subjectName =
-    typeof exam.subject === "object"
-      ? exam.subject?.name || "Subject"
+    typeof exam.subject === "object" && exam.subject !== null
+      ? exam.subject.name || "Subject"
       : String(exam.subject || "Subject");
 
   const subjectCode =
-    typeof exam.subject === "object"
-      ? exam.subject?.code || "N/A"
+    typeof exam.subject === "object" && exam.subject !== null
+      ? exam.subject.code || "N/A"
       : String(exam.subject || "N/A");
+
   const doc = new jsPDF({ unit: "pt", format: "a4" });
 
   const pageWidth = doc.internal.pageSize.getWidth();
@@ -295,16 +311,23 @@ async function handleDownloadPaper() {
 
     doc.setFont("Times", "Bold");
     doc.setFontSize(13);
-    doc.text("PAPER ID: " + (exam._id?.toString().slice(0, 8) || "N/A"), pageWidth / 2, currentY, { align: "center" });
+    doc.text(
+      "PAPER ID: " + (exam._id?.toString().slice(0, 8) || "N/A"),
+      pageWidth / 2,
+      currentY,
+      { align: "center" }
+    );
     currentY += 20;
 
     doc.setFontSize(18);
-    doc.text("INVERTIS UNIVERSITY", pageWidth / 2, currentY, { align: "center" });
+    doc.text("INVERTIS UNIVERSITY", pageWidth / 2, currentY, {
+      align: "center",
+    });
     currentY += 20;
 
     doc.setFont("Times", "Normal");
     doc.setFontSize(13);
-    doc.text((exam.course || "B.Tech"), pageWidth / 2, currentY, { align: "center" });
+    doc.text(courseName, pageWidth / 2, currentY, { align: "center" });
     currentY += 18;
 
     const subjLine = `${subjectName} (${subjectCode})`;
@@ -317,7 +340,11 @@ async function handleDownloadPaper() {
     currentY += 20;
 
     doc.setFontSize(10);
-    doc.text("Note: 1. Attempt all Sections. If any data missing, choose suitably.", marginLeft, currentY);
+    doc.text(
+      "Note: 1. Attempt all Sections. If any data missing, choose suitably.",
+      marginLeft,
+      currentY
+    );
     currentY += 24;
 
     doc.setLineWidth(0.5);
@@ -337,7 +364,6 @@ async function handleDownloadPaper() {
     const xM = pageWidth - marginRight - 40; // marks aligned right
     const yStart = currentY;
 
-    // Split long question text
     doc.setFont("Times", "Normal");
     doc.setFontSize(11);
     const splitText = doc.splitTextToSize(text, usableWidth - 80);
@@ -350,30 +376,24 @@ async function handleDownloadPaper() {
       drawHeader();
     }
 
-    // Question number
     doc.setFont("Times", "Bold");
     doc.text(`${qNo}.`, xQ, currentY);
 
-    // Question text
     doc.setFont("Times", "Normal");
     doc.text(splitText, xQ + 25, currentY, { maxWidth: usableWidth - 70 });
-    if (marks) {
-      doc.text(`${marks}`, xM, yStart);
-    }
+    if (marks) doc.text(`${marks}`, xM, yStart);
 
     currentY += qHeight + 6;
   };
 
   const addMCQ = (qNo: number, q: any) => {
-    // Question line
     addQuestion(`${qNo}`, q.question, q.marks);
 
-    // Options
     if (q.options && q.options.length > 0) {
       q.options.forEach((opt: string, idx: number) => {
         const optText = `${String.fromCharCode(97 + idx)}) ${opt}`;
         const splitOpt = doc.splitTextToSize(optText, usableWidth - 90);
-        splitOpt.forEach((line:any) => {
+        splitOpt.forEach((line: any) => {
           if (currentY > pageHeight - 60) {
             doc.addPage();
             pageNo++;
@@ -406,7 +426,6 @@ async function handleDownloadPaper() {
     coding.forEach((q, i) => addQuestion(`${i + 1}`, q.question, q.marks));
   }
 
-  // FOOTER PAGE NO
   doc.setFontSize(9);
   doc.text(`Page ${pageNo}`, pageWidth / 2, pageHeight - 20, { align: "center" });
 
@@ -474,7 +493,10 @@ async function handleDownloadPaper() {
                   ? `${exam.subject.name}${exam.subject.code ? ` (${exam.subject.code})` : ""}`
                   : ""}
               </div>
-              <div className="text-sm text-gray-500 mt-2">Class: {exam?.course || "—"}</div>
+              <div className="text-sm text-gray-500 mt-2"><div className="text-sm text-gray-500 mt-2">
+  Course: {isCourseObject(exam?.course) ? exam.course.name : (exam?.course || "N/A")} 
+</div>
+</div>
             </div>
             <div className="text-right text-sm text-gray-400">
               <div>Duration: {exam?.duration ?? "—"} min</div>
