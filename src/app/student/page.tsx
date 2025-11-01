@@ -130,7 +130,8 @@ export default function StudentDashboard() {
     const fetchData = async () => {
       setLoading(true);
       try {
-        const examsResponse = await axios.get("/api/exams");
+        const examsResponse = await axios.get(`/api/exams?courseId=${user?.course?._id}`);
+
         const publishedExams = (examsResponse.data || []).filter(
           (exam: Exam) => exam?.isPublished
         );
@@ -219,6 +220,7 @@ export default function StudentDashboard() {
                 <h1 className="text-3xl font-bold">
                   Welcome, {user?.firstName ?? "Student"}
                 </h1>
+                <h4>Course Name: {user?.course?.name ?? "N/A"}</h4>
                 <p className="text-sm opacity-90 mt-1">
                   Ready for your next challenge?
                 </p>

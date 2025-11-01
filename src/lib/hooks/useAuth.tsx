@@ -1,7 +1,12 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
-import {jwtDecode} from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
+
+interface Course {
+  _id: string;
+  name: string;
+}
 
 interface User {
   id: string;
@@ -9,8 +14,8 @@ interface User {
   role: string;
   firstName?: string;
   lastName?: string;
+  course?: Course | null;
 }
- 
 
 interface AuthContextType {
   user: User | null;
@@ -22,7 +27,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true); // <-- loading flag
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const token = document.cookie
@@ -39,6 +44,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           role: decoded.role,
           firstName: decoded.firstName,
           lastName: decoded.lastName,
+          course: decoded.course || null,
         });
       } catch (err) {
         console.error("Token decode error:", err);
@@ -48,7 +54,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
     }
 
-    setLoading(false); // <-- finished checking
+    setLoading(false);
   }, []);
 
   return (

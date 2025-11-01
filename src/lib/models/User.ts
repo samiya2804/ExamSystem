@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, models } from "mongoose";
+import "./Course";
 
 export interface IUser extends Document {
   firstName: string;
@@ -7,6 +8,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   role: "student" | "faculty" | "admin";
+  course?: mongoose.Schema.Types.ObjectId;
   createdAt: Date;
     // --- NEW FIELDS ---
     phone?: string;
@@ -23,6 +25,10 @@ const UserSchema = new Schema<IUser>({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, enum: ["student", "faculty", "admin"], default: "student" },
+  course: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Course", // 
+  },
      // --- NEW SCHEMA DEFINITIONS ---
     phone: { type: String, required: false },
     address: { type: String, required: false },

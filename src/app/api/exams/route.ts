@@ -1,9 +1,9 @@
 // app/api/exams/route.ts
 import { NextResponse } from "next/server";
+import mongoose from "mongoose";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
 import Subject from "@/lib/models/subject";
-
 
 export async function GET(req: Request) {
   try {
@@ -11,13 +11,16 @@ export async function GET(req: Request) {
 
     const url = new URL(req.url);
     const facultyId = url.searchParams.get("facultyId");
+    const courseId = url.searchParams.get("courseId");
 
     const query: any = {};
     if (facultyId) query.facultyId = facultyId;
+    if (courseId) query.course = new mongoose.Types.ObjectId(courseId);
 
     const exams = await Exam.find(query)
       .sort({ createdAt: -1 })
-      .populate("subject", "name code");
+      .populate("subject", "name code")
+      .populate("course", "name");
 
     return NextResponse.json(exams);
   } catch (err: any) {
@@ -31,12 +34,10 @@ export async function POST(req: Request) {
     await connectDB();
     const body = await req.json();
 
-    // validate required fields
     if (!body.title || !body.subject) {
       return NextResponse.json({ error: "Missing title or subject" }, { status: 400 });
     }
 
-    // optionally check subject exists
     const subj = await Subject.findById(body.subject);
     if (!subj) {
       return NextResponse.json({ error: "Subject not found" }, { status: 400 });
@@ -44,7 +45,7 @@ export async function POST(req: Request) {
 
     const exam = await Exam.create({
       title: body.title,
-      course: body.course,
+      course: body.course, // ✅ correct field
       subject: body.subject,
       facultyId: body.facultyId || null,
       duration: body.duration || 180,
@@ -54,10 +55,12 @@ export async function POST(req: Request) {
       coding: body.coding || { count: 0 },
       instructions: body.instructions || "",
       status: "draft",
-      
     });
 
-    const populated = await Exam.findById(exam._id).populate("subject", "name code");
+    const populated = await Exam.findById(exam._id)
+      .populate("subject", "name code")
+      .populate("course", "name");
+
     return NextResponse.json(populated, { status: 201 });
   } catch (err: any) {
     console.error("Exams POST error:", err);

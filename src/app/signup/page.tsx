@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner"; // ✅ shadcn toast
+import { toast } from "sonner";
 
 const SignupPage = () => {
   const [firstName, setFirstName] = useState("");
@@ -12,8 +12,19 @@ const SignupPage = () => {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
   const [loading, setLoading] = useState(false);
-
+  const [courses, setCourses] = useState<{ _id: string; name: string }[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState("");
   const router = useRouter();
+
+  // Fetch available courses
+  useEffect(() => {
+    if (role === "student" || role === "faculty") {
+      fetch("/api/courses")
+        .then((res) => res.json())
+        .then((data) => setCourses(data))
+        .catch((err) => console.error("Error loading courses:", err));
+    }
+  }, [role]);
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,6 +41,7 @@ const SignupPage = () => {
           email,
           password,
           role,
+          course: selectedCourse || null,
         }),
       });
 
@@ -69,7 +81,7 @@ const SignupPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-900  to-gray-900  flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-900 to-gray-900 flex items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-lg-md p-8 rounded-2xl shadow-2xl w-full max-w-md border border-white/20">
         <h1 className="text-3xl font-bold text-center text-indigo-400 mb-6">Sign Up</h1>
 
@@ -105,7 +117,7 @@ const SignupPage = () => {
               value={firstName}
               onChange={(e) => setFirstName(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
@@ -118,7 +130,7 @@ const SignupPage = () => {
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
@@ -131,7 +143,7 @@ const SignupPage = () => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
@@ -144,7 +156,7 @@ const SignupPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
@@ -157,12 +169,36 @@ const SignupPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg shadow-sm text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
+
+          {/* Course Dropdown (only for student/faculty) */}
+          {(role === "student" || role === "faculty") && (
+            <div>
+              <label htmlFor="course" className="block text-sm font-medium text-gray-300 mb-1">
+                Select Course
+              </label>
+              <select
+                id="course"
+                value={selectedCourse}
+                onChange={(e) => setSelectedCourse(e.target.value)}
+                required
+                className="w-full px-4 py-2 bg-gray-800 border border-gray-700 rounded-lg text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              >
+                <option value="">-- Choose a Course --</option>
+                {courses.map((course) => (
+                  <option key={course._id} value={course._id}>
+                    {course.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl cursor-pointer shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
+            className="w-full px-4 py-3 bg-indigo-600 text-white font-semibold rounded-xl shadow-md hover:bg-indigo-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-900"
             disabled={loading}
           >
             {loading ? "Processing..." : "Sign Up"}
