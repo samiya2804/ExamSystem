@@ -467,7 +467,7 @@ export default function FacultyDashboardPage() {
                     type="number"
 
                     min={0}
-                    className="w-24 bg-transparent border-gray-700"
+                    
 
                     className="w-24 bg-transparent border-gray-700 text-gray-400"
 
