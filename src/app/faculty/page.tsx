@@ -391,217 +391,231 @@ export default function FacultyDashboardPage() {
       </div>
 
       <Dialog open={openModal} onOpenChange={setOpenModal}>
-        <DialogContent className="bg-[#08101a] text-gray-100 rounded-lg w-full max-w-3xl">
-          <DialogHeader>
-            <DialogTitle className="text-indigo-700">
-              📘 {editingExam ? "Edit Exam" : "Create Exam"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
-            <div className="space-y-3 p-2">
-              <label>Exam Title : </label>
-              <Input
-                placeholder="e.g., Mid-Term Exam"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="bg-transparent border-gray-700 placeholder:text-gray-400"
-              />
-              <label>Select Subject : </label>
-              <Select
-                value={form.subjectId}
-                onValueChange={(v) => setForm({ ...form, subjectId: v })}
-              >
-                <SelectTrigger className="bg-transparent border-gray-700 placeholder:text-gray-400 mt-2">
-                  <SelectValue placeholder="Choose a subject" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subjects.map((s) => (
-                    <SelectItem key={s._id} value={s._id} className="bg-slate-800 text-white hover:bg-blue-400 border-slate-600">
-                      {s.name} {s.code ? `(${s.code})` : ""}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+  <DialogContent
+    className="
+      bg-[#0b1220] text-gray-100 rounded-2xl
+      w-[95vw] max-w-3xl max-h-[90vh]
+      overflow-y-auto p-6 sm:p-8
+      border border-slate-700 shadow-2xl
+    "
+  >
+    <DialogHeader className="border-b border-slate-700 pb-4 mb-4">
+      <DialogTitle className="text-indigo-400 text-2xl font-semibold tracking-wide">
+        {editingExam ? "Edit Exam" : "Create New Exam"}
+      </DialogTitle>
+      <p className="text-gray-400 text-sm">
+        Configure exam details, difficulty levels, and instructions below.
+      </p>
+    </DialogHeader>
 
-              <label>Select Course</label>
-              <Select
-                value={form.course}
-                onValueChange={(v) => setForm({ ...form, course: v })}
-              >
-                <SelectTrigger className="bg-transparent border-gray-700">
-                  <SelectValue placeholder="Choose a course" />
-                </SelectTrigger>
-                <SelectContent>
-                  {courses.map((c) => (
-                    <SelectItem key={c._id} value={c._id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+    <div className="space-y-8">
+      {/* BASIC DETAILS */}
+      <section className="space-y-4">
+        <h3 className="text-lg font-medium text-indigo-400 border-b border-slate-700 pb-1">
+          Basic Details
+        </h3>
 
-              <label>Duration (minutes)</label>
-
-              <label>Class / Course : </label>
-              <Input
-                value={form.course}
-                onChange={(e) => setForm({ ...form, course: e.target.value })}
-                className="bg-transparent border-gray-700 mt-2"
-              />
-              <label>Duration (minutes) : </label>
-
-              <Input
-                type="number"
-                value={form.duration}
-                onChange={(e) =>
-                  setForm({ ...form, duration: Number(e.target.value) })
-                }
-                className="bg-transparent border-gray-700 mt-2"
-              />
-            </div>
-            <div className="p-2 space-y-3">
-              <div>
-                <label>Multiple Choice Questions(MCQ) : </label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    type="number"
-                    min={0}
-                    className="w-24 bg-transparent border-gray-700 text-gray-400"
-
-                    value={form.veryShortCount}
-                    onChange={(e) =>
-                      setForm({
-                        ...form,
-                        veryShortCount: Number(e.target.value),
-                      })
-                    }
-                  />
-                  <Select
-                    value={form.veryShortDifficulty}
-                    onValueChange={(v) =>
-                      setForm({ ...form, veryShortDifficulty: v })
-                    }
-                  >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
-                      <SelectValue placeholder="Difficulty" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 text-white">
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <label>Short Questions (Theory) : </label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    type="number"
-
-                    min={0}
-                    
-
-                    className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
-
-                    value={form.shortCount}
-                    onChange={(e) =>
-                      setForm({ ...form, shortCount: Number(e.target.value) })
-                    }
-                  />
-                  <Select
-                    value={form.shortDifficulty}
-                    onValueChange={(v) =>
-                      setForm({ ...form, shortDifficulty: v })
-                    }
-                  >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
-                      <SelectValue placeholder="Difficulty" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 text-white">
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <label>Long Questions (Theory) : </label>
-                <div className="flex gap-2 mt-1">
-                  <Input
-                    type="number"
-
-                    min={0}
-                   
-
-                    className="w-24 bg-transparent border-gray-700 mt-2 text-gray-400"
-
-                    value={form.longCount}
-                    onChange={(e) =>
-                      setForm({ ...form, longCount: Number(e.target.value) })
-                    }
-                  />
-                  <Select
-                    value={form.longDifficulty}
-                    onValueChange={(v) =>
-                      setForm({ ...form, longDifficulty: v })
-                    }
-                  >
-                    <SelectTrigger className="bg-transparent border-gray-700 w-40 mt-2">
-                      <SelectValue placeholder="Difficulty" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-slate-800 text-white">
-                      <SelectItem value="easy">Easy</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="hard">Hard</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <div>
-                <label>Coding Questions : </label>
-                <Input
-                  type="number"
-
-                  min={0}
-                  
-
-                  className="w-28 bg-transparent border-gray-700 mt-2 text-gray-400"
-
-                  value={form.codingCount}
-                  onChange={(e) =>
-                    setForm({ ...form, codingCount: Number(e.target.value) })
-                  }
-                />
-              </div>
-            </div>
-          </div>
-          <div className="px-2">
-            <label>Instructions / Notes : </label>
-            <Textarea
-              placeholder="Add instructions for the paper"
-              value={form.instructions}
-              onChange={(e) =>
-                setForm({ ...form, instructions: e.target.value })
-              }
-              className="bg-transparent border-gray-700 placeholder:text-gray-400 mt-2"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Exam Title</label>
+            <Input
+              placeholder="e.g., Mid-Term Exam"
+              value={form.title}
+              onChange={(e) => setForm({ ...form, title: e.target.value })}
+              className="bg-slate-900 border-gray-700 placeholder:text-gray-500 focus:ring-indigo-600"
             />
           </div>
-          <DialogFooter>
-            <Button className=" bg-red-500 hover:bg-red-600 cursor-pointer" onClick={() => setOpenModal(false)} variant="ghost">
-              Cancel
-            </Button>
-            <Button
-              onClick={handleSaveExam}
-              disabled={saving}
-              className="bg-indigo-700 hover:bg-indigo-600 cursor-pointer"
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Duration (minutes)</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="e.g., 90"
+              value={form.duration}
+              onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
+              className="bg-slate-900 border-gray-700 placeholder:text-gray-500"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Select Subject</label>
+            <Select
+              value={form.subjectId}
+              onValueChange={(v) => setForm({ ...form, subjectId: v })}
             >
-              {saving ? "Saving..." : "Save Exam"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+              <SelectTrigger className="bg-slate-900 border-gray-700">
+                <SelectValue placeholder="Choose subject" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 text-white border-gray-700">
+                {subjects.map((s) => (
+                  <SelectItem key={s._id} value={s._id}>
+                    {s.name} {s.code && `(${s.code})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Select Course</label>
+            <Select
+              value={form.course}
+              onValueChange={(v) => setForm({ ...form, course: v })}
+            >
+              <SelectTrigger className="bg-slate-900 border-gray-700">
+                <SelectValue placeholder="Choose course" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 text-white border-gray-700">
+                {courses.map((c) => (
+                  <SelectItem key={c._id} value={c._id}>
+                    {c.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </section>
+
+      {/* QUESTION COUNTS */}
+      <section className="space-y-4">
+        <h3 className="text-lg font-medium text-indigo-400 border-b border-slate-700 pb-1">
+          Question Distribution
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* MCQs */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">MCQs</label>
+            <div className="flex gap-3 flex-wrap">
+              <Input
+                type="number"
+                min={0}
+                className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+                value={form.veryShortCount}
+                onChange={(e) => setForm({ ...form, veryShortCount: Number(e.target.value) })}
+              />
+              <Select
+                value={form.veryShortDifficulty}
+                onValueChange={(v) => setForm({ ...form, veryShortDifficulty: v })}
+              >
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 text-white border-gray-700">
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Short Questions */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Short Questions</label>
+            <div className="flex gap-3 flex-wrap">
+              <Input
+                type="number"
+                min={0}
+                className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+                value={form.shortCount}
+                onChange={(e) => setForm({ ...form, shortCount: Number(e.target.value) })}
+              />
+              <Select
+                value={form.shortDifficulty}
+                onValueChange={(v) => setForm({ ...form, shortDifficulty: v })}
+              >
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 text-white border-gray-700">
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Long Questions */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Long Questions</label>
+            <div className="flex gap-3 flex-wrap">
+              <Input
+                type="number"
+                min={0}
+                className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+                value={form.longCount}
+                onChange={(e) => setForm({ ...form, longCount: Number(e.target.value) })}
+              />
+              <Select
+                value={form.longDifficulty}
+                onValueChange={(v) => setForm({ ...form, longDifficulty: v })}
+              >
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                  <SelectValue placeholder="Difficulty" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 text-white border-gray-700">
+                  <SelectItem value="easy">Easy</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="hard">Hard</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Coding */}
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-300">Coding Questions</label>
+            <Input
+              type="number"
+              min={0}
+              placeholder="e.g., 2"
+              className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+              value={form.codingCount}
+              onChange={(e) => setForm({ ...form, codingCount: Number(e.target.value) })}
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* INSTRUCTIONS */}
+      <section className="space-y-3">
+        <h3 className="text-lg font-medium text-indigo-400 border-b border-slate-700 pb-1">
+          Instructions / Notes
+        </h3>
+        <Textarea
+          placeholder="Add any specific instructions for this exam..."
+          value={form.instructions}
+          onChange={(e) => setForm({ ...form, instructions: e.target.value })}
+          className="bg-slate-900 border-gray-700 placeholder:text-gray-500 min-h-[100px]"
+        />
+      </section>
+    </div>
+
+    <DialogFooter className="mt-8 border-t border-slate-700 pt-4 flex flex-wrap justify-end gap-3">
+      <Button
+        onClick={() => setOpenModal(false)}
+        variant="outline"
+        className="border-gray-600 text-gray-300 hover:bg-slate-800"
+      >
+        Cancel
+      </Button>
+      <Button
+        onClick={handleSaveExam}
+        disabled={saving}
+        className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6"
+      >
+        {saving ? "Saving..." : "Save Exam"}
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {loadingExams ? (
@@ -692,21 +706,12 @@ export default function FacultyDashboardPage() {
 
                 <Link href={`/faculty/results/${exam._id}`} passHref>
                   <Button
-                    className="bg-purple-700 hover:bg-purple-600 text-white"
+                    className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-600 cursor-pointer"
                     size="sm"
                   >
                     Results
                   </Button>
                 </Link>
-
-              <Link href={`/faculty/results/${exam._id}`} passHref> 
-    <Button
-        className="bg-purple-700 hover:bg-purple-600 border-purple-900 text-white cursor-pointer"
-      
-    >
-        Results
-    </Button>
-</Link>
 
                 <Button
                   variant="outline"

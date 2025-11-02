@@ -67,7 +67,7 @@ type Result = {
 };
 type SubmissionStats = {
   totalSubmissions: number;
-  lastExam: { examTitle?: string } | null;
+  lastExam: { subjectName?: string } | null;
   averageScore: string;
 };
 
@@ -126,25 +126,31 @@ export default function StudentDashboard() {
 
   // --- Fetch available exams ---
   useEffect(() => {
-    if (!user?.id) return;
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const examsResponse = await axios.get(`/api/exams?courseId=${user?.course?._id}`);
+  // Stop early if user or course is not ready
+  if (!user?.id) return;
 
-        const publishedExams = (examsResponse.data || []).filter(
-          (exam: Exam) => exam?.isPublished
-        );
-        setAvailableExams(publishedExams);
-      } catch (err) {
-        console.error("Failed to fetch dashboard data", err);
-        setError("Failed to load dashboard data.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, [user]);
+  const courseId = user?.course?._id;
+  if (!courseId) return; // <-- ensures it's defined before using it
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const examsResponse = await axios.get(`/api/exams?courseId=${courseId}`);
+      const publishedExams = (examsResponse.data || []).filter(
+        (exam: Exam) => exam?.isPublished
+      );
+      setAvailableExams(publishedExams);
+    } catch (err) {
+      console.error("Failed to fetch dashboard data", err);
+      setError("Failed to load dashboard data.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+}, [user?.id, user?.course?._id]);
+
 
   // --- Derived Data ---
   const averageMarksData = useMemo(
@@ -264,7 +270,7 @@ export default function StudentDashboard() {
             <StatCard
               icon={<Calendar className="w-6 h-6 text-blue-500" />}
               title="Last Exam"
-              value={lastExam?.examTitle ?? "None"}
+              value={lastExam?.subjectName ?? "None"}
               color="text-blue-600"
             />
           </section>
@@ -363,7 +369,7 @@ function StatCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="p-0">
-        <div className={`text-5xl font-extrabold ${color} mt-2`}>{value}</div>
+        <div className={`text-3xl font-extrabold ${color} mt-2`}>{value}</div>
       </CardContent>
     </Card>
   );
