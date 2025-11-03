@@ -5,7 +5,7 @@ import Course from "@/lib/models/Course"; // ✅ make sure Course model exists
 import { connectDB } from "@/lib/db";
 
 
-//trigerring deployment
+//trigerring deployments
 export async function POST(req: Request) {
   try {
     await connectDB();
