@@ -8,15 +8,15 @@ export async function POST(req: Request) {
   try {
     await connectDB();
     const body = await req.json();
-    const { firstName, lastName, username, email, password, role, course } = body;
+    const { firstName, lastName, email, password, role, course } = body;
 
     // Validate fields
-    if (!firstName || !email || !password || !role || !username) {
+    if (!firstName || !email || !password || !role) {
       return NextResponse.json({ error: "All required fields must be filled" }, { status: 400 });
     }
 
     // Check for duplicates
-    const existing = await User.findOne({ $or: [{ email }, { username }] });
+    const existing = await User.findOne({ $or: [{ email }] });
     if (existing) {
       return NextResponse.json({ error: "User already exists" }, { status: 400 });
     }
@@ -38,7 +38,7 @@ export async function POST(req: Request) {
     const newUser = await User.create({
       firstName,
       lastName,
-      username,
+      // username,
       email,
       password: hashedPassword,
       role,

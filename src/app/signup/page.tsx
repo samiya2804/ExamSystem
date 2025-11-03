@@ -7,7 +7,7 @@ import { toast } from "sonner";
 const SignupPage = () => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [role, setRole] = useState("student");
@@ -37,7 +37,7 @@ const SignupPage = () => {
         body: JSON.stringify({
           firstName,
           lastName,
-          username,
+          // username,
           email,
           password,
           role,
@@ -143,7 +143,7 @@ const SignupPage = () => {
 
             />
           </div>
-          <div>
+          {/* <div>
             <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
               Username
             </label>
@@ -154,13 +154,9 @@ const SignupPage = () => {
               placeholder="Enter Username"
               onChange={(e) => setUsername(e.target.value)}
               required
-
-              
-
               className="w-full px-4 py-3 rounded-lg bg-gray-900/60 text-white placeholder-gray-400 border border-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
-
             />
-          </div>
+          </div> */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
               Email
