@@ -601,7 +601,7 @@ export default function FacultyDashboardPage() {
       <Button
         onClick={() => setOpenModal(false)}
         variant="outline"
-        className="border-gray-600 text-gray-300 hover:bg-slate-800"
+        className="border-gray-600  bg-gray-800 hover:bg-slate-800"
       >
         Cancel
       </Button>
