@@ -23,7 +23,7 @@ import { toast } from "sonner";
 // --- Types ---
 type Question = { Q_ID: string; question: string; options?: string[]; type?: string };
 type QuestionPaper = { MCQs?: Question[]; Theory?: Question[]; Coding?: Question[] };
-type Exam = { _id: string; title: string; subject: { name: string; code?: string }; duration: number; questions: QuestionPaper };
+type Exam = { _id: string; title: string; subject: { name: string; code?: string }; duration: number; questions: QuestionPaper , proctoringEnabled?: boolean; };
 type Answer = { questionText: string; studentAnswer: string; marks: number };
 
 export default function ExamTaker() {
@@ -121,6 +121,26 @@ const [isProctoringStarted, setIsProctoringStarted] = useState(false);
     document.removeEventListener("visibilitychange", handleVisibility);
   };
 }, []);
+//  Always enforce fullscreen — ESC shows warning & re-enters
+useEffect(() => {
+  const goFull = async () => {
+    try {
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {}
+  };
+
+  const escHandler = (e:any) => {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      toast.warning("⚠️ You must stay in fullscreen mode!");
+      goFull(); 
+    }
+  };
+    document.addEventListener("keydown", escHandler);
+  return () => document.removeEventListener("keydown", escHandler);
+}, []);
 
 //auto submit on tab switch
 
@@ -179,8 +199,18 @@ const startProctoring = async () => {
 
 useEffect(() => {
   const initCamera = async () => {
-    if (!isProctoringStarted || !videoRef.current) return;
+   
 
+         if (document.documentElement.requestFullscreen) {
+       try {
+      await document.documentElement.requestFullscreen();
+    }catch(err){
+      console.warn("Fullscreen blocked");
+
+    }
+  }
+if (!exam?.proctoringEnabled) return;
+ if (!isProctoringStarted || !videoRef.current) return;
     try {
       console.log("🎥 Starting live camera after render...");
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -207,7 +237,7 @@ useEffect(() => {
   };
 
   initCamera();
-}, [isProctoringStarted]);
+}, [isProctoringStarted , exam?.proctoringEnabled]);
 
 
 
@@ -333,6 +363,7 @@ useEffect(() => {
     <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
       <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
       <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
+
       <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
   <li>Keep your camera and microphone on throughout the exam - moving out of the frame may trigger a warning or auto-submit.</li>
   <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
@@ -343,6 +374,7 @@ useEffect(() => {
   <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
   <li>Any external assistance or use of devices is strictly prohibited.</li>
 </ul>
+
 
       </ul>
  <Button
@@ -357,6 +389,35 @@ useEffect(() => {
 
     </div>
   </div>
+)}
+{showInstructions && !exam?.proctoringEnabled && (
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
+        <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
+            <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
+           <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
+      <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
+
+  <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
+  <li>Do not reload, copy, or navigate away from the exam window.</li>
+  <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
+  <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
+  <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
+  <li>Any external assistance or use of devices is strictly prohibited.</li>
+</ul>
+
+      </ul>
+            <Button
+                onClick={() => {
+                    setShowInstructions(false);
+                     
+                    setIsProctoringStarted(true); // Triggers the non-proctoring exam flow
+                }}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
+            >
+                Start Exam
+            </Button>
+        </div>
+    </div>
 )}
 
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
@@ -450,19 +511,21 @@ useEffect(() => {
           </section>
         </div>
      
-<div className="fixed bottom-5 right-5 w-32 h-32 sm:w-40 sm:h-40 bg-black border-2 border-blue-500 rounded-lg overflow-hidden shadow-lg z-[9999] flex items-center justify-center">
-  <video
-    ref={videoRef}
-    autoPlay
-    playsInline
-    muted
-    className="w-full h-full object-cover"
-    style={{ transform: "scaleX(-1)" }}
-  />
-  {!cameraStream && (
-    <span className="text-xs text-gray-400 absolute">Loading camera...</span>
-  )}
-</div>
+{exam?.proctoringEnabled && (
+    <div className="fixed bottom-5 right-5 w-32 h-32 sm:w-40 sm:h-40 bg-black border-2 border-blue-500 rounded-lg overflow-hidden shadow-lg z-[9999] flex items-center justify-center">
+        <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+            style={{ transform: "scaleX(-1)" }}
+        />
+        {!cameraStream && (
+            <span className="text-xs text-gray-400 absolute">Loading camera...</span>
+        )}
+    </div>
+)}
 
 
 </div>
@@ -473,7 +536,7 @@ useEffect(() => {
         <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogDescription className="text-white" >
               If you reload or leave this page, all unsaved answers may be lost. Please confirm before refreshing.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -492,8 +555,8 @@ useEffect(() => {
       <AlertDialog open={showSubmitDialog} onOpenChange={setShowSubmitDialog}>
         <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
           <AlertDialogHeader>
-            <AlertDialogTitle>Submit Exam?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-green-700">Submit Exam?</AlertDialogTitle>
+            <AlertDialogDescription className="text-white">
               Are you sure you want to submit your exam? You won&lsquo;t be able to change your answers after submission.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -518,8 +581,8 @@ useEffect(() => {
       <AlertDialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
         <AlertDialogContent className="bg-gray-900 border border-gray-700 text-gray-100">
           <AlertDialogHeader>
-            <AlertDialogTitle>✅ Exam Submitted</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-gray-100">✅ Exam Submitted</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-300">
               Your exam has been submitted successfully. Click below to close this tab.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -532,4 +595,5 @@ useEffect(() => {
       </AlertDialog>
     </>
   );
+
 }

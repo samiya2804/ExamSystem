@@ -19,4 +19,5 @@ const contactSchema = new Schema<IContact>({
 // Prevent model overwrite issues
 const Contact = models.Contact || model<IContact>("Contact", contactSchema);
 
+
 export default Contact;

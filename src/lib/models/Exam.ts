@@ -1,15 +1,12 @@
 import Subject from "./subject";
 import mongoose, { Schema, Document } from "mongoose";
 
-// A schema for individual questions, including an ID placeholder
-// Note: We expect the Python API to populate these with question text, options, etc.
 const QuestionSchema = new Schema(
   {
     Q_ID: String,
     question: String,
     options: [String],
-    // If you need to store the correct answer/solution inside the question object itself
-    // you would add a field like: answer: String, here, but paper_solutions_map works too.
+
   },
   { _id: false }
 );
@@ -48,8 +45,9 @@ const ExamSchema = new Schema(
     isPublished: { type: Boolean, default: false },
 
     publishedAt: { type: Date, required: false },
+        proctoringEnabled: { type: Boolean, default: false },
 
-    // This field stores the structure of the question paper for display
+
     questions: QuestionPaperSchema,
 
     // This stores the map of Q_ID -> {type, question, correct_answer} from the Python API

@@ -49,6 +49,7 @@ type Exam = {
   long: { count: number; difficulty: string };
   coding: { count: number };
   instructions: string;
+  proctoringEnabled?: boolean;
 };
 
 export default function FacultyDashboardPage() {
@@ -74,6 +75,7 @@ export default function FacultyDashboardPage() {
     longDifficulty: "hard",
     codingCount: 0,
     instructions: "",
+    proctoringEnabled: false,
   });
   const [saving, setSaving] = useState(false);
   const [generating, setGenerating] = useState<string | null>(null);
@@ -147,6 +149,7 @@ export default function FacultyDashboardPage() {
       longDifficulty: "hard",
       codingCount: 0,
       instructions: "",
+       proctoringEnabled: false,
     });
     setOpenModal(true);
   }
@@ -169,6 +172,7 @@ export default function FacultyDashboardPage() {
       longDifficulty: exam.long?.difficulty || "hard",
       codingCount: exam.coding?.count || 0,
       instructions: exam.instructions || "",
+      proctoringEnabled: exam.proctoringEnabled ?? false,
     });
     setOpenModal(true);
   }
@@ -201,6 +205,7 @@ export default function FacultyDashboardPage() {
       coding: { count: Math.max(0, Number(form.codingCount)) },
       instructions: form.instructions,
       facultyId,
+      proctoringEnabled: form.proctoringEnabled,
     };
 
     const url = editingExam ? `/api/exams/${editingExam._id}` : "/api/exams";
@@ -417,39 +422,39 @@ export default function FacultyDashboardPage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Exam Title</label>
+            <label className="text-sm font-medium text-gray-300">Exam Title : </label>
             <Input
               placeholder="e.g., Mid-Term Exam"
               value={form.title}
               onChange={(e) => setForm({ ...form, title: e.target.value })}
-              className="bg-slate-900 border-gray-700 placeholder:text-gray-500 focus:ring-indigo-600"
+              className="bg-slate-900 border-gray-700 placeholder:text-gray-400 focus:ring-indigo-600 mt-2"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Duration (minutes)</label>
+            <label className="text-sm font-medium text-gray-300">Duration (minutes) : </label>
             <Input
               type="number"
               min={0}
               placeholder="e.g., 90"
               value={form.duration}
               onChange={(e) => setForm({ ...form, duration: Number(e.target.value) })}
-              className="bg-slate-900 border-gray-700 placeholder:text-gray-500"
+              className="bg-slate-900 border-gray-700 placeholder:text-gray-400 mt-2"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Select Subject</label>
+            <label className="text-sm font-medium text-gray-300">Select Subject : </label>
             <Select
               value={form.subjectId}
               onValueChange={(v) => setForm({ ...form, subjectId: v })}
             >
-              <SelectTrigger className="bg-slate-900 border-gray-700">
+              <SelectTrigger className="bg-slate-900 border-gray-700 placeholder:text-gray-400 mt-2">
                 <SelectValue placeholder="Choose subject" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 text-white border-gray-700">
+              <SelectContent className="bg-slate-900 text-white border-gray-700 placeholder:text-gray-400 mt-2">
                 {subjects.map((s) => (
                   <SelectItem key={s._id} value={s._id}>
                     {s.name} {s.code && `(${s.code})`}
@@ -460,15 +465,15 @@ export default function FacultyDashboardPage() {
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Select Course</label>
+            <label className="text-sm font-medium text-gray-300">Select Course : </label>
             <Select
               value={form.course}
               onValueChange={(v) => setForm({ ...form, course: v })}
             >
-              <SelectTrigger className="bg-slate-900 border-gray-700">
+              <SelectTrigger className="bg-slate-900 border-gray-700 placeholder:text-gray-400 mt-2">
                 <SelectValue placeholder="Choose course" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-900 text-white border-gray-700">
+              <SelectContent className="bg-slate-900 text-white border-gray-700 placeholder:text-gray-400 mt-2">
                 {courses.map((c) => (
                   <SelectItem key={c._id} value={c._id}>
                     {c.name}
@@ -489,12 +494,12 @@ export default function FacultyDashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* MCQs */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">MCQs</label>
+            <label className="text-sm font-medium text-gray-300">Multiple Choice Questions(MCQs) : </label>
             <div className="flex gap-3 flex-wrap">
               <Input
                 type="number"
                 min={0}
-                className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+                className="w-28 bg-slate-900 border-gray-700 text-gray-400 mt-2"
                 value={form.veryShortCount}
                 onChange={(e) => setForm({ ...form, veryShortCount: Number(e.target.value) })}
               />
@@ -502,7 +507,7 @@ export default function FacultyDashboardPage() {
                 value={form.veryShortDifficulty}
                 onValueChange={(v) => setForm({ ...form, veryShortDifficulty: v })}
               >
-                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36 mt-2">
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 text-white border-gray-700">
@@ -516,12 +521,12 @@ export default function FacultyDashboardPage() {
 
           {/* Short Questions */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Short Questions</label>
+            <label className="text-sm font-medium text-gray-300">Short Questions : </label>
             <div className="flex gap-3 flex-wrap">
               <Input
                 type="number"
                 min={0}
-                className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+                className="w-28 bg-slate-900 border-gray-700 text-gray-400 mt-2"
                 value={form.shortCount}
                 onChange={(e) => setForm({ ...form, shortCount: Number(e.target.value) })}
               />
@@ -529,7 +534,7 @@ export default function FacultyDashboardPage() {
                 value={form.shortDifficulty}
                 onValueChange={(v) => setForm({ ...form, shortDifficulty: v })}
               >
-                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36 mt-2">
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 text-white border-gray-700">
@@ -543,7 +548,7 @@ export default function FacultyDashboardPage() {
 
           {/* Long Questions */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Long Questions</label>
+            <label className="text-sm font-medium text-gray-300">Long Questions : </label>
             <div className="flex gap-3 flex-wrap">
               <Input
                 type="number"
@@ -556,7 +561,7 @@ export default function FacultyDashboardPage() {
                 value={form.longDifficulty}
                 onValueChange={(v) => setForm({ ...form, longDifficulty: v })}
               >
-                <SelectTrigger className="bg-slate-900 border-gray-700 w-36">
+                <SelectTrigger className="bg-slate-900 border-gray-700 w-36 mt-2">
                   <SelectValue placeholder="Difficulty" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 text-white border-gray-700">
@@ -570,18 +575,37 @@ export default function FacultyDashboardPage() {
 
           {/* Coding */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Coding Questions</label>
+            <label className="text-sm font-medium text-gray-300">Coding Questions : </label>
             <Input
               type="number"
               min={0}
               placeholder="e.g., 2"
-              className="w-28 bg-slate-900 border-gray-700 text-gray-400"
+              className="w-28 bg-slate-900 border-gray-700 text-gray-400 mt-2 ml-2"
               value={form.codingCount}
               onChange={(e) => setForm({ ...form, codingCount: Number(e.target.value) })}
             />
           </div>
         </div>
       </section>
+       <div className="px-2 pb-4 border-t border-gray-700 pt-4">
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={form.proctoringEnabled}
+                onChange={(e) =>
+                  setForm({ ...form, proctoringEnabled: e.target.checked })
+                }
+                // Tailwind CSS classes for styling a simple checkbox
+                className="form-checkbox h-5 w-5 text-indigo-600 bg-transparent border-gray-700 rounded focus:ring-indigo-500"
+              />
+              <span className="text-lg font-semibold text-indigo-400">
+                🔒 Enable Live Proctoring (Webcam & Security)
+              </span>
+            </label>
+            <p className="text-sm text-gray-500 mt-1 ml-8">
+              Enabling this requires webcam access and enforces security measures.
+            </p>
+          </div>
 
       {/* INSTRUCTIONS */}
       <section className="space-y-3">
@@ -707,7 +731,7 @@ export default function FacultyDashboardPage() {
                 <Link href={`/faculty/results/${exam._id}`} passHref>
                   <Button
                     className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-600 cursor-pointer"
-                    size="sm"
+                   
                   >
                     Results
                   </Button>

@@ -1,17 +1,22 @@
+
 import React from 'react';
 import Image from 'next/image';
 import { Github, Linkedin, Mail } from 'lucide-react';
+
 
 type Developer = {
   id: number;
   name: string;
   role: string;
   bio: string;
-  image: string;
+
+  image: string; // Path to image
   githubUrl: string;
   linkedinUrl: string;
   email: string;
+
 };
+
 
 const developers: Developer[] = [
   {
@@ -34,6 +39,7 @@ const developers: Developer[] = [
     linkedinUrl: "https://www.linkedin.com/in/moiqbalbbdniit/",
     email: "iqbal.engineer.it@gmail.com",
   },
+
 ];
 
 export default function DevelopersPage() {
@@ -61,8 +67,10 @@ export default function DevelopersPage() {
                     <Image
                       src={dev.image}
                       alt={`Image of ${dev.name}`}
+
                       fill
                       style={{ objectFit: 'cover' }}
+
                       className="rounded-full"
                     />
                   </div>
@@ -74,6 +82,7 @@ export default function DevelopersPage() {
                 </div>
 
                 <div className="mt-8 flex justify-center space-x-6">
+
                   <a href={dev.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:text-blue-400 transition-colors duration-200">
                     <Linkedin className="h-8 w-8" />
                   </a>
@@ -83,11 +92,14 @@ export default function DevelopersPage() {
                   <a href={`mailto:${dev.email}`} className="text-blue-500 hover:text-blue-400 transition-colors duration-200">
                     <Mail className="h-8 w-8" />
                   </a>
+
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-gray-700 text-center">
                   <p className="text-lg font-semibold text-gray-300">Contact:</p>
                   <p className="text-blue-300 hover:text-blue-200 transition-colors duration-200">
+
+
                     <a href={`mailto:${dev.email}`}>{dev.email}</a>
                   </p>
                 </div>
@@ -98,4 +110,5 @@ export default function DevelopersPage() {
       </div>
     </div>
   );
+
 }

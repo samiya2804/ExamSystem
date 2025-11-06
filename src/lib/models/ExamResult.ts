@@ -7,13 +7,9 @@ export interface IExamResult extends Document {
   totalMarksObtained: number;
   totalMaxMarks: number;
   percentage: number;
-  feedback: string;
-  evaluationDetails: {
-    questionText: string;
-    scoreObtained: number;
-    maximumScore: number;
-    feedback: string;
-  }[];
+  feedback: string; // overall feedback only
+  strengths: string[];
+  weaknesses: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,15 +22,9 @@ const ExamResultSchema = new Schema<IExamResult>(
     totalMarksObtained: { type: Number, required: true },
     totalMaxMarks: { type: Number, required: true },
     percentage: { type: Number, required: true },
-    feedback: { type: String },
-    evaluationDetails: [
-      {
-        questionText: { type: String, required: true },
-        scoreObtained: { type: Number, required: true },
-        maximumScore: { type: Number, required: true },
-        feedback: { type: String },
-      },
-    ],
+    feedback: { type: String }, // overall_feedback from AI
+    strengths: [{ type: String }], // collective_strengths
+    weaknesses: [{ type: String }], // collective_weaknesses
   },
   { timestamps: true }
 );

@@ -1,4 +1,4 @@
-// app/api/exams/[id]/route.ts
+
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/db";
 import Exam from "@/lib/models/Exam";
@@ -18,7 +18,7 @@ export async function GET(req: Request, context: { params: Promise<{ id: string 
   }
 }
 
-// ✅ FIXED PUT route
+
 export async function PUT(req: Request) {
   try {
     await connectDB();
@@ -28,7 +28,16 @@ export async function PUT(req: Request) {
 
     const body = await req.json();
 
-    // ✅ Only allow safe fields
+       const allowed: any = {};
+    if (body.questions) allowed.questions = body.questions;
+    if (body.paper_solutions_map) allowed.paper_solutions_map = body.paper_solutions_map;
+    if (body.status) allowed.status = body.status;
+    if (typeof body.isPublished !== "undefined") allowed.isPublished = body.isPublished;
+
+    if (typeof body.proctoringEnabled !== "undefined") {
+      allowed.proctoringEnabled = body.proctoringEnabled;
+    }
+    
     const allowedFields = [
       "title",
       "course",
@@ -43,6 +52,7 @@ export async function PUT(req: Request) {
       "isPublished",
       "questions",
       "paper_solutions_map",
+      "proctoringEnabled", 
     ];
 
     // ✅ Build update object dynamically from body

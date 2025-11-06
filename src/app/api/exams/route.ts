@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
     const exam = await Exam.create({
       title: body.title,
-      course: body.course, // ✅ correct field
+      course: body.course, 
       subject: body.subject,
       facultyId: body.facultyId || null,
       duration: body.duration || 180,
@@ -55,6 +55,7 @@ export async function POST(req: Request) {
       coding: body.coding || { count: 0 },
       instructions: body.instructions || "",
       status: "draft",
+      proctoringEnabled: body.proctoringEnabled ?? false,
     });
 
     const populated = await Exam.findById(exam._id)
