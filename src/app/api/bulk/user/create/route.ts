@@ -1,63 +1,103 @@
-import mongoose, { Types } from "mongoose";
+import { connectDB } from "@/lib/db";
 import User from "@/lib/models/User";
 import Course from "@/lib/models/Course";
-import { connectDB } from "@/lib/db";
+import bcrypt from "bcryptjs";
+import * as XLSX from "xlsx";
+
+interface ExcelRow {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  password?: string;
+  role?: string;
+  courseName?: string;
+}
 
 export async function POST(req: Request) {
   try {
     await connectDB();
 
-    const body = await req.json();
-    const { studentIds, courseId } = body as {
-      studentIds: string[];
-      courseId: string;
-    };
-
-    // ✅ Validate input
-    if (!Array.isArray(studentIds) || studentIds.length === 0 || !courseId) {
-      return new Response(
-        JSON.stringify({ error: "Missing or invalid studentIds or courseId" }),
-        { status: 400 }
-      );
-    }
-
-    // ✅ Ensure course exists
-    const course = await Course.findById(courseId);
-    if (!course) {
-      return new Response(JSON.stringify({ error: "Course not found" }), {
-        status: 404,
+    const formData = await req.formData();
+    const file = formData.get("file") as File;
+    if (!file) {
+      return new Response(JSON.stringify({ error: "No file uploaded" }), {
+        status: 400,
       });
     }
 
-    // ✅ Convert IDs safely to ObjectId
-    const objectIds: Types.ObjectId[] = studentIds.map(
-      (id) => new mongoose.Types.ObjectId(id)
-    );
+    const buffer = Buffer.from(await file.arrayBuffer());
+    const workbook = XLSX.read(buffer, { type: "buffer" });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json<ExcelRow>(sheet);
 
-    // ✅ Perform bulk update (assign the same course to multiple users)
-    const result = await User.bulkWrite(
-      objectIds.map((id) => ({
-        updateOne: {
-          filter: { _id: id },
-          update: { $set: { course: course._id } }, // if one course per student
-          // OR use $addToSet if users can have multiple courses:
-          // update: { $addToSet: { courses: course._id } },
-        },
-      }))
-    );
+    console.log(`📄 Loaded ${rows.length} rows from Excel`);
 
-    console.log("✅ Bulk update result:", result);
+    let created = 0,
+      updated = 0,
+      skipped = 0;
+
+    for (const row of rows) {
+      const email = row.email?.trim()?.toLowerCase();
+      const firstName = row.firstName?.trim() || "";
+      const lastName = row.lastName?.trim() || "";
+      const password = row.password?.trim() || "123456";
+      const role = row.role?.trim()?.toLowerCase() || "student";
+      const courseName = row.courseName?.trim();
+
+      if (!email || !firstName || !lastName) {
+        skipped++;
+        continue;
+      }
+
+      const hashed = await bcrypt.hash(password, 10);
+
+      // ✅ Find course by courseName field
+      let courseDoc = null;
+      if (courseName) {
+        courseDoc = await Course.findOne({
+          name: new RegExp(`^${courseName}$`, "i"),
+        });
+        if (!courseDoc) {
+          console.warn(`⚠️ Course not found for "${courseName}"`);
+        }
+      }
+
+      const userData: any = {
+        firstName,
+        lastName,
+        email,
+        password: hashed,
+        role,
+        createdAt: new Date(),
+      };
+
+      // ✅ Attach course ObjectId if found
+      if (courseDoc?._id) {
+        userData.course = courseDoc._id;
+      }
+
+      const existing = await User.findOne({ email });
+      if (existing) {
+        await User.updateOne({ email }, { $set: userData });
+        updated++;
+      } else {
+        await User.create(userData);
+        created++;
+      }
+    }
+
+    console.log("🎯 Bulk Upload Summary:", { created, updated, skipped });
 
     return new Response(
       JSON.stringify({
-        message: "Courses assigned successfully",
-        modifiedCount: result.modifiedCount,
+        message: "Bulk user upload completed successfully",
+        summary: { created, updated, skipped },
       }),
       { status: 200 }
     );
-  } catch (error: any) {
-    console.error("❌ Error assigning courses:", error);
-    return new Response(JSON.stringify({ error: error.message }), {
+  } catch (err: any) {
+    console.error("❌ Bulk Upload Error:", err);
+    return new Response(JSON.stringify({ error: err.message }), {
       status: 500,
     });
   }
