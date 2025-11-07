@@ -4,99 +4,115 @@ import Submission, { ISubmission } from "@/lib/models/Submission";
 import ExamResult, { IExamResult } from "@/lib/models/ExamResult";
 import axios from "axios";
 
-const PYTHON_API_URL = "http://127.0.0.1:8000/api/v1/evaluate-submission";
-
-type EvaluateRequest = {
-  examId: string;
-  studentIds: string[];
-};
+const PYTHON_API_URL = "https://exammodelbydsteam.onrender.com/api/v1/evaluate-submission";
 
 export async function POST(req: Request) {
   try {
     await connectDB();
-    const { examId, studentIds }: EvaluateRequest = await req.json();
 
-    if (!examId || !Array.isArray(studentIds) || studentIds.length === 0) {
-      console.log("❌ Invalid input:", { examId, studentIds });
-      return NextResponse.json({ error: "Missing or invalid input" }, { status: 400 });
+    // 🧩 Parse payload (expected: array of submissions)
+    const payload = await req.json();
+
+    if (!Array.isArray(payload) || payload.length === 0) {
+      console.log("❌ Invalid payload:", payload);
+      return NextResponse.json({ error: "Expected an array of submissions" }, { status: 400 });
     }
 
-    console.log("📥 Bulk evaluate request:", { examId, totalStudents: studentIds.length });
+    // 🧠 Validate structure
+    const isValid = payload.every(
+      (p) =>
+        p.examId &&
+        p.studentId &&
+        Array.isArray(p.answers) &&
+        p.answers.every(
+          (a: any) =>
+            typeof a.questionText === "string" &&
+            typeof a.studentAnswer === "string" &&
+            typeof a.maximumScore === "number"
+        )
+    );
 
-    // 🔍 Fetch all submissions for selected students
-    const submissions = (await Submission.find({
-      examId,
-      studentId: { $in: studentIds },
-    }).lean()) as unknown as ISubmission[];
-
-    if (submissions.length === 0) {
-      return NextResponse.json({ error: "No submissions found" }, { status: 404 });
+    if (!isValid) {
+      console.log("❌ Invalid data format in request:", payload);
+      return NextResponse.json({ error: "Invalid submission data format" }, { status: 400 });
     }
 
-    // 🗺️ Map facultyId for later use
-    const facultyMap = submissions.reduce((acc, s) => {
-      acc[s.studentId.toString()] = s.facultyId?.toString() || null;
-      return acc;
-    }, {} as Record<string, string | null>);
+    console.log(`📥 Received ${payload.length} submissions for evaluation`);
 
-    // 🧩 Prepare payload for Python model (EXACT structure you mentioned)
-    const payload = submissions.map((sub) => ({
-      examId: sub.examId.toString(),
-      studentId: sub.studentId.toString(),
-      answers:
-        sub.answers?.map((ans) => ({
-          questionText: ans.questionText,
-          studentAnswer: ans.studentAnswer,
-          maximumScore: ans.marks ?? 10,
-        })) || [],
-    }));
-
-    console.log("📤 Sending payload to AI model:", JSON.stringify(payload, null, 2));
-
-    // ⚙️ Send to Python model API
+    // ⚙️ Send payload to Python evaluation API
     const response = await axios.post(PYTHON_API_URL, payload, { timeout: 180000 });
     const data = response.data;
 
     const reports = data?.batch_evaluation_reports || [];
-
     if (!reports.length) {
-      throw new Error("Invalid response — no batch_evaluation_reports found");
+      throw new Error("Invalid response from Python model — no batch_evaluation_reports found");
     }
 
     const savedResults: IExamResult[] = [];
 
-    // 🧾 Save results to MongoDB
+    // 🧾 Process each evaluation result
     for (const report of reports) {
       const summary = report.report_summary;
       if (!summary) continue;
 
-      const facultyId = facultyMap[summary.student_id];
-      if (!facultyId) {
-        console.warn(`⚠️ Missing facultyId for student ${summary.student_id}`);
+      console.log("🧾 Report summary received:", summary);
+
+      // 🛑 Skip already evaluated students
+      const exists = await ExamResult.findOne({
+        examId: summary.exam_id,
+        studentId: summary.student_id,
+      });
+      if (exists) {
+        console.log(`⚠️ Student ${summary.student_id} already evaluated`);
         continue;
       }
 
+      // 🔍 Get related submission
+      const submission = await Submission.findOne({
+        examId: summary.exam_id,
+        studentId: summary.student_id,
+      });
+      if (!submission) {
+        console.warn(`⚠️ No submission found for student ${summary.student_id}`);
+        continue;
+      }
+
+      // ✅ Safely parse numeric fields
+      const obtained = Number(summary.total_score_obtained ?? 0);
+      const max = Number(summary.total_max_score ?? 0);
+      const percent = Number(summary.percentage_obtained ?? 0);
+
+      if (isNaN(obtained) || isNaN(max) || isNaN(percent)) {
+        console.error("⚠️ Invalid numeric values in report:", summary);
+        continue;
+      }
+
+      // 💾 Save result in ExamResult collection
       const savedResult = await ExamResult.create({
         examId: summary.exam_id,
         studentId: summary.student_id,
-        facultyId,
-        totalMarksObtained: summary.total_score_obtained,
-        totalMaxMarks: summary.total_max_score,
-        percentage: summary.percentage_obtained,
-        feedback: summary.overall_feedback,
-        strengths: summary.collective_strengths || [],
-        weaknesses: summary.collective_weaknesses || [],
+        facultyId: submission.facultyId || null,
+        totalMarksObtained: obtained,
+        totalMaxMarks: max,
+        percentage: percent,
+        feedback: summary.overall_feedback || "",
+        strengths: Array.isArray(summary.collective_strengths)
+          ? summary.collective_strengths
+          : [],
+        weaknesses: Array.isArray(summary.collective_weaknesses)
+          ? summary.collective_weaknesses
+          : [],
       });
 
-      // 🛠️ Update submission status
+      // 🧩 Update submission status
       await Submission.updateOne(
         { examId: summary.exam_id, studentId: summary.student_id },
         {
           $set: {
             status: "evaluated",
             evaluation_report: savedResult._id,
-            total_score: summary.total_score_obtained,
-            max_score: summary.total_max_score,
+            total_score: obtained,
+            max_score: max,
           },
         }
       );
@@ -104,34 +120,33 @@ export async function POST(req: Request) {
       savedResults.push(savedResult);
     }
 
-    console.log("✅ Bulk evaluation complete:", savedResults.length, "students");
+    console.log("✅ Evaluation complete:", savedResults.length, "students evaluated");
 
-    // Prepare readable result summary for frontend
-const studentResults = reports.map((r: any) => {
-  const s = r.report_summary;
-  return {
-    examId: s.exam_id,
-    studentId: s.student_id,
-    totalQuestions: s.total_questions_evaluated,
-    totalMarksObtained: s.total_score_obtained,
-    totalMaxMarks: s.total_max_score,
-    percentage: s.percentage_obtained,
-    feedback: s.overall_feedback,
-    strengths: s.collective_strengths || [],
-    weaknesses: s.collective_weaknesses || [],
-  };
-});
+    // 🧠 Prepare frontend response
+    const studentResults = reports.map((r: any) => {
+      const s = r.report_summary;
+      return {
+        examId: s.exam_id,
+        studentId: s.student_id,
+        totalQuestions: s.total_questions_evaluated,
+        totalMarksObtained: s.total_score_obtained,
+        totalMaxMarks: s.total_max_score,
+        percentage: s.percentage_obtained,
+        feedback: s.overall_feedback,
+        strengths: s.collective_strengths || [],
+        weaknesses: s.collective_weaknesses || [],
+      };
+    });
 
-return NextResponse.json({
-  success: true,
-  totalEvaluated: studentResults.length,
-  results: studentResults,
-});
-
+    return NextResponse.json({
+      success: true,
+      totalEvaluated: studentResults.length,
+      results: studentResults,
+    });
   } catch (err: any) {
-    console.error("❌ Bulk evaluation error:", err);
+    console.error("❌ Evaluation error:", err.response?.data || err.message);
     return NextResponse.json(
-      { error: err.message || "Internal Server Error" },
+      { error: err.response?.data || err.message || "Internal Server Error" },
       { status: 500 }
     );
   }
