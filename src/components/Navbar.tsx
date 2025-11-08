@@ -40,11 +40,12 @@ export default function Navbar() {
   }
 
   const handleLogout = async () => {
-    try {
-      const res = await fetch("/api/auth/logout", {
-        method: "POST",
-        credentials: "include",
-      });
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "DELETE",
+      credentials: "include",
+    });
+
       if (res.ok) {
         toast.success("Logged out successfully!");
         localStorage.removeItem("token"); // ensure token removed

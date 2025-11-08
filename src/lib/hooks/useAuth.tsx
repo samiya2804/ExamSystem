@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, createContext, useContext } from "react";
-import { jwtDecode } from "jwt-decode";
 
 interface Course {
   _id: string;
@@ -30,31 +29,23 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("exam_system_token="))
-      ?.split("=")[1];
-
-    if (token) {
+    const fetchUser = async () => {
       try {
-        const decoded: any = jwtDecode(token);
-        setUser({
-          id: decoded.id,
-          email: decoded.email,
-          role: decoded.role,
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-          course: decoded.course || null,
+        const res = await fetch("/api/auth/me", {
+          credentials: "include",
         });
+        const data = await res.json();
+        if (data.user) setUser(data.user);
+        else setUser(null);
       } catch (err) {
-        console.error("Token decode error:", err);
+        console.error("Error fetching user:", err);
         setUser(null);
+      } finally {
+        setLoading(false);
       }
-    } else {
-      setUser(null);
-    }
+    };
 
-    setLoading(false);
+    fetchUser();
   }, []);
 
   return (
