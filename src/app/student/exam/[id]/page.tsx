@@ -42,21 +42,20 @@ export default function ExamTaker() {
   const [showSubmitDialog, setShowSubmitDialog] = useState(false);
   const [showSuccessDialog, setShowSuccessDialog] = useState(false);
   const [answers, setAnswers] = useState<Answer[]>([]);
-const [showInstructions, setShowInstructions] = useState(true);
-const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
-const [tabSwitchCount, setTabSwitchCount] = useState(0);
-const videoRef = useRef<HTMLVideoElement>(null);
-const [isProctoringStarted, setIsProctoringStarted] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(true);
+  const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
+  const [tabSwitchCount, setTabSwitchCount] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isProctoringStarted, setIsProctoringStarted] = useState(false);
 
   const authUserId =
     user?.id || (typeof window !== "undefined" ? sessionStorage.getItem("temp_exam_student_id") : null);
 
-
-    useEffect(() => {
-  if (videoRef.current) {
-    console.log("🎬 Video element ready:", videoRef.current);
-  }
-}, []);
+  useEffect(() => {
+    if (videoRef.current) {
+      console.log("🎬 Video element ready:", videoRef.current);
+    }
+  }, []);
 
   // --- Fetch Exam ---
   useEffect(() => {
@@ -91,170 +90,153 @@ const [isProctoringStarted, setIsProctoringStarted] = useState(false);
     return () => clearInterval(timer);
   }, [exam]);
 
-
   //camera access and full screen
 
   useEffect(() => {
-  // Disable copy, paste, right-click, inspect
-  const disableActions = (e: any) => e.preventDefault();
-  document.addEventListener("contextmenu", disableActions);
-  document.addEventListener("copy", disableActions);
-  document.addEventListener("cut", disableActions);
-  document.addEventListener("paste", disableActions);
-  document.onkeydown = function (e) {
-    if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) return false;
-  };
+    // Disable copy, paste, right-click, inspect
+    const disableActions = (e: any) => e.preventDefault();
+    document.addEventListener("contextmenu", disableActions);
+    document.addEventListener("copy", disableActions);
+    document.addEventListener("cut", disableActions);
+    document.addEventListener("paste", disableActions);
+    document.onkeydown = function (e) {
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && e.key === "I")) return false;
+    };
 
-  // Detect tab change / visibility loss
-  const handleVisibility = () => {
-    if (document.hidden) {
-      setTabSwitchCount((prev) => prev + 1);
-    }
-  };
-  document.addEventListener("visibilitychange", handleVisibility);
-
-  return () => {
-    document.removeEventListener("contextmenu", disableActions);
-    document.removeEventListener("copy", disableActions);
-    document.removeEventListener("cut", disableActions);
-    document.removeEventListener("paste", disableActions);
-    document.removeEventListener("visibilitychange", handleVisibility);
-  };
-}, []);
-//  Always enforce fullscreen — ESC shows warning & re-enters
-useEffect(() => {
-  const goFull = async () => {
-    try {
-      if (!document.fullscreenElement) {
-        await document.documentElement.requestFullscreen();
-      }
-    } catch (err) {}
-  };
-
-  const escHandler = (e:any) => {
-    if (e.key === "Escape") {
-      e.preventDefault();
-      toast.warning("⚠️ You must stay in fullscreen mode!");
-      goFull(); 
-    }
-  };
-    document.addEventListener("keydown", escHandler);
-  return () => document.removeEventListener("keydown", escHandler);
-}, []);
-
-//auto submit on tab switch
-
-useEffect(() => {
-  if (tabSwitchCount === 1) {
-    toast.warning("⚠️ Warning: You switched tabs. Next time will auto-submit your exam!");
-  } else if (tabSwitchCount >= 2) {
-    toast.warning("⚠️ You switched tabs twice. Auto-submitting exam...");
-    handleExamSubmission(true);
-  }
-}, [tabSwitchCount]);
-
-
-
-
-//request for camera access
-
-const startProctoring = async () => {
-  try {
-    console.log("🎥 Requesting camera access...");
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { width: 320, height: 240, facingMode: "user" },
-    });
-
-    if (!videoRef.current) {
-      console.error("❌ videoRef is null — cannot attach stream.");
-      return;
-    }
-
-    // Attach and play
-    videoRef.current.srcObject = stream;
-    setCameraStream(stream);
-
-    // Try multiple times to start the feed (for autoplay issues)
-    const tryPlay = async () => {
-      try {
-        await videoRef.current?.play();
-        console.log("✅ Camera feed playing successfully");
-      } catch (err) {
-        console.warn("Retrying video play due to autoplay restriction...");
-        setTimeout(tryPlay, 1000);
+    // Detect tab change / visibility loss
+    const handleVisibility = () => {
+      if (document.hidden) {
+        setTabSwitchCount((prev) => prev + 1);
       }
     };
-    tryPlay();
+    document.addEventListener("visibilitychange", handleVisibility);
 
-    // Fullscreen
-    if (document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
+    return () => {
+      document.removeEventListener("contextmenu", disableActions);
+      document.removeEventListener("copy", disableActions);
+      document.removeEventListener("cut", disableActions);
+      document.removeEventListener("paste", disableActions);
+      document.removeEventListener("visibilitychange", handleVisibility);
+    };
+  }, []);
+  //  Always enforce fullscreen — ESC shows warning & re-enters
+  useEffect(() => {
+    const goFull = async () => {
+      try {
+        if (!document.fullscreenElement) {
+          await document.documentElement.requestFullscreen();
+        }
+      } catch (err) {}
+    };
+
+    const escHandler = (e:any) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        toast.warning("⚠️ You must stay in fullscreen mode!");
+        goFull(); 
+      }
+    };
+    document.addEventListener("keydown", escHandler);
+    return () => document.removeEventListener("keydown", escHandler);
+  }, []);
+
+  //auto submit on tab switch
+
+  useEffect(() => {
+    if (tabSwitchCount === 1) {
+      toast.warning("⚠️ Warning: You switched tabs. Next time will auto-submit your exam!");
+    } else if (tabSwitchCount >= 2) {
+      toast.warning("⚠️ You switched tabs twice. Auto-submitting exam...");
+      handleExamSubmission(true);
     }
-  } catch (err) {
-    console.error("Camera access error:", err);
-    alert("Camera access denied or not available. Please enable your webcam and refresh.");
-  }
-};
+  }, [tabSwitchCount]);
 
+  //request for camera access
 
-useEffect(() => {
-  const initCamera = async () => {
-   
-
-         if (document.documentElement.requestFullscreen) {
-       try {
-      await document.documentElement.requestFullscreen();
-    }catch(err){
-      console.warn("Fullscreen blocked");
-
-    }
-  }
-if (!exam?.proctoringEnabled) return;
- if (!isProctoringStarted || !videoRef.current) return;
+  const startProctoring = async () => {
     try {
-      console.log("🎥 Starting live camera after render...");
+      console.log("🎥 Requesting camera access...");
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 320, height: 240, facingMode: "user" },
       });
 
+      if (!videoRef.current) {
+        console.error("❌ videoRef is null — cannot attach stream.");
+        return;
+      }
+
+      // Attach and play
       videoRef.current.srcObject = stream;
       setCameraStream(stream);
 
-      await videoRef.current.play().catch((err) => {
-        console.warn("Autoplay blocked, retrying...", err);
-        setTimeout(() => videoRef.current?.play(), 1000);
-      });
+      // Try multiple times to start the feed (for autoplay issues)
+      const tryPlay = async () => {
+        try {
+          await videoRef.current?.play();
+          console.log("✅ Camera feed playing successfully");
+        } catch (err) {
+          console.warn("Retrying video play due to autoplay restriction...");
+          setTimeout(tryPlay, 1000);
+        }
+      };
+      tryPlay();
 
-      console.log("✅ Camera live inside box now.");
-    } catch (err) {
-      console.error("Camera error:", err);
-      alert("Camera access denied or unavailable. Please allow webcam.");
-    }
-
+      // Fullscreen
       if (document.documentElement.requestFullscreen) {
-      await document.documentElement.requestFullscreen();
+        await document.documentElement.requestFullscreen();
+      }
+    } catch (err) {
+      console.error("Camera access error:", err);
+      alert("Camera access denied or not available. Please enable your webcam and refresh.");
     }
   };
 
-  initCamera();
-}, [isProctoringStarted , exam?.proctoringEnabled]);
+  useEffect(() => {
+    const initCamera = async () => {
+      if (document.documentElement.requestFullscreen) {
+        try {
+          await document.documentElement.requestFullscreen();
+        } catch(err) {
+          console.warn("Fullscreen blocked");
+        }
+      }
+      if (!exam?.proctoringEnabled) return;
+      if (!isProctoringStarted || !videoRef.current) return;
+      try {
+        console.log("🎥 Starting live camera after render...");
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { width: 320, height: 240, facingMode: "user" },
+        });
 
+        videoRef.current.srcObject = stream;
+        setCameraStream(stream);
 
+        await videoRef.current.play().catch((err) => {
+          console.warn("Autoplay blocked, retrying...", err);
+          setTimeout(() => videoRef.current?.play(), 1000);
+        });
 
+        console.log("✅ Camera live inside box now.");
+      } catch (err) {
+        console.error("Camera error:", err);
+        alert("Camera access denied or unavailable. Please allow webcam.");
+      }
 
+      if (document.documentElement.requestFullscreen) {
+        await document.documentElement.requestFullscreen();
+      }
+    };
 
+    initCamera();
+  }, [isProctoringStarted , exam?.proctoringEnabled]);
 
-useEffect(() => {
-  navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
-    stream.getTracks().forEach((t) => t.stop()); 
-  }).catch(() => {
-    console.warn("User denied camera permission initially");
-  });
-}, []);
-
-
-
-
+  useEffect(() => {
+    navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+      stream.getTracks().forEach((t) => t.stop()); 
+    }).catch(() => {
+      console.warn("User denied camera permission initially");
+    });
+  }, []);
 
   // --- Save/Load Answers ---
   useEffect(() => {
@@ -267,7 +249,7 @@ useEffect(() => {
     if (saved) setAnswers(JSON.parse(saved));
   }, [examId]);
 
-  // --- Prevent Reload ---
+  // --- Prevent Reload (keeps existing dialog behavior) ---
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -310,14 +292,54 @@ useEffect(() => {
         return;
       }
 
+      // AUTO submission path: use sendBeacon or fetch keepalive fallback
       setSubmitting(true);
       try {
         const payload = { examId: exam._id, studentId: authUserId, answers };
-        const res = await axios.post("/api/submit-exam", payload);
-        if (res.status === 201) {
-          localStorage.removeItem(`exam_${examId}_answers`);
-          setShowSuccessDialog(true);
+
+        // Try navigator.sendBeacon first
+        let beaconSent = false;
+        try {
+          if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+            const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+            beaconSent = navigator.sendBeacon("/api/submit-exam", blob);
+            console.log("🛰️ sendBeacon result:", beaconSent);
+          }
+        } catch (e) {
+          console.warn("sendBeacon failed:", e);
+          beaconSent = false;
         }
+
+        // If sendBeacon failed, try fetch with keepalive (works in many browsers)
+        if (!beaconSent) {
+          try {
+            await fetch("/api/submit-exam", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+              keepalive: true,
+            });
+            console.log("🛰️ fetch keepalive fallback used");
+          } catch (fetchErr) {
+            console.warn("fetch keepalive failed:", fetchErr);
+            // Final fallback: axios (may not complete if tab closes immediately)
+            try {
+              await axios.post("/api/submit-exam", payload);
+            } catch (axErr) {
+              console.error("Axios fallback failed:", axErr);
+            }
+          }
+        }
+
+        // Clear local storage copy of answers (best-effort)
+        try {
+          localStorage.removeItem(`exam_${examId}_answers`);
+        } catch (e) {
+          console.warn("Could not remove answers from localStorage:", e);
+        }
+
+        // show success dialog if page still open
+        setShowSuccessDialog(true);
       } catch (err) {
         console.error("Submission failed:", err);
         if (axios.isAxiosError(err) && err.response?.status === 409) {
@@ -331,6 +353,49 @@ useEffect(() => {
     },
     [exam, authUserId, answers, examId]
   );
+
+  // Add an effect that will attempt to submit via beacon when tab is being closed.
+  useEffect(() => {
+    const handleUnloadAndSubmit = (e: BeforeUnloadEvent) => {
+      // Show native confirmation (some browsers ignore custom text)
+      e.preventDefault();
+      e.returnValue = "Are you sure you want to leave? Your exam will be submitted automatically.";
+
+      // Best-effort beacon submission synchronously
+      try {
+        if (!exam || !authUserId) return;
+
+        const payload = { examId: exam._id, studentId: authUserId, answers };
+        if (typeof navigator !== "undefined" && typeof navigator.sendBeacon === "function") {
+          const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+          const ok = navigator.sendBeacon("/api/submit-exam", blob);
+          console.log("beforeunload: sendBeacon ->", ok);
+          if (ok) {
+            try { localStorage.removeItem(`exam_${examId}_answers`); } catch {}
+            return;
+          }
+        }
+
+        // If beacon not available or failed, try fetch keepalive (best-effort)
+        try {
+          fetch("/api/submit-exam", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            keepalive: true,
+          }).catch((err) => console.warn("beforeunload fetch keepalive failed", err));
+          try { localStorage.removeItem(`exam_${examId}_answers`); } catch {}
+        } catch (err) {
+          console.warn("beforeunload fallback fetch failed:", err);
+        }
+      } catch (outerErr) {
+        console.error("Error during beforeunload submission:", outerErr);
+      }
+    };
+
+    window.addEventListener("beforeunload", handleUnloadAndSubmit);
+    return () => window.removeEventListener("beforeunload", handleUnloadAndSubmit);
+  }, [exam, authUserId, answers, examId]);
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -359,66 +424,65 @@ useEffect(() => {
     <>
 
     {showInstructions && (
-  <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
-    <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
-      <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
-      <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
-
-      <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
-  <li>Keep your camera and microphone on throughout the exam - moving out of the frame may trigger a warning or auto-submit.</li>
-  <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
-  <li>Do not reload, copy, or navigate away from the exam window.</li>
-  <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
-  <li>Ensure proper lighting and a quiet environment for clear detection.</li>
-  <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
-  <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
-  <li>Any external assistance or use of devices is strictly prohibited.</li>
-</ul>
-
-
-      </ul>
- <Button
-  onClick={() => {
-    setShowInstructions(false);
-    setIsProctoringStarted(true); // 👈 Add this new state trigger
-  }}
-  className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
->
-  I’m Ready
-</Button>
-
-    </div>
-  </div>
-)}
-{showInstructions && !exam?.proctoringEnabled && (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
         <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
-            <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
-           <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
-      <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
+          <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
+          <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
 
-  <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
-  <li>Do not reload, copy, or navigate away from the exam window.</li>
-  <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
-  <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
-  <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
-  <li>Any external assistance or use of devices is strictly prohibited.</li>
-</ul>
+            <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
+              <li>Keep your camera and microphone on throughout the exam - moving out of the frame may trigger a warning or auto-submit.</li>
+              <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
+              <li>Do not reload, copy, or navigate away from the exam window.</li>
+              <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
+              <li>Ensure proper lighting and a quiet environment for clear detection.</li>
+              <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
+              <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
+              <li>Any external assistance or use of devices is strictly prohibited.</li>
+            </ul>
 
-      </ul>
-            <Button
-                onClick={() => {
-                    setShowInstructions(false);
-                     
-                    setIsProctoringStarted(true); // Triggers the non-proctoring exam flow
-                }}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
-            >
-                Start Exam
-            </Button>
+          </ul>
+          <Button
+            onClick={() => {
+              setShowInstructions(false);
+              setIsProctoringStarted(true); // 👈 Add this new state trigger
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
+          >
+            I’m Ready
+          </Button>
+
         </div>
-    </div>
-)}
+      </div>
+    )}
+    {showInstructions && !exam?.proctoringEnabled && (
+      <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 text-white p-6">
+        <div className="bg-gray-800 rounded-2xl p-8 max-w-lg text-center space-y-6 shadow-2xl border border-gray-700">
+          <h2 className="text-2xl font-bold text-blue-300">Exam Instructions</h2>
+          <ul className="text-left text-gray-200 list-disc list-inside space-y-2">
+            <ul className="list-disc pl-5 mb-2 text-lg space-y-1 text-gray-100 text-xs sm:text-sm leading-relaxed">
+
+              <li>Switching tabs or minimizing the window more than twice will result in automatic submission.</li>
+              <li>Do not reload, copy, or navigate away from the exam window.</li>
+              <li>Maintain eye contact with the screen — frequent looking away will be flagged.</li>
+              <li>Submit your answers before time ends — system auto-submits when the timer expires.</li>
+              <li>Leaving fullscreen mode may pause monitoring and lead to auto-submission.</li>
+              <li>Any external assistance or use of devices is strictly prohibited.</li>
+            </ul>
+
+          </ul>
+          <Button
+            onClick={() => {
+              setShowInstructions(false);
+
+              setIsProctoringStarted(true); // Triggers the non-proctoring exam flow
+            }}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-3 rounded-full"
+          >
+            Start Exam
+          </Button>
+        </div>
+      </div>
+    )}
 
       <div className="min-h-screen bg-gradient-to-br from-gray-900 via-slate-900 to-blue-900 text-white font-sans p-6 sm:p-10">
         <div className="max-w-5xl mx-auto space-y-6">
@@ -510,26 +574,23 @@ useEffect(() => {
             </Button>
           </section>
         </div>
-     
-{exam?.proctoringEnabled && (
-    <div className="fixed bottom-5 right-5 w-32 h-32 sm:w-40 sm:h-40 bg-black border-2 border-blue-500 rounded-lg overflow-hidden shadow-lg z-[9999] flex items-center justify-center">
-        <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-            style={{ transform: "scaleX(-1)" }}
-        />
-        {!cameraStream && (
-            <span className="text-xs text-gray-400 absolute">Loading camera...</span>
+
+        {exam?.proctoringEnabled && (
+          <div className="fixed bottom-5 right-5 w-32 h-32 sm:w-40 sm:h-40 bg-black border-2 border-blue-500 rounded-lg overflow-hidden shadow-lg z-[9999] flex items-center justify-center">
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+              style={{ transform: "scaleX(-1)" }}
+            />
+            {!cameraStream && (
+              <span className="text-xs text-gray-400 absolute">Loading camera...</span>
+            )}
+          </div>
         )}
-    </div>
-)}
-
-
-</div>
-
+      </div>
 
       {/* 🔒 Reload Confirmation Dialog */}
       <AlertDialog open={showReloadDialog} onOpenChange={setShowReloadDialog}>
@@ -595,5 +656,4 @@ useEffect(() => {
       </AlertDialog>
     </>
   );
-
 }
