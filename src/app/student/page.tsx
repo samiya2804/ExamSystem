@@ -101,6 +101,22 @@ export default function StudentDashboard() {
     }
   };
 
+  // --- Reload page when tab becomes active ---
+useEffect(() => {
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "visible") {
+      console.log("🔄 Tab is active again — reloading dashboard...");
+      window.location.reload();
+    }
+  };
+
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+  return () => {
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+}, []);
+
+
   useEffect(() => {
     if (user?.id) fetchSubmissionStats();
   }, [user]);
