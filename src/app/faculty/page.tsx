@@ -52,6 +52,11 @@ type Exam = {
   proctoringEnabled?: boolean;
 };
 
+type PendingCountByExam = {
+  _id: string; // This is the examId
+  count: number;
+};
+
 export default function FacultyDashboardPage() {
   const { user } = useAuth();
   const facultyId = user?.id;
@@ -60,6 +65,7 @@ export default function FacultyDashboardPage() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [exams, setExams] = useState<Exam[]>([]);
   const [loadingExams, setLoadingExams] = useState(false);
+  const [pendingCounts, setPendingCounts] = useState<PendingCountByExam[]>([]);
   const [openModal, setOpenModal] = useState(false);
   const [editingExam, setEditingExam] = useState<Exam | null>(null);
   const [form, setForm] = useState({
@@ -92,6 +98,18 @@ export default function FacultyDashboardPage() {
     }
   }
 
+  //fetch pending submissions 
+  async function fetchPendingCounts(id: string) {
+    try {
+      const res = await fetch(`/api/submissions/pending-count?facultyId=${id}`);
+      const data = await res.json();
+    
+      setPendingCounts(data.pendingByExam || []); 
+    } catch (err) {
+      console.error("Pending counts fetch error", err);
+    }
+  }
+
   useEffect(() => {
     async function loadInitialData() {
       await Promise.all([fetchSubjects(), fetchCourses()]);
@@ -100,16 +118,38 @@ export default function FacultyDashboardPage() {
     loadInitialData();
   }, []);
 
-  // FIX 2: Load exams only AFTER the facultyId is available from the auth hook
-  useEffect(() => {
+
+   async function loadExams(id: string) {
+    setLoadingExams(true);
+    try {
+      const res = await fetch(`/api/exams?facultyId=${id}`);
+      const data = await res.json();
+      setExams(data || []);
+      await fetchPendingCounts(id);
+    } catch (err) {
+      console.error("Failed loading exams", err);
+    } finally {
+      setLoadingExams(false);
+    }
+  }
+
+
+ useEffect(() => {
     async function loadInitialData() {
-      await fetchSubjects();
+      await Promise.all([fetchSubjects(), fetchCourses()]);
       if (facultyId) {
-        await loadExams(facultyId);
+        await loadExams(facultyId); 
       }
     }
     loadInitialData();
   }, [facultyId]);
+
+
+useEffect(() => {
+    
+    if (!facultyId) return;  
+    fetchPendingCounts(facultyId); 
+}, [facultyId]);
 
   async function fetchSubjects() {
     try {
@@ -121,18 +161,12 @@ export default function FacultyDashboardPage() {
     }
   }
 
-  async function loadExams(id: string) {
-    setLoadingExams(true);
-    try {
-      const res = await fetch(`/api/exams?facultyId=${id}`);
-      const data = await res.json();
-      setExams(data || []);
-    } catch (err) {
-      console.error("Failed loading exams", err);
-    } finally {
-      setLoadingExams(false);
-    }
-  }
+ const getPendingCount = (examId: string): number => {
+    // Now this comparison works because p._id is a string!
+    const item = pendingCounts.find(p => p._id === examId); 
+    return item ? item.count : 0;
+};
+ 
 
   function openCreateModal() {
     setEditingExam(null);
@@ -651,7 +685,9 @@ export default function FacultyDashboardPage() {
             No exams created yet.
           </div>
         ) : (
-          exams.map((exam) => (
+          exams.map((exam) =>{
+            const pendingCount = getPendingCount(exam._id);
+            return(
             <div
               key={exam._id}
               className="bg-[#07101a] border border-indigo-900 rounded-lg p-5 shadow-sm"
@@ -728,15 +764,21 @@ export default function FacultyDashboardPage() {
               </div>
               <div className="mt-3 flex gap-2">
 
-                <Link href={`/faculty/results/${exam._id}`} passHref>
-                  <Button
-                    className="bg-purple-700 hover:bg-purple-600 text-white border border-purple-600 cursor-pointer"
-                   
-                  >
-                    Results
-                  </Button>
-                </Link>
+              <Link href={`/faculty/results/${exam._id}`} passHref>
+    <Button
+    
+      className="relative bg-purple-700 hover:bg-purple-600 text-white border border-purple-600 cursor-pointer"
 
+    >
+      Results
+   
+      {pendingCount > 0 && (
+        <span className="absolute top-[-8px] right-[-8px] h-5 min-w-5 bg-red-600 text-white rounded-full text-xs font-bold flex items-center justify-center p-1 leading-none">
+          {pendingCount > 99 ? "99+" : pendingCount}
+        </span>
+      )}
+    </Button>
+  </Link>
                 <Button
                   variant="outline"
                   onClick={() => handleDelete(exam._id)}
@@ -746,7 +788,8 @@ export default function FacultyDashboardPage() {
                 </Button>
               </div>
             </div>
-          ))
+          );
+})
         )}
       </div>
     </div>
