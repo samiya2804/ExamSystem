@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
+
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -57,6 +59,15 @@
   --shadow-offset-x: 4px;
   --shadow-offset-y: 4px;
   --letter-spacing: 0em;
+  --font-heading: "Poppins", "Inter", "Segoe UI", Arial, sans-serif;
+--font-body: "Inter", "Roboto", "Segoe UI", Arial, sans-serif;
+--font-code: "JetBrains Mono", monospace;
+
+/* override tailwind */
+--font-sans: var(--font-body);
+--font-serif: var(--font-heading);
+--font-mono: var(--font-code);
+
 }
 
 .dark {
@@ -208,18 +219,7 @@
 }
 
 
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap");
 
-:root {
-  --font-heading: "Poppins", "Inter", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-body: "Inter", "Roboto", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
-  --font-code: "JetBrains Mono", monospace;
-
-  /* Override Tailwind default vars */
-  --font-sans: var(--font-body);
-  --font-serif: var(--font-heading);
-  --font-mono: var(--font-code);
-}
 
 /* Optional (not required, but helps improve text rendering) */
 html, body {
