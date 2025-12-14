@@ -9,15 +9,7 @@ export default function Footer() {
           <p className="text-xs sm:text-sm">
             © {new Date().getFullYear()}{" "}
             <span className="text-blue-400 font-semibold">AI Exam System</span>.  
-            Built with ❤️ by{" "}
-            <a
-              href="https://algoforgestudios.com"
-              target="_blank"
-              className="hover:text-white transition-colors font-medium"
-              rel="noopener noreferrer"
-            >
-              AlgoforgeStudios.com
-            </a>
+            Built with ❤️
           </p>
 
           {/* Right Section */}

@@ -88,7 +88,7 @@ export default function Navbar() {
             <Brain className="absolute top-0 left-0 w-full h-full text-blue-500 fill-blue-500/20" />
           </div>
           <span className="text-2xl md:text-lg lg:text-xl font-extrabold tracking-widest text-white drop-shadow-lg">
-            AI Exam System
+            EduTriGen
           </span>
         </Link>
 

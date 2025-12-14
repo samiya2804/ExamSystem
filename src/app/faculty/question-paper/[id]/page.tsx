@@ -320,7 +320,7 @@ async function handleDownloadPaper() {
     currentY += 20;
 
     doc.setFontSize(18);
-    doc.text("INVERTIS UNIVERSITY", pageWidth / 2, currentY, {
+    doc.text("Babu Banarsi Das Institute of Technology and Management", pageWidth / 2, currentY, {
       align: "center",
     });
     currentY += 20;
