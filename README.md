@@ -11,7 +11,8 @@
 ​Database: MongoDB
 ​🏃 How to Run Locally
 
-Clone the Repository: git clone https://github.com/samiya2804/EduTriGen.git cd EduTriGen
+Clone the Repository: git clone https://github.com/samiya2804/ExamSystem
+cd automatedexamsystem
 
 Install Dependencies: npm install
 
